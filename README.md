@@ -41,3 +41,15 @@ A mod that allows you to create paintings which can be sold or displayed in fram
 
 ## Quests
 Some NPCs will commission a painting for them. The painting will require a specific object to be in-frame, such as a location, creature, or NPC (including themselves!). Once commissioned, they may ask you to hang the painting up in their house in a suitable location. 
+
+
+## Components Required
+
+- Service to take screenshots and save them to file
+- Camera controller
+- Drag and Drop / menu functionality (Separate into framework from Ashfall?)
+- Shader controller
+- Painterly shader
+- Crafting recipes
+- Quest services
+- Picture Frame controller
