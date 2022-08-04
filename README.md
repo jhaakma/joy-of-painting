@@ -1,4 +1,4 @@
-# the-painter
+# The Painter
 A mod that allows you to create paintings which can be sold or displayed in frames
 
 ## Painting Mechanic
@@ -38,3 +38,6 @@ A mod that allows you to create paintings which can be sold or displayed in fram
 - Uses Skills Module
 - Determines gold value of painting
 - Maybe shader effects to simulate accuracy?
+
+## Quests
+Some NPCs will commission a painting for them. The painting will require a specific object to be in-frame, such as a location, creature, or NPC (including themselves!). Once commissioned, they may ask you to hang the painting up in their house in a suitable location. 
