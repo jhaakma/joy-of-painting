@@ -21,10 +21,12 @@ A mod that allows you to create paintings which can be sold or displayed in fram
 - Drop/attach via a menu, a blank canvas
 - Once canvas is attached, menu option to begin painting
 
-### Frame
+### Picture Frame
 - Purchase or craft
-- Place on a wall, then drop a painting onto it
-- Then activate to start painting
+- Place on a wall
+- Square and 1:2 variants
+- 1:2 frame can be rotated to accept landscape or portrait painting
+- Drop a painting on it or via menu
 
 ### Canvas
 - Purchase or craft
