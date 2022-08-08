@@ -48,8 +48,8 @@ A mod that allows you to create paintings which can be sold or displayed in fram
 ## Quests
 Some NPCs will commission a painting for them. The painting will require a specific object to be in-frame, such as a location, creature, or NPC (including themselves!). Once commissioned, they may ask you to hang the painting up in their house in a suitable location. 
 
-## Painting Data
-When a scene is captured, add data based on what is in the painting
+### Painting Subjects
+When a scene is captured, add data about the subject of the painting based on what is in the scene:
 - Cell/Region
 - Time of day
 - Weather
@@ -59,7 +59,7 @@ When a scene is captured, add data based on what is in the painting
 - Other objects: miscs, statics etc
 - Unique locations (i.e defined XYZ coords representing something that can not be identified through generic objects)
 
-## Request Examples
+### Request Examples
 The data captured above can be combined to create requests for specific paintings:
 - A landscape painting of Seyda Neen at Sunset
 - A self portrait of the questgiver
