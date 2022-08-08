@@ -73,6 +73,9 @@ The data captured above can be combined to create requests for specific painting
 ## Components Required
 
 - Service to take screenshots and save them to file
+  - Save painting
+  - Save icon
+  - Save average color (see: https://stackoverflow.com/questions/25488338/how-to-find-average-color-of-an-image-with-imagemagick)
 - Camera controller
 - Service to detect objects in front of player
 - Drag and Drop / menu functionality (Separate into framework from Ashfall?)
