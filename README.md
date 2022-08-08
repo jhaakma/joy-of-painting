@@ -48,11 +48,32 @@ A mod that allows you to create paintings which can be sold or displayed in fram
 ## Quests
 Some NPCs will commission a painting for them. The painting will require a specific object to be in-frame, such as a location, creature, or NPC (including themselves!). Once commissioned, they may ask you to hang the painting up in their house in a suitable location. 
 
+## Painting Data
+When a scene is captured, add data based on what is in the painting
+- Cell/Region
+- Time of day
+- Weather
+- NPCs
+- Creatures
+- Atrological objects: moon, sun etc
+- Other objects: miscs, statics etc
+- Unique locations (i.e defined XYZ coords representing something that can not be identified through generic objects)
+
+## Request Examples
+The data captured above can be combined to create requests for specific paintings:
+- A landscape painting of Seyda Neen at Sunset
+- A self portrait of the questgiver
+- A painting of a scrib
+- A landscape painting of Arkgnthand
+- A "Still life" painting of a lute
+- A saucy painting of the dancers at Desele's 
+
 
 ## Components Required
 
 - Service to take screenshots and save them to file
 - Camera controller
+- Service to detect objects in front of player
 - Drag and Drop / menu functionality (Separate into framework from Ashfall?)
 - Shader controller
 - Painterly shader
