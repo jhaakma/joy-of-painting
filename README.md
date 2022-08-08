@@ -1,16 +1,17 @@
-# The Painter
+# The Joy of Painting
 A mod that allows you to create paintings which can be sold or displayed in frames
 
 ## Painting Mechanic
 - Painting quality determined by skill
 - Place down an easel, add canvas
 - Adjust camera to look at what you want to paint
-- Camera moves to easel location, lets you look around, zoom in/out
+- Camera lets you look around, zoom in/out
 - Painting materialises onto canvas (using method described here: https://discord.com/channels/210394599246659585/766432467162497065/967851368406732860)
-- Check Sveng's photo mod to see how to capture screenshots
+- Use ImageMagick to asynchronously convert screenshot into painting
 - Use shader to create painted effect: apply shader, grab screenshot, remove shader
 - Other active shaders can affect the final painting, such as Skoomaesthesia
-- Final painting is a rolled up canvas
+- Final painting as painted canvas item with dynamically generated icon
+- Painted Canvas can be attached to a picture frame and hung on a wall
 
 ## Items
 
@@ -27,17 +28,20 @@ A mod that allows you to create paintings which can be sold or displayed in fram
 
 ### Canvas
 - Purchase or craft
-- Rolled up misc mesh
+- Crafting recipe: Fabric + Wood
 - Attaches to easel for painting
 
 ### Paint and Brushes
-- Maybe a single "Paint Set" item?
-- Maybe paint crafted with various flowers for dye?
+- Paint brush must be equipped
+- Craft paint brush using wood and... hair?
+- Paint must be refilled or purchased from merchants
+  - The purpose of this is to limit how many paintings can be made for balance reasons.
 
 ## Painting Skill
 - Uses Skills Module
 - Determines gold value of painting
-- Maybe shader effects to simulate accuracy?
+- How much paint is used per painting
+- Could unlock new painting styles (shaders)
 
 ## Quests
 Some NPCs will commission a painting for them. The painting will require a specific object to be in-frame, such as a location, creature, or NPC (including themselves!). Once commissioned, they may ask you to hang the painting up in their house in a suitable location. 
