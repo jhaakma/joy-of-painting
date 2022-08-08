@@ -44,6 +44,7 @@ A mod that allows you to create paintings which can be sold or displayed in fram
 - Determines gold value of painting
 - How much paint is used per painting
 - Could unlock new painting styles (shaders)
+- Gain more experience painting novel objects in new locations
 
 ## Quests
 Some NPCs will commission a painting for them. The painting will require a specific object to be in-frame, such as a location, creature, or NPC (including themselves!). Once commissioned, they may ask you to hang the painting up in their house in a suitable location. 
