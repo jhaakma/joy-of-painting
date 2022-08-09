@@ -85,6 +85,7 @@ The data captured above can be combined to create requests for specific painting
     - Increase FOV
     - Decrease FOV
     - Vignette On/Off
+    - Toggle PPL?
     - Rotate Canvas
     - Change Style (cycle between painting style shaders: oil, watercolor, sketch etc)
 - Service to detect objects in front of player
