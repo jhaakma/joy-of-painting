@@ -82,6 +82,8 @@ The data captured above can be combined to create requests for specific painting
     - Confirm (Start Painting)
     - Zoom In
     - Zoom Out
+    - Increase FOV
+    - Decrease FOV
     - Vignette On/Off
     - Rotate Canvas
     - Change Style (cycle between painting style shaders: oil, watercolor, sketch etc)
