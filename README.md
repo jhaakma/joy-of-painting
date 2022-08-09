@@ -77,10 +77,25 @@ The data captured above can be combined to create requests for specific painting
   - Save icon
   - Save average color (see: https://stackoverflow.com/questions/25488338/how-to-find-average-color-of-an-image-with-imagemagick)
 - Camera controller
+  - Disable player movement
+  - Activate to pause game and enter menu
+    - Confirm (Start Painting)
+    - Zoom In
+    - Zoom Out
+    - Vignette On/Off
+    - Rotate Canvas
+    - Change Style (cycle between painting style shaders: oil, watercolor, sketch etc)
 - Service to detect objects in front of player
+  - Solution #1: 
+    - Place 2d plane in front of player, size and distance such that it perfectly fits the frame on-screen
+    - Perform rayTest from player to target, check if it intercepted the plane
+  - Solution #2:
+    - Check object position against player orientation
+    - Use FOV to approximate whether it's within view
 - Drag and Drop / menu functionality (Separate into framework from Ashfall?)
 - Shader controller
-- Painterly shader
+  - List of "active" shaders
+  - Active shaders enabled while in capture menu and when screenshot is taken, then deactivated
 - Crafting recipes
 - Quest services
 - Picture Frame controller
