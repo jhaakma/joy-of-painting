@@ -102,3 +102,8 @@ The data captured above can be combined to create requests for specific painting
 - Crafting recipes
 - Quest services
 - Picture Frame controller
+
+
+## Magick commands
+- https://imagemagick.org/script/command-line-options.php#paint - to simulate oil painting
+- https://imagemagick.org/script/command-line-options.php#distort - To skew icon
