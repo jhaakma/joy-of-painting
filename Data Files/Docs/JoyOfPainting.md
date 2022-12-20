@@ -1,7 +1,7 @@
 # The Joy of Painting ALPHA
 This mod allows you to create paintings which can be sold or displayed in frames.
 
-## Requirements & Installation
+## Requirements ##
 
 ### ImageMagick
 ImageMagick is an image editing tool, and it must be installed on your machine so it can be used by this mod.
@@ -21,6 +21,10 @@ Skills Module can be found here: https://www.nexusmods.com/morrowind/mods/46034
 ### The Crafting Framework
 The Crafting Framework is required in order to craft art supplies.
 The Crafting Framework can be found here: https://www.nexusmods.com/morrowind/mods/51009
+
+### Perfect Placement (ALPHA release only)
+Perfect Placement is required to position paintings on walls. The full release will inlcude its own positioning system. 
+Perfect Placement can be found here: https://www.nexusmods.com/morrowind/mods/46562
 
 ### Ashfall (ALPHA release only)
 This dependency is only required during the alpha release, as currently the only way to get canvases and easels is to bushcraft them.
