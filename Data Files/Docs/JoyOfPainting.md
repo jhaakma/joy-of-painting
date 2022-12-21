@@ -23,7 +23,7 @@ The Crafting Framework is required in order to craft art supplies.
 The Crafting Framework can be found here: https://www.nexusmods.com/morrowind/mods/51009
 
 ### Perfect Placement (ALPHA release only)
-Perfect Placement is required to position paintings on walls. The full release will inlcude its own positioning system. 
+Perfect Placement is required to position paintings on walls. The full release will inlcude its own positioning system.
 Perfect Placement can be found here: https://www.nexusmods.com/morrowind/mods/46562
 
 ### Ashfall (ALPHA release only)
