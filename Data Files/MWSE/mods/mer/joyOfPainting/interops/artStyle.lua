@@ -54,8 +54,8 @@ local artStyles = {
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
                 config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
-                8, 2
-            ), 8, 2)
+                8, 4
+            ), 8, 4)
             logger:debug("Charcoal Sketch detail level is %d", detailLevel)
             return function(next)
                 image.magick:new("createCharoalSketch")
