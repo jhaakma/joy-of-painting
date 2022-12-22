@@ -6,10 +6,10 @@ This mod allows you to create paintings which can be sold or displayed in frames
 ### ImageMagick
 ImageMagick is an image editing tool, and it must be installed on your machine so it can be used by this mod.
 
-An installer is included with this mod in the `imageMagick` folder, or you can download it here: https://imagemagick.org/archive/binaries/ImageMagick-7.1.0-55-Q16-HDRI-x64-dll.exe
+An installer is included with this mod in the `Data Files\JoyOfPaintingResources` folder, or you can download it here: https://imagemagick.org/archive/binaries/ImageMagick-7.1.0-55-Q16-HDRI-x64-dll.exe
 
-### MGE XE v0.14.3 or later
-MGE XE can be found here: https://www.nexusmods.com/morrowind/mods/41102
+### MGE XE v0.15.0 or later
+As of writing, v0.15 of MGE XE is in BETA and hasn't been uploaded to Nexus. A copy of this beta can be found at `Data Files\JoyOfPaintingResources\MGE_XE_0.15.0beta2.7z`
 
 ### Morrowind Script Extender
 Ensure the latest MWSE is installed by running the `MWSE-Update.exe` file which comes with MGE XE, found in your `Morrowind` directory.
@@ -23,7 +23,7 @@ The Crafting Framework is required in order to craft art supplies.
 The Crafting Framework can be found here: https://www.nexusmods.com/morrowind/mods/51009
 
 ### Perfect Placement (ALPHA release only)
-Perfect Placement is required to position paintings on walls. The full release will inlcude its own positioning system. 
+Perfect Placement is required to position paintings on walls. The full release will inlcude its own positioning system.
 Perfect Placement can be found here: https://www.nexusmods.com/morrowind/mods/46562
 
 ### Ashfall (ALPHA release only)
