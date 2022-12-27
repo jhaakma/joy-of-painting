@@ -57,6 +57,8 @@ end
 
 --Registered objects
 config.canvases = {}
+config.frameSizes = {}
+config.frames = {}
 config.easels = {}
 config.artStyles = {}
 config.paints = {}

@@ -3,22 +3,34 @@
 #define SensitivityLower 10
 #define Saturation 1.0
 extern float Brightness = 0.2;
+extern float distance = 5000;
 
 texture lastshader;
 texture lastpass;
 texture depthframe;
 float2 rcpres;
 sampler s0 = sampler_state { texture=<lastshader>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
+sampler s1 = sampler_state { texture=<depthframe>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
 sampler s2 = sampler_state { texture=<lastpass>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
 
 #define width rcpres.x
 #define height rcpres.y
 
+float readDepth(float2 tex)
+{
+	float depth = pow(tex2D(s1, tex).r,1);
+	return depth;
+}
+
 float4 brightness(float2 tex: TEXCOORD0) : COLOR0
 {
   float4 color = tex2D(s0, tex);
   color.rgb += Brightness;
+
+  float depth = readDepth(tex);
+  color = color * ( smoothstep(0, depth, distance ));
   return color;
+
 }
 
 float4 edge_detect(float2 tex : TEXCOORD0) : COLOR
@@ -46,6 +58,7 @@ float4 edge_detect(float2 tex : TEXCOORD0) : COLOR
 	val = 1 - pow(1 - val, SensitivityLower);
 
 	float3 gray = float3(val, val, val);
+
 	float3 blackWhite = saturate(gray * Saturation);
 	return float4(blackWhite, 1.0);
 }

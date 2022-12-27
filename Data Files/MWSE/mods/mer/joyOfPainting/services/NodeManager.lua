@@ -15,6 +15,9 @@ NodeManager.nodes = {
     PAINT_TEX_NODE = "CANVAS_PAINT",
     --Easel nodes
     ATTACH_CANVAS = "ATTACH_CANVAS",
+
+    --Frame
+    ATTACH_FRAME = "ATTACH_FRAME",
 }
 
 function NodeManager.getIndex(node, name)
@@ -35,8 +38,7 @@ function NodeManager.cloneTextureProperty(node)
 end
 
 
-
-function NodeManager.getEaselAttachNode(sceneNode)
+function NodeManager.getCanvasAttachNode(sceneNode)
     return sceneNode:getObjectByName(NodeManager.nodes.ATTACH_CANVAS)
 end
 

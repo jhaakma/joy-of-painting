@@ -1,0 +1,158 @@
+local common = require("mer.joyOfPainting.common")
+local config = require("mer.joyOfPainting.config")
+local logger = common.createLogger("FrameActivator")
+local Painting = require("mer.joyOfPainting.items.Painting")
+local UIHelper = require("mer.joyOfPainting.services.UIHelper")
+
+
+--[[
+    Menu options:
+    Add Painting
+    Remove Painting
+    View Painting
+    Take Frame
+    Cancel
+]]
+local skipActivate = false
+---@param e activateEventData
+local function openFrameMenu(e)
+
+    local hasCanvas = Painting.hasCanvasData(e.target)
+    local isPainted = Painting.hasPaintingData(e.target)
+    local safeRef = tes3.makeSafeObjectHandle(e.target)
+    local frameConfig = config.frames[e.target.object.id:lower()]
+    if safeRef == nil then
+        logger:warn("Failed to make safe handle for %s", e.target.object.id)
+    end
+    tes3ui.showMessageMenu{
+        message = "Frame Menu",
+        buttons = {
+            {
+                text = "Add Painting",
+                callback = function()
+
+                    timer.delayOneFrame(function()
+                        if not safeRef:valid() then
+                            logger:warn("Skipping add painting because reference is invalid")
+                            return
+                        end
+                        local ref = safeRef:getObject()
+
+                        logger:debug("Add Painting")
+                        UIHelper.selectCanvasFromInventory{
+                            frameSize = frameConfig.frameSize,
+                            callback = function(e2)
+                                local painting = Painting:new(ref)
+                                painting:attachCanvas(e2.item, e2.itemData)
+                                        --Remove the canvas from the player's inventory
+                                logger:debug("Removing canvas %s from inventory", item.id)
+                                tes3.removeItem{
+                                    reference = tes3.player,
+                                    item = e2.item.id,
+                                    itemData = e2.itemData,
+                                    count = 1
+                                }
+                            end
+                        }
+                    end)
+                end,
+                showRequirements = function()
+                    return not hasCanvas
+                end,
+            },
+            {
+                text = "Remove Painting",
+                callback = function()
+                    timer.delayOneFrame(function()
+                        if not safeRef:valid() then
+                            logger:warn("Skipping remove painting because reference is invalid")
+                            return
+                        end
+                        local ref = safeRef:getObject()
+
+                        logger:debug("Remove Painting")
+                        local painting = Painting:new(ref)
+                        painting:takeCanvas()
+                    end)
+                end,
+                showRequirements = function()
+                    return hasCanvas
+                end,
+            },
+            {
+                text = "View Painting",
+                callback = function()
+                    timer.delayOneFrame(function()
+                        if not safeRef:valid() then
+                            logger:warn("Skipping view painting because reference is invalid")
+                            return
+                        end
+                        local ref = safeRef:getObject()
+
+                        logger:debug("View Painting")
+                        local paintingData = ref.data.joyOfPainting
+                        local paintingTexture = paintingData.paintingTexture
+                        local paintingName = paintingData.paintingName or ref.object.name
+                        local tooltipHeader = paintingName
+                        logger:debug("Painting Name: %s", paintingName)
+                        local tooltipText = string.format("Location: %s.", paintingData.location)
+                        UIHelper.openPaintingMenu{
+                            canvasId = paintingData.canvasId,
+                            paintingTexture = paintingTexture,
+                            tooltipHeader = tooltipHeader,
+                            tooltipText = tooltipText,
+                            dataHolder = paintingData,
+                        }
+                    end)
+                end,
+                showRequirements = function()
+                    return isPainted
+                end,
+            },
+            {
+                text = "Take Frame",
+                callback = function()
+                    timer.delayOneFrame(function()
+                        if not safeRef:valid() then
+                            logger:warn("Skipping take frame because reference is invalid")
+                            return
+                        end
+                        ---@type tes3reference
+                        ---@diagnostic disable-next-line: assign-type-mismatch
+                        local ref = safeRef:getObject()
+
+                        logger:debug("Take Frame")
+                        skipActivate = true
+                        tes3.player:activate(ref)
+                    end)
+                end,
+            },
+            {
+                text = "Cancel",
+                callback = function()
+                    logger:debug("Cancel")
+                end,
+            },
+        },
+    }
+end
+
+---@param e activateEventData
+local function onActivate(e)
+    if skipActivate then
+        skipActivate = false
+        return
+    end
+    if tes3ui.menuMode() then return end
+    if tes3.worldController.inputController:isKeyDown(tes3.scanCode.lShift) then return end
+    --check if registered frame
+    local id = e.target.object.id:lower()
+    local isFrame = config.frames[id]
+    if not isFrame then return end
+    logger:debug("Frame activated: %s", id)
+    openFrameMenu(e)
+    --block activate
+    return false
+end
+
+event.register(tes3.event.activate, onActivate)

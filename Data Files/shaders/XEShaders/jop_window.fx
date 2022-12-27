@@ -1,6 +1,5 @@
 // Aspect Ratio Shader
-extern float width = 1024;
-extern float height = 512;
+extern float aspectRatio = 1.0;
 extern float view_port_size = 0.8;
 float2 rcpres;
 static const float screen_width = rcpres.x;
@@ -11,9 +10,6 @@ sampler2D s0 = sampler_state { texture = <lastshader>; addressu = clamp; };
 
 float4 aspect_ratio(float2 tex: TEXCOORD0) : COLOR0
 {
-  // Calculate the aspect ratio of the given width and height
-  float aspectRatio = (width) / (height);
-
   // Calculate the aspect ratio of the screen
   float screenRatio = screen_width / screen_height;
 

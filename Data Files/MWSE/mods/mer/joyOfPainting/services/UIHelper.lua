@@ -1,7 +1,9 @@
 local UIHelper = {}
 local PaintService = require("mer.joyOfPainting.services.PaintService")
 local common = require("mer.joyOfPainting.common")
+local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("UIHelper")
+local Painting = require("mer.joyOfPainting.items.Painting")
 
 ---@class JoyOfPainting.UIHelper.addLabelToTooltip.params
 ---@field tooltip tes3uiElement
@@ -53,6 +55,7 @@ end
 ---@param e JoyOfPainting.UIHelper.createNamePainting.params
 function UIHelper.createNamePaintingField(parent, e)
     local textField = mwse.mcm.createTextField(parent, {
+        buttonText = "Name your Painting",
         --label = "Name your Painting: ",
         variable = mwse.mcm.createTableVariable {
             id = "paintingName",
@@ -70,7 +73,9 @@ function UIHelper.createNamePaintingField(parent, e)
                 }
                 return
             else
-                if e.dataHolder.paintingName and e.dataHolder.paintingName ~= "" then
+                if e.dataHolder.paintingName and e.dataHolder.paintingName:startswith("Painting: ") then
+                    --already has prefix
+                elseif e.dataHolder.paintingName and e.dataHolder.paintingName ~= "" then
                     e.dataHolder.paintingName = "Painting: " .. e.dataHolder.paintingName
                 else
                     e.dataHolder.paintingName = "Painting"
@@ -110,6 +115,9 @@ end
 ---@field tooltipText string? The text to show in the on-hover tooltip
 ---@field buttons JoyOfPainting.UIHelper.openNamePaintingMenu.button[] list of additional buttons to show at the bottom of the menu
 
+--[[
+    The UI for showing the painting and allowing the user to name it
+]]
 ---@param e JoyOfPainting.UIHelper.openNamePaintingMenu.params
 function UIHelper.openPaintingMenu(e)
     logger:debug("Creating Menu")
@@ -123,16 +131,12 @@ function UIHelper.openPaintingMenu(e)
     })
 
     --build button block
-    local buttonBlock = menu:createBlock()
-    buttonBlock.flowDirection = 'left_to_right'
-    buttonBlock.autoHeight = true
-    buttonBlock.autoWidth = true
-    buttonBlock.widthProportional = 1.0
-    buttonBlock.heightProportional = 1.0
-    buttonBlock.childAlignX = 1.0
-    buttonBlock.paddingAllSides = 4.0
+    local nameBlock = menu:createBlock()
+    nameBlock.flowDirection = 'left_to_right'
+    nameBlock.autoHeight = true
+    nameBlock.widthProportional = 1.0
 
-    UIHelper.createNamePaintingField(buttonBlock, {
+    UIHelper.createNamePaintingField(nameBlock, {
         dataHolder = e.dataHolder,
         callback = function()
             tes3ui.leaveMenuMode(menu.id)
@@ -141,27 +145,28 @@ function UIHelper.openPaintingMenu(e)
         end
     })
 
-    e.buttons = e.buttons or {}
-    --add buttons
-    for _, b in ipairs(e.buttons) do
-        assert(b.text, "Button needs text")
-        local button = buttonBlock:createButton{ text = b.text, id = b.id }
-        button.borderAllSides = 0
-        button.paddingAllSides = 2
-        button.borderRight = 10
-        button:register("mouseClick", function()
-            if b.closesMenu then
-                tes3ui.leaveMenuMode(menu.id)
-                tes3ui.findMenu(menu.id):destroy()
-            end
-            b.callback()
-        end)
+    local buttonBlock
+    buttonBlock = menu:createBlock()
+    buttonBlock.flowDirection = 'left_to_right'
+    buttonBlock.autoHeight = true
+    buttonBlock.widthProportional = 1.0
+    buttonBlock.childAlignX = 1.0
+    if e.buttons then
+        --add buttons
+        for _, b in ipairs(e.buttons) do
+            assert(b.text, "Button needs text")
+            local button = buttonBlock:createButton{ text = b.text, id = b.id }
+            button:register("mouseClick", function()
+                if b.closesMenu then
+                    tes3ui.leaveMenuMode(menu.id)
+                    tes3ui.findMenu(menu.id):destroy()
+                end
+                b.callback()
+            end)
+        end
     end
-
     --do cancel
     local button = buttonBlock:createButton{ text = "Cancel", id = "MenuMessage_CancelButton" }
-    button.borderAllSides = 0
-    button.paddingAllSides = 2
     button:register("mouseClick", function()
         tes3ui.leaveMenuMode(menu.id)
         tes3ui.findMenu(menu.id):destroy()
@@ -235,13 +240,15 @@ end
 ---@param parent tes3uiElement
 ---@param e JoyOfPainting.UIHelper.viewPainting.params
 function UIHelper.createPaintingImage(parent, e)
-
     --get dimensions
     local _, maxHeight = tes3ui.getViewportSize()
     maxHeight = maxHeight * 0.75
     logger:debug("Max Height: %s", maxHeight)
     local dimensions = PaintService.getPaintingDimensions(e.canvasId, maxHeight)
-
+    if not dimensions then
+        logger:error("Could not get dimensions for painting %s", e.canvasId)
+        return
+    end
     local outerBlock = parent:createBlock()
     outerBlock.flowDirection = "left_to_right"
     outerBlock.borderAllSides = 6
@@ -272,42 +279,38 @@ function UIHelper.createPaintingImage(parent, e)
     end
 end
 
-
-
---[[
-    Load the painting texture into a menu with an OK button at the bottom
-]]
----@param e JoyOfPainting.UIHelper.viewPainting.params
-function UIHelper.viewPainting(e)
-    local menuId = "JOP.ViewPaintingMenu"
-    local menu = UIHelper.createBaseMenu(menuId)
-    --outerblock with center aligned children
-    local outerBlock = menu:createBlock()
-    outerBlock.flowDirection = 'top_to_bottom'
-    outerBlock.autoHeight = true
-    outerBlock.autoWidth = true
-    outerBlock.childAlignX = 0.5
-
-    local titleLabel = outerBlock:createLabel({text = e.paintingName })
-    titleLabel.color = tes3ui.getPalette("header_color")
-
-    UIHelper.createPaintingImage(outerBlock, e)
-
-    local buttonBlock = outerBlock:createBlock()
-    buttonBlock.flowDirection = 'left_to_right'
-    buttonBlock.autoHeight = true
-    buttonBlock.autoWidth = true
-    buttonBlock.widthProportional = 1.0
-    buttonBlock.heightProportional = 1.0
-    buttonBlock.childAlignX = 0.5
-
-    local okButton = buttonBlock:createButton({text = "OK", id = tes3ui.registerID("MenuMessage_CancelButton")})
-    okButton:register("mouseClick", function()
-        tes3ui.leaveMenuMode(menuId)
-        tes3ui.findMenu(menuId):destroy()
-    end)
-    menu:updateLayout()
-    tes3ui.enterMenuMode(menu.id)
+--open an inventorySelectMenu filtered on canvas items
+function UIHelper.selectCanvasFromInventory(e)
+    tes3ui.showInventorySelectMenu{
+        title = "Select a canvas",
+        noResultsText = "No canvases found",
+        filter = function(e2)
+            local id = e2.item.id:lower()
+            local hasCanvasConfig = config.canvases[id] ~= nil
+            local hasCanvasData = Painting.hasCanvasData(e2.itemData)
+            local isFrame = config.frames[id]
+            if isFrame then
+                logger:trace("Filtering on frame: %s", id)
+                return false
+            end
+            if e.frameSize then
+                logger:trace("Filtering on frame size: %s", e.frameSize)
+                local canvasId = Painting.getCanvasId(e2.itemData)
+                    or e2.item.id:lower()
+                local canvasConfig = config.canvases[canvasId]
+                if canvasConfig and e.frameSize ~= canvasConfig.frameSize then
+                    logger:trace("Frame size does not match( %s ~= %s)",
+                        e.frameSize, canvasConfig.frameSize)
+                    return false
+                end
+            end
+            return hasCanvasConfig or hasCanvasData
+        end,
+        callback = e.callback,
+        noResultsCallback = function()
+            tes3.messageBox("You don't have any canvases in your inventory.")
+        end
+    }
 end
 
 return UIHelper

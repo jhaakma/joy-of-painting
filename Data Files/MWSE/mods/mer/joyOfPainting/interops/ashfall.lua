@@ -23,6 +23,57 @@ end
 
 local recipes = {
     {
+        id = "jop_frame_sq_01",
+        description = "A square wooden frame, activate to attach a painting",
+        materials = {
+            { material = "wood", count = 4 },
+            { material = "rope", count = 1 },
+        },
+        skillRequirements = {
+            {
+                skill = "Bushcrafting",
+                requirement = 20,
+            }
+        },
+        category = "Painting",
+        soundType = "wood",
+        maxSteepness = 0.1,
+    },
+    {
+        id = "jop_frame_w_01",
+        description = "A wide wooden frame, activate to attach a painting",
+        materials = {
+            { material = "wood", count = 4 },
+            { material = "rope", count = 1 },
+        },
+        skillRequirements = {
+            {
+                skill = "Bushcrafting",
+                requirement = 20,
+            }
+        },
+        category = "Painting",
+        soundType = "wood",
+        maxSteepness = 0.1,
+    },
+    {
+        id = "jop_frame_t_01",
+        description = "A tall wooden frame, activate to attach a painting",
+        materials = {
+            { material = "wood", count = 4 },
+            { material = "rope", count = 1 },
+        },
+        skillRequirements = {
+            {
+                skill = "Bushcrafting",
+                requirement = 20,
+            }
+        },
+        category = "Painting",
+        soundType = "wood",
+        maxSteepness = 0.1,
+    },
+    {
         id = "jop_easel_01",
         description = "A crude wooden easel. Can be used to paint a canvas.",
         materials = {
@@ -75,6 +126,10 @@ local recipes = {
                 text = "Scrape Painting",
                 callback = function(e)
                     local safeRef = tes3.makeSafeObjectHandle(e.reference)
+                    if safeRef == nil then
+                        logger:warn("Unable to scrape painting: Easel reference is no longer valid")
+                        return
+                    end
                     timer.delayOneFrame(function()
                         UIHelper.scrapePaintingMessage(function()
                             if safeRef:valid() then
@@ -97,14 +152,14 @@ local recipes = {
             {
                 text = "Take Canvas",
                 callback = function(e)
-                    Easel:new(e.reference):takeCanvas()
+                    Easel:new(e.reference).painting:takeCanvas()
                 end,
                 showRequirements = hasEmptyCanvas,
             },
             {
                 text = "Take Painting",
                 callback = function(e)
-                    Easel:new(e.reference):takeCanvas()
+                    Easel:new(e.reference).painting:takeCanvas()
                 end,
                 showRequirements = hasPainting,
             }

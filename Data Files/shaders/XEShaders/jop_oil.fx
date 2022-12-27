@@ -120,7 +120,6 @@ float3 getPosition(in float2 tex, in float depth)
 float4 edgedetecting( float2 tex : TEXCOORD0  ) : COLOR0
 {
 
-
 	float depth = readDepth(tex);
 	float3 pos2 = getPosition(tex, depth);
 
@@ -174,9 +173,11 @@ float4 edgedetecting( float2 tex : TEXCOORD0  ) : COLOR0
 	float y = lum[6]+2*lum[7]+  lum[8]-lum[0]-2*lum[1]-lum[2];
 	float edge =(x*x + y*y < threshold)? 1.0:0.0;
 
+
 	return float4(norm.xyz,edge);
 
 }
+
 
 float4 BlurNormals(float2 UVCoord : TEXCOORD0, uniform float2 OffsetMask) : COLOR0
 {
@@ -225,14 +226,10 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 	//image *=  * (1-ce.r));
 
 	float lum = sqrt(dot(image * image, float3(0.29, 0.58, 0.114)));
-
-
 	obbright = smoothstep(0.04, 0.05, lum.xxxx);
 
 	float4 sky = image * saturate((1-ce.r));
 	//return sky;
-
-
 
 	float3 edges = tex2D(s2,Tex + float2(0.0, 0.0)).a/2;
 

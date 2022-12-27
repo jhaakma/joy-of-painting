@@ -26,29 +26,18 @@ function PaintService.getSketchTexture()
     return config.locations.sketchTexture
 end
 
-function PaintService.hasPaintingData(dataHolder)
-    return dataHolder
-        and dataHolder.data
-        and dataHolder.data.joyOfPainting
-        and dataHolder.data.joyOfPainting.paintingTexture
-end
-
-function PaintService.hasFrameData(dataHolder)
-    return dataHolder
-    and dataHolder.data
-    and dataHolder.data.joyOfPainting
-    and dataHolder.data.joyOfPainting.frameId
-end
-
-
 function PaintService.getPaintingDimensions(canvasId, maxHeight)
     logger:debug("Getting painting dimensions for %s. Max height: %s",
         canvasId, maxHeight)
-    local dimensions = config.canvases[canvasId]
-    local textureHeight = math.min(dimensions.textureHeight, maxHeight)
-    local canvasWidth = dimensions.canvasWidth
-    local canvasHeight = dimensions.canvasHeight
-    local ratio = canvasWidth / canvasHeight
+    local canvasData = config.canvases[canvasId]
+    local textureHeight = math.min(canvasData.textureHeight, maxHeight)
+
+    local frameSize = config.frameSizes[canvasData.frameSize]
+    if not frameSize then
+        logger:error("Frame Size '%s' is not registered.", canvasData.frameSize)
+        return
+    end
+    local ratio = frameSize.aspectRatio
 
     local height = textureHeight
     local width = textureHeight * ratio

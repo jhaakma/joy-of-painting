@@ -103,13 +103,6 @@ function PhotoMenu:capture()
             logger:debug("Enabling controls")
             self:enablePlayerControls()
         end)
-        :registerStep("viewPainting", function(next)
-            UIHelper.viewPainting{
-                paintingName = self.artStyle.name,
-                paintingTexture = paintingTexture,
-                canvasId = self.canvas.canvasId,
-            }
-        end)
         :registerStep("progressSkill", function()
             SkillService.progressSkillFromPainting()
         end)
@@ -352,8 +345,12 @@ end
 
 
 function PhotoMenu:setAspectRatio()
-    Shader.setUniform(config.shaders.window, "width", self.canvas.canvasWidth)
-    Shader.setUniform(config.shaders.window, "height", self.canvas.canvasHeight)
+    local frameSize = config.frameSizes[self.canvas.frameSize]
+    if not frameSize then
+        logger:error("Frame Size '%s' is not registered.", self.canvas.frameSize)
+        return
+    end
+    Shader.setUniform(config.shaders.window, "aspectRatio", frameSize.aspectRatio)
 end
 
 function PhotoMenu:initMGESettings()

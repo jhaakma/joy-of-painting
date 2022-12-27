@@ -7,17 +7,12 @@ local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("PaintingVisuals")
 
 local function manageSceneNodeCreated(e)
-    --First attach canvas to easel
-    local easel = Easel:new(e.reference)
-    if easel then
-        logger:debug("Updating easel visuals for %s", easel.name)
-        easel:doCanvasVisuals()
-    end
-    --Then add paint
-    local paint = Painting:new(e.reference)
-    if paint then
-        logger:debug("Updating painting visuals for %s", paint.id)
-        paint:doPaintingVisuals()
+    --Attach canvas then add paint to canvas
+    if Painting.hasCanvasData(e.reference) then
+        local paint = Painting:new(e.reference)
+        if paint then
+            paint:doVisuals()
+        end
     end
 end
 

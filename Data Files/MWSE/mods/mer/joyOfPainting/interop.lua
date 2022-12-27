@@ -8,8 +8,7 @@ local Interop = {}
 ---@field canvasId string The id of the canvas. Must be unique.
 ---@field textureWidth number The width of the texture to be used for the canvas.
 ---@field textureHeight number The height of the texture to be used for the canvas.
----@field canvasWidth number The width of the canvas in pixels.
----@field canvasHeight number The height of the canvas in pixels.
+---@field frameSize string The size of the frame to use for the canvas. Must be one of "sqaure", "tall", or "wide"
 ---@field valueModifier number The value modifier for the painting
 ---@field canvasTexture string The texture to use for the canvas
 
@@ -19,18 +18,16 @@ function Interop.registerCanvas(e)
     assert(type(e.canvasId) == "string", "id must be a string")
     assert(type(e.textureHeight) == "number", "textureHeight must be a number")
     assert(type(e.textureHeight) == "number", "textureHeight must be a number")
-    assert(type(e.canvasWidth) == "number", "canvasWidth must be a number")
-    assert(type(e.canvasHeight) == "number", "canvasHeight must be a number")
+    assert(type(e.frameSize) == "string", "frameSize must be a string")
     assert(type(e.valueModifier) == "number", "valueModifier must be a number")
     assert(type(e.canvasTexture) == "string", "canvasTexture must be a string")
-    logger:debug("Registering canvas %s with dimensions %s x %s", e.id, e.canvasWidth, e.canvasHeight)
+    logger:debug("Registering canvas %s with frameSize %s", e.canvasId, e.frameSize)
     local id = e.canvasId:lower()
     config.canvases[id] = {
         canvasId = id,
         textureWidth = e.textureWidth,
         textureHeight = e.textureHeight,
-        canvasWidth = e.canvasWidth,
-        canvasHeight = e.canvasHeight,
+        frameSize = e.frameSize,
         valueModifier = e.valueModifier,
         canvasTexture = e.canvasTexture,
     }
@@ -68,6 +65,35 @@ function Interop.registerArtStyle(e)
         soundEffect = e.soundEffect,
         animAlphaTexture = e.animAlphaTexture,
         equipment = e.equipment,
+    }
+end
+
+--[[
+    Register a frame size, which allows canvases to have the right frame
+]]
+function Interop.registerFrameSize(e)
+    assert(type(e.id) == "string", "id must be a string")
+    assert(type(e.width) == "number", "width must be a number")
+    assert(type(e.height) == "number", "aspectRatio.height must be a number")
+    logger:debug("Registering frame size %s", e.id)
+    local id = e.id:lower()
+    config.frameSizes[id] = {
+        id = id,
+        width = e.width,
+        height = e.height,
+        aspectRatio = e.width / e.height,
+    }
+end
+
+function Interop.registerFrame(e)
+    assert(type(e.id) == "string", "id must be a string")
+    assert(type(e.frameSize) == "string", "frameSize must be a string")
+    logger:debug("Registering frame %s", e.id)
+    local id = e.id:lower()
+    config.frames[id] = {
+        id = id,
+        texture = e.texture,
+        frameSize = e.frameSize,
     }
 end
 
