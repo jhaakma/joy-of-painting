@@ -63,6 +63,7 @@ config.easels = {}
 config.artStyles = {}
 config.paints = {}
 config.easelActiveToMiscMap = {}
+config.meshOverrides = {}
 config.shaders = {
     watercolor = "jop_watercolor",
     oil = "jop_oil",

@@ -39,8 +39,28 @@ local function openFrameMenu(e)
                         local ref = safeRef:getObject()
 
                         logger:debug("Add Painting")
-                        UIHelper.selectCanvasFromInventory{
-                            frameSize = frameConfig.frameSize,
+                        tes3ui.showInventorySelectMenu{
+                            title = "Select a painting",
+                            noResultsText = "No canvases found",
+                            filter = function(e2)
+                                local id = e2.item.id:lower()
+
+                                local canvasConfig = Painting.getCanvasData(e2.item, e2.itemData)
+                                local isFrame = config.frames[id]
+                                if isFrame then
+                                    logger:trace("Filtering on frame: %s", id)
+                                    return false
+                                end
+                                if frameConfig.frameSize then
+                                    logger:trace("Filtering on frame size: %s", frameConfig.frameSize)
+                                    if canvasConfig and frameConfig.frameSize ~= canvasConfig.frameSize then
+                                        logger:trace("Frame size does not match( %s ~= %s)",
+                                            frameConfig.frameSize, canvasConfig.frameSize)
+                                        return false
+                                    end
+                                end
+                                return canvasConfig  ~= nil
+                            end,
                             callback = function(e2)
                                 local painting = Painting:new(ref)
                                 painting:attachCanvas(e2.item, e2.itemData)
@@ -52,6 +72,9 @@ local function openFrameMenu(e)
                                     itemData = e2.itemData,
                                     count = 1
                                 }
+                            end,
+                            noResultsCallback = function()
+                                tes3.messageBox("You don't have any canvases in your inventory.")
                             end
                         }
                     end)
@@ -88,21 +111,7 @@ local function openFrameMenu(e)
                             return
                         end
                         local ref = safeRef:getObject()
-
-                        logger:debug("View Painting")
-                        local paintingData = ref.data.joyOfPainting
-                        local paintingTexture = paintingData.paintingTexture
-                        local paintingName = paintingData.paintingName or ref.object.name
-                        local tooltipHeader = paintingName
-                        logger:debug("Painting Name: %s", paintingName)
-                        local tooltipText = string.format("Location: %s.", paintingData.location)
-                        UIHelper.openPaintingMenu{
-                            canvasId = paintingData.canvasId,
-                            paintingTexture = paintingTexture,
-                            tooltipHeader = tooltipHeader,
-                            tooltipText = tooltipText,
-                            dataHolder = paintingData,
-                        }
+                        Painting.paintingMenu(ref.object, ref)
                     end)
                 end,
                 showRequirements = function()

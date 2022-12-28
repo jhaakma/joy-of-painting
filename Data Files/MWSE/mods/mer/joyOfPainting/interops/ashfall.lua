@@ -2,6 +2,7 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("AshfallInterop")
 local Easel = require("mer.joyOfPainting.items.Easel")
+local Painting = require("mer.joyOfPainting.items.Painting")
 local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 
 local function hasCanvas(e)
@@ -86,6 +87,13 @@ local recipes = {
                 requirement = 20,
             }
         },
+        destroyCallback = function(_recipe, e)
+            local reference = e.reference
+            local easel = Easel:new(reference)
+            if easel and easel.painting and easel.data.canvasId then
+                easel.painting:takeCanvas()
+            end
+        end,
         category = "Painting",
         soundType = "wood",
         maxSteepness = 0.1,
@@ -133,7 +141,7 @@ local recipes = {
                     timer.delayOneFrame(function()
                         UIHelper.scrapePaintingMessage(function()
                             if safeRef:valid() then
-                                Easel:new(safeRef:getObject()):cleanCanvas()
+                                Painting:new(safeRef:getObject()):cleanCanvas()
                             else
                                 logger:warn("Unable to clean canvas: Easel reference is no longer valid")
                             end
@@ -173,8 +181,7 @@ local recipes = {
         skillRequirements = {
             {
                 skill = "Bushcrafting",
-                requirement = 20,
-            }
+                requirement = 20,}
         },
         materials = {
             { material = "fibre", count = 20 },

@@ -11,16 +11,26 @@ local Interop = {}
 ---@field frameSize string The size of the frame to use for the canvas. Must be one of "sqaure", "tall", or "wide"
 ---@field valueModifier number The value modifier for the painting
 ---@field canvasTexture string The texture to use for the canvas
+---@field meshOverride string? An optional mesh override for the canvas
+---@field requiresEasel boolean? Whether the canvas requires an easel to be painted on
+
+local function logAssert(condition, message)
+    if not condition then
+        logger:error(message)
+        assert(condition, message)
+    end
+end
 
 
 ---@param e JoyOfPainting.Canvas
 function Interop.registerCanvas(e)
-    assert(type(e.canvasId) == "string", "id must be a string")
-    assert(type(e.textureHeight) == "number", "textureHeight must be a number")
-    assert(type(e.textureHeight) == "number", "textureHeight must be a number")
-    assert(type(e.frameSize) == "string", "frameSize must be a string")
-    assert(type(e.valueModifier) == "number", "valueModifier must be a number")
-    assert(type(e.canvasTexture) == "string", "canvasTexture must be a string")
+    logAssert(type(e.canvasId) == "string", "id must be a string")
+    logAssert(type(e.textureHeight) == "number", "textureHeight must be a number")
+    logAssert(type(e.textureHeight) == "number", "textureHeight must be a number")
+    logAssert(type(e.frameSize) == "string", "frameSize must be a string")
+    logAssert(type(e.valueModifier) == "number", "valueModifier must be a number")
+    logAssert(type(e.canvasTexture) == "string", "canvasTexture must be a string")
+
     logger:debug("Registering canvas %s with frameSize %s", e.canvasId, e.frameSize)
     local id = e.canvasId:lower()
     config.canvases[id] = {
@@ -30,7 +40,18 @@ function Interop.registerCanvas(e)
         frameSize = e.frameSize,
         valueModifier = e.valueModifier,
         canvasTexture = e.canvasTexture,
+        requiresEasel = e.requiresEasel,
     }
+    if e.meshOverride then
+        local obj = tes3.getObject(id)
+        if not obj then
+            logger:error("Could not find object %s", id)
+            return
+        end
+        local originalMesh = "meshes\\" .. obj.mesh:lower()
+        logger:debug("Registering mesh override for %s: %s -> %s", id, originalMesh, e.meshOverride)
+        config.meshOverrides[originalMesh] = e.meshOverride:lower()
+    end
 end
 
 ---@class JoyOfPainting.PaintingEquipment
@@ -50,11 +71,11 @@ end
 
 ---@param e JoyOfPainting.ArtStyle
 function Interop.registerArtStyle(e)
-    assert(type(e.name) == "string", "name must be a string")
-    assert(type(e.magickCommand) == "function", "magickCommand must be a function")
-    assert(type(e.shaders) == "table", "shaders must be a table")
-    assert(type(e.valueModifier) == "number", "valueModifier must be a number")
-    assert(type(e.soundEffect) == "string", "soundEffect must be a string")
+    logAssert(type(e.name) == "string", "name must be a string")
+    logAssert(type(e.magickCommand) == "function", "magickCommand must be a function")
+    logAssert(type(e.shaders) == "table", "shaders must be a table")
+    logAssert(type(e.valueModifier) == "number", "valueModifier must be a number")
+    logAssert(type(e.soundEffect) == "string", "soundEffect must be a string")
     logger:debug("Registering art style %s", e.name)
 
     config.artStyles[e.name] = {
@@ -72,9 +93,9 @@ end
     Register a frame size, which allows canvases to have the right frame
 ]]
 function Interop.registerFrameSize(e)
-    assert(type(e.id) == "string", "id must be a string")
-    assert(type(e.width) == "number", "width must be a number")
-    assert(type(e.height) == "number", "aspectRatio.height must be a number")
+    logAssert(type(e.id) == "string", "id must be a string")
+    logAssert(type(e.width) == "number", "width must be a number")
+    logAssert(type(e.height) == "number", "aspectRatio.height must be a number")
     logger:debug("Registering frame size %s", e.id)
     local id = e.id:lower()
     config.frameSizes[id] = {
@@ -86,8 +107,8 @@ function Interop.registerFrameSize(e)
 end
 
 function Interop.registerFrame(e)
-    assert(type(e.id) == "string", "id must be a string")
-    assert(type(e.frameSize) == "string", "frameSize must be a string")
+    logAssert(type(e.id) == "string", "id must be a string")
+    logAssert(type(e.frameSize) == "string", "frameSize must be a string")
     logger:debug("Registering frame %s", e.id)
     local id = e.id:lower()
     config.frames[id] = {

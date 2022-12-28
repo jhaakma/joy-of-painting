@@ -3,7 +3,6 @@ local PaintService = require("mer.joyOfPainting.services.PaintService")
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("UIHelper")
-local Painting = require("mer.joyOfPainting.items.Painting")
 
 ---@class JoyOfPainting.UIHelper.addLabelToTooltip.params
 ---@field tooltip tes3uiElement
@@ -279,38 +278,5 @@ function UIHelper.createPaintingImage(parent, e)
     end
 end
 
---open an inventorySelectMenu filtered on canvas items
-function UIHelper.selectCanvasFromInventory(e)
-    tes3ui.showInventorySelectMenu{
-        title = "Select a canvas",
-        noResultsText = "No canvases found",
-        filter = function(e2)
-            local id = e2.item.id:lower()
-            local hasCanvasConfig = config.canvases[id] ~= nil
-            local hasCanvasData = Painting.hasCanvasData(e2.itemData)
-            local isFrame = config.frames[id]
-            if isFrame then
-                logger:trace("Filtering on frame: %s", id)
-                return false
-            end
-            if e.frameSize then
-                logger:trace("Filtering on frame size: %s", e.frameSize)
-                local canvasId = Painting.getCanvasId(e2.itemData)
-                    or e2.item.id:lower()
-                local canvasConfig = config.canvases[canvasId]
-                if canvasConfig and e.frameSize ~= canvasConfig.frameSize then
-                    logger:trace("Frame size does not match( %s ~= %s)",
-                        e.frameSize, canvasConfig.frameSize)
-                    return false
-                end
-            end
-            return hasCanvasConfig or hasCanvasData
-        end,
-        callback = e.callback,
-        noResultsCallback = function()
-            tes3.messageBox("You don't have any canvases in your inventory.")
-        end
-    }
-end
 
 return UIHelper

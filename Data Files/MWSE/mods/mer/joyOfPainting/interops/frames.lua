@@ -3,19 +3,25 @@ local interop = require("mer.joyOfPainting.interop")
 local frameSizes = {
     {
         id = "square",
-        width = 512,
-        height = 512,
+        width = 100,
+        height = 100,
     },
     {
         id = "tall",
-        width = 512,
-        height = 1024,
+        width = 9,
+        height = 16,
     },
     {
         id = "wide",
-        width = 1024,
-        height = 512,
+        width = 16,
+        height = 9,
     },
+
+    {
+        id = "paper_portrait",
+        width = 100,
+        height = 120
+    }
 }
 
 for _, frameSize in ipairs(frameSizes) do
@@ -36,6 +42,8 @@ local frames = {
         frameSize = "tall"
     },
 }
-for _, frame in ipairs(frames) do
-    interop.registerFrame(frame)
-end
+event.register(tes3.event.initialized, function()
+    for _, frame in ipairs(frames) do
+        interop.registerFrame(frame)
+    end
+end)

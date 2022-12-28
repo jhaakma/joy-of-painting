@@ -54,8 +54,8 @@ local artStyles = {
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
                 config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
-                8, 4
-            ), 8, 4)
+                15, 4
+            ), 15, 4)
             logger:debug("Charcoal Sketch detail level is %d", detailLevel)
             return function(next)
                 image.magick:new("createCharoalSketch")
@@ -103,8 +103,8 @@ local artStyles = {
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
                 config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
-                5, 0
-            ), 5, 0)
+                8, 0
+            ), 8, 0)
             logger:debug("Ink Sketch detail level is %d", detailLevel)
             return function(next)
                 image.magick:new("createInkSketch")
@@ -181,7 +181,8 @@ local artStyles = {
         }
     }
 }
-
-for _, artStyle in ipairs(artStyles) do
-    interop.registerArtStyle(artStyle)
-end
+event.register(tes3.event.initialized, function()
+    for _, artStyle in ipairs(artStyles) do
+        interop.registerArtStyle(artStyle)
+    end
+end)

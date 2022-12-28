@@ -6,7 +6,6 @@ local Painting = require("mer.joyOfPainting.items.Painting")
 local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
 local SkillService = require("mer.joyOfPainting.services.SkillService")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
-local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 
 ---@class JoyOfPainting.CanvasData
 ---@field canvasId string|nil The id of the original canvas object
@@ -85,94 +84,39 @@ end
 ]]
 function Easel:openAttachCanvasMenu()
     timer.delayOneFrame(function()
-        UIHelper.selectCanvasFromInventory{
+        tes3ui.showInventorySelectMenu{
+            title = "Select a canvas",
+            noResultsText = "No canvases found",
             callback = function(e)
                 timer.delayOneFrame(function()
-                    self:attachCanvasFromInventory(e.item, e.itemData)
+                    if e.item then
+                        self:attachCanvasFromInventory(e.item, e.itemData)
+                    end
                 end)
             end,
+            filter = function(e2)
+                local id = e2.item.id:lower()
+                local canvasConfig = Painting.getCanvasData(e2.item, e2.itemData)
+                local isFrame = config.frames[id]
+                if isFrame then
+                    logger:trace("Filtering on frame: %s", id)
+                    return false
+                end
+                return (canvasConfig  ~= nil)
+                    and (canvasConfig.requiresEasel == true)
+            end,
+            noResultsCallback = function()
+                tes3.messageBox("You don't have any canvases in your inventory.")
+            end
         }
     end)
-end
-
-function Easel:getCanvasData()
-    return config.canvases[self.data.canvasId]
-end
-
-
-
-function Easel:cleanCanvas()
-    logger:debug("Cleaning canvas")
-    local canvasId = self.data.canvasId
-    self.painting:resetCanvas()
-    self.data.canvasId = canvasId
-    local canvas = tes3.getObject(canvasId)
-    self.painting:attachCanvas(canvas)
-end
-
-
-function Easel:doPaintAnim()
-    logger:debug("doPaintAnim()")
-
-    --get texture node
-    local paintTexNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_ANIM_TEX_NODE)
-    assert(paintTexNode ~= nil, "No paint node found on easel")
-
-    --set texture
-    NodeManager.cloneTextureProperty(paintTexNode)
-    ---@type niSourceTexture
-    ---@diagnostic disable-next-line: assign-type-mismatch
-    paintTexNode.texturingProperty.baseMap.texture = PaintService.createTexture(self.data.paintingTexture)
-    paintTexNode:update()
-    paintTexNode:updateProperties()
-
-    --reset animation
-    self:resetPaintTime()
-
-    timer.delayOneFrame(function()
-        --set index to animation node
-        local switchNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_SWITCH)
-        local animIndex = NodeManager.getIndex(switchNode, NodeManager.nodes.PAINT_SWITCH_ANIMATING )
-        switchNode.switchIndex = animIndex
-    end)
-end
-
---Creates a new misc item with the paintingTexture as the ID and the path to the icon
-function Easel:createPaintingObject(paintingName)
-    assert(self.data.paintingTexture ~= nil, "No painting texture set")
-    local canvasObj = tes3.getObject(self.data.canvasId)
-    local paintingObject = tes3.createObject{
-        id = self.data.paintingTexture,
-        name = paintingName,
-        mesh = canvasObj.mesh,
-        enchantment = canvasObj.enchantment,
-        weight = canvasObj.weight,
-        type = canvasObj.type,
-        maxCondition = canvasObj.maxCondition,
-        speed = canvasObj.speed,
-        reach = canvasObj.reach,
-        enchantCapacity = canvasObj.enchantCapacity,
-        chopMin = canvasObj.chopMin,
-        chopMax = canvasObj.chopMax,
-        slashMin = canvasObj.slashMin,
-        slashMax = canvasObj.slashMax,
-        thrustMin = canvasObj.thrustMin,
-        thrustMax = canvasObj.thrustMax,
-        materialFlags = canvasObj.flags,
-        getIfExists = false,
-        objectType = canvasObj.objectType,
-        icon = PaintService.getPaintingIconPath(self.data.paintingTexture),
-        value = SkillService.getPaintingValue(),
-    }
-    logger:debug("Created painting object %s", paintingObject.id)
-    return paintingObject
 end
 
 ---Start painting
 function Easel:paint(artStyle)
     self.data.artStyle = artStyle
     self.reference.sceneNode.appCulled = true
-    local canvas = self:getCanvasData()
+    local canvas = Painting.getCanvasData(self.reference.object, self.reference)
     if canvas then
         timer.delayOneFrame(function()
             PhotoMenu:new{
@@ -182,7 +126,7 @@ function Easel:paint(artStyle)
                     --set paintingTexture before creating object
                     self.data.paintingTexture = e.paintingTexture
                     self.data.location = tes3.player.cell.displayName
-                    self:doPaintAnim()
+                    self.painting:doPaintAnim()
                     self.reference.sceneNode.appCulled = false
                 end,
                 closeCallback = function()
@@ -191,18 +135,19 @@ function Easel:paint(artStyle)
                 cancelCallback = function()
                     logger:debug("Cancelling painting")
                     tes3.messageBox("You scrape the paint from the canvas.")
-                    self:cleanCanvas()
+                    self.painting:cleanCanvas()
                 end,
                 finalCallback = function(e)
                     logger:debug("Creating new object for painting %s", e.paintingName)
-                    local newPaintingObject = self:createPaintingObject(e.paintingName)
+                    local newPaintingObject = self.painting:createPaintingObject(e.paintingName)
                     self.data.paintingId = newPaintingObject.id
+                    self.data.canvasId = self.data.canvasId or self.reference.object.id:lower()
                     self.data.paintingName = newPaintingObject.name
                     self.painting:doVisuals()
                     tes3.messageBox("Successfully created %s", newPaintingObject.name)
                     --assert all canvas fields are filled in
                     for _, field in ipairs(Painting.canvasFields) do
-                        assert(self.data[field] ~= nil, "Missing field %s", field)
+                        assert(self.data[field] ~= nil, string.format("Missing field %s", field))
                     end
                 end
             }:open()
@@ -212,6 +157,7 @@ function Easel:paint(artStyle)
         return
     end
 end
+
 
 function Easel:pickUp()
     logger:debug("TODO: Pick up easel")
@@ -239,20 +185,6 @@ function Easel:canPickUp()
         and not self:hasCanvas()
 end
 
-function Easel:resetPaintTime()
-    local now = tes3.getSimulationTimestamp(false)
-    local root = self.reference.sceneNode
-    for node in table.traverse{root} do
-        if node.controller then
-            node.controller.phase = -now + config.ANIM_OFFSET
-        end
-        for _, prop in pairs{node.materialProperty, node.texturingProperty} do
-            if prop.controller then
-                prop.controller.phase = -now + config.ANIM_OFFSET
-            end
-        end
-    end
-end
 
 
 

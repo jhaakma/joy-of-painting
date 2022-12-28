@@ -10,6 +10,7 @@ local canvases = {
         frameSize = "square",
         valueModifier = 10,
         canvasTexture = "Data Files\\Textures\\jop\\ab_painting_canvas_01.dds",
+        requiresEasel = true,
     },
     {
         canvasId = "jop_canvas_tall_01",
@@ -18,6 +19,7 @@ local canvases = {
         frameSize = "tall",
         valueModifier = 10,
         canvasTexture = "Data Files\\Textures\\jop\\ab_painting_canvas_01.dds",
+        requiresEasel = true,
     },
     {
         canvasId = "jop_canvas_wide_01",
@@ -26,10 +28,24 @@ local canvases = {
         frameSize = "wide",
         valueModifier = 10,
         canvasTexture = "Data Files\\Textures\\jop\\ab_painting_canvas_01.dds",
+        requiresEasel = true,
     },
+
+    {
+        canvasId = "sc_paper plain",
+        meshOverride = "meshes\\jop\\medium\\paper_01.nif",
+        textureWidth = 512,
+        textureHeight = 512,
+        frameSize = "paper_portrait",
+        valueModifier = 1,
+        canvasTexture = "Data Files\\Textures\\tx_paper_plain_01.dds",
+    }
 }
 
----@type JoyOfPainting.ArtStyle[]
-for _, canvas in ipairs(canvases) do
-    interop.registerCanvas(canvas)
-end
+event.register(tes3.event.initialized, function()
+    ---@type JoyOfPainting.ArtStyle[]
+    for _, canvas in ipairs(canvases) do
+        interop.registerCanvas(canvas)
+    end
+end)
+
