@@ -53,9 +53,9 @@ local artStyles = {
             local skill = SkillService.skills.painting.value
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
-                config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
-                15, 4
-            ), 15, 4)
+                config.skillPaintEffect.MIN_SKILL, 40,
+                10, 3
+            ), 10, 3)
             logger:debug("Charcoal Sketch detail level is %d", detailLevel)
             return function(next)
                 image.magick:new("createCharoalSketch")
@@ -65,7 +65,7 @@ local artStyles = {
                 :trim()
                 :autoGamma()
                 :paint(detailLevel)
-                --:blur(detailLevel)
+                :blur(detailLevel)
                 --:charcoal(tes3.player.data.charcoal or 1)
                 :sketch()
                 :brightnessContrast(-80, 90)
