@@ -51,9 +51,9 @@ local function openFrameMenu(e)
                                     return false
                                 end
                                 if frameConfig.frameSize then
-                                    logger:debug("Filtering on frame size: %s", frameConfig.frameSize)
+                                    logger:trace("Filtering on frame size: %s", frameConfig.frameSize)
                                     if canvasConfig and frameConfig.frameSize ~= canvasConfig.frameSize then
-                                        logger:debug("Frame size does not match( %s ~= %s)",
+                                        logger:trace("Frame size does not match( %s ~= %s)",
                                             frameConfig.frameSize, canvasConfig.frameSize)
                                         return false
                                     end
@@ -61,9 +61,9 @@ local function openFrameMenu(e)
                                 if canvasConfig == nil then
                                     return false
                                 end
-                                logger:debug("Filtering on canvas: %s", id)
-                                logger:debug("Frame Size = %s", frameConfig.frameSize)
-                                logger:debug("canvas frame size: %s", canvasConfig.frameSize)
+                                logger:trace("Filtering on canvas: %s", id)
+                                logger:trace("Frame Size = %s", frameConfig.frameSize)
+                                logger:trace("canvas frame size: %s", canvasConfig.frameSize)
                                 return true
                             end,
                             callback = function(e2)
