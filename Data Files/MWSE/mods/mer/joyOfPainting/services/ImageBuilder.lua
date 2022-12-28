@@ -75,7 +75,7 @@ function ImageBuilder:registerStep(name, command)
     return self
 end
 
----@param artStyle JoyOfPainting.ArtStyle
+---@param artStyle JOP.ArtStyle
 function ImageBuilder:registerArtStyle(artStyle)
     self:registerStep(artStyle.name, artStyle.magickCommand(self.image))
     return self

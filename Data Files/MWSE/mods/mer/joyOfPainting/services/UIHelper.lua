@@ -4,7 +4,7 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("UIHelper")
 
----@class JoyOfPainting.UIHelper.addLabelToTooltip.params
+---@class JOP.UIHelper.addLabelToTooltip.params
 ---@field tooltip tes3uiElement
 ---@field labelText string
 ---@field color tes3vector3
@@ -20,7 +20,7 @@ local function setupOuterBlock(e)
     e.childAlignX = 0.5
 end
 
----@param params JoyOfPainting.UIHelper.addLabelToTooltip.params
+---@param params JOP.UIHelper.addLabelToTooltip.params
 function UIHelper.addLabelToTooltip(params)
     assert(params.tooltip, 'params.tooltip is required')
     assert(params.labelText, 'params.labelText is required')
@@ -47,11 +47,11 @@ function UIHelper.addLabelToTooltip(params)
     return outerBlock
 end
 
----@class JoyOfPainting.UIHelper.createNamePainting.params
+---@class JOP.UIHelper.createNamePainting.params
 ---@field dataHolder table The table holding the paintingName field to update
 ---@field callback function? The function to call when the okay button is pressed
 
----@param e JoyOfPainting.UIHelper.createNamePainting.params
+---@param e JOP.UIHelper.createNamePainting.params
 function UIHelper.createNamePaintingField(parent, e)
     local textField = mwse.mcm.createTextField(parent, {
         buttonText = "Name your Painting",
@@ -98,13 +98,13 @@ function UIHelper.createBaseMenu(menuId)
     return menu
 end
 
----@class JoyOfPainting.UIHelper.openNamePaintingMenu.button
+---@class JOP.UIHelper.openNamePaintingMenu.button
 ---@field text string The button text
 ---@field id string? Button id
 ---@field callback? function The function to call when the button is pressed
 ---@field closesMenu boolean True if clicking this button also closes the menu
 
----@class JoyOfPainting.UIHelper.openNamePaintingMenu.params
+---@class JOP.UIHelper.openNamePaintingMenu.params
 ---@field dataHolder table The table holding the paintingName field to update
 ---@field canvasId string The id of the canvas it is painted on
 ---@field paintingTexture string
@@ -112,12 +112,12 @@ end
 ---@field cancelCallback function? The function to call whe the cancel button is pressed
 ---@field tooltipHeader string? The header to show in the on-hover tooltip
 ---@field tooltipText string? The text to show in the on-hover tooltip
----@field buttons JoyOfPainting.UIHelper.openNamePaintingMenu.button[] list of additional buttons to show at the bottom of the menu
+---@field buttons JOP.UIHelper.openNamePaintingMenu.button[] list of additional buttons to show at the bottom of the menu
 
 --[[
     The UI for showing the painting and allowing the user to name it
 ]]
----@param e JoyOfPainting.UIHelper.openNamePaintingMenu.params
+---@param e JOP.UIHelper.openNamePaintingMenu.params
 function UIHelper.openPaintingMenu(e)
     logger:debug("Creating Menu")
     local menu = UIHelper.createBaseMenu("JOP.NamePaintingMenu")
@@ -228,7 +228,7 @@ function UIHelper.createTooltipMenu(e)
 end
 
 
----@class JoyOfPainting.UIHelper.viewPainting.params
+---@class JOP.UIHelper.viewPainting.params
 ---@field paintingName string
 ---@field paintingTexture string
 ---@field canvasId string
@@ -237,7 +237,7 @@ end
 
 --Display a painting in a UI menu
 ---@param parent tes3uiElement
----@param e JoyOfPainting.UIHelper.viewPainting.params
+---@param e JOP.UIHelper.viewPainting.params
 function UIHelper.createPaintingImage(parent, e)
     --get dimensions
     local _, maxHeight = tes3ui.getViewportSize()

@@ -10,7 +10,7 @@ local logger = common.createLogger("Painting")
     Painting class for managing any item that has a painting
 ]]
 
----@class JoyOfPainting.Painting
+---@class JOP.Painting
 local Painting = {
     -- id
     ---@type string
@@ -65,7 +65,7 @@ end
 function Painting.getCanvasData(item, dataHolder)
     local canvasId = Painting.getCanvasId(dataHolder)
         or item.id:lower()
-    ---@type JoyOfPainting.Canvas
+    ---@type JOP.Canvas
     local canvasConfig = config.canvases[canvasId]
     return canvasConfig
 end
@@ -145,7 +145,7 @@ function Painting.paintingMenu(item, dataHolder)
 end
 
 
----@return JoyOfPainting.Painting
+---@return JOP.Painting
 function Painting:new(reference)
     local painting = setmetatable({}, Painting)
     painting.id = reference.object.id:lower()
@@ -163,7 +163,7 @@ end
 
 function Painting:doCanvasVisuals()
     if not self.data.canvasId then return end
-    logger:debug("doCanvasVisuals for %s", self.id)
+    logger:trace("doCanvasVisuals for %s", self.id)
     --Attach the canvas mesh to the attach_canvas node
     local attachNode = NodeManager.getCanvasAttachNode(self.reference.sceneNode)
     if attachNode then
@@ -294,11 +294,11 @@ end
 
 function Painting:attachCanvas(item, itemData)
     if item then
-        logger:debug("Attaching canvas %s", item.id)
+        logger:trace("Attaching canvas %s", item.id)
         local isPainting = itemData and itemData.data.joyOfPainting
             and itemData.data.joyOfPainting.paintingTexture
         if isPainting then
-            logger:debug("Canvas already has a painting")
+            logger:trace("Canvas already has a painting")
             self.data.paintingId = item.id
             self.data.canvasId = itemData.data.joyOfPainting.canvasId
             self.data.paintingTexture = itemData.data.joyOfPainting.paintingTexture
@@ -306,14 +306,14 @@ function Painting:attachCanvas(item, itemData)
             self.data.artStyle = itemData.data.joyOfPainting.artStyle
             self.data.paintingName = itemData.data.joyOfPainting.paintingName or item.name
         else
-            logger:debug("Canvas is blank")
+            logger:trace("Canvas is blank")
             self.data.canvasId = item.id:lower()
         end
         if Painting.hasCanvasData(self.reference) then
             self:doVisuals()
         end
     else
-        logger:debug("No canvas selected")
+        logger:trace("No canvas selected")
     end
 end
 

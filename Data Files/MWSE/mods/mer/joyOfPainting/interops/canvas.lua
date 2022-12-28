@@ -1,7 +1,7 @@
 --Add canvases via the interop
 local interop = require("mer.joyOfPainting.interop")
 
----@type JoyOfPainting.Canvas[]
+---@type JOP.Canvas[]
 local canvases = {
     {
         canvasId = "jop_canvas_square_01",
@@ -43,7 +43,7 @@ local canvases = {
 }
 
 event.register(tes3.event.initialized, function()
-    ---@type JoyOfPainting.ArtStyle[]
+    ---@type JOP.ArtStyle[]
     for _, canvas in ipairs(canvases) do
         interop.registerCanvas(canvas)
     end

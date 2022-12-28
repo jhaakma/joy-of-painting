@@ -7,19 +7,19 @@ local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
 local SkillService = require("mer.joyOfPainting.services.SkillService")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
 
----@class JoyOfPainting.CanvasData
+---@class JOP.CanvasData
 ---@field canvasId string|nil The id of the original canvas object
 ---@field paintingId string|nil The id of the generated painting object
 ---@field paintingTexture string|nil The path to the painting texture
 ---@field textureWidth number|nil The width of the painting texture
 ---@field textureHeight number|nil The height of the painting texture
----@field artStyle JoyOfPainting.ArtStyle The art style the canvas was painted with
+---@field artStyle JOP.ArtStyle The art style the canvas was painted with
 
 
----@class JoyOfPainting.EaselData
+---@class JOP.EaselData
 
 -- Easel class
----@class JoyOfPainting.Easel
+---@class JOP.Easel
 local Easel = {
     -- name
     ---@type string
@@ -32,13 +32,13 @@ local Easel = {
     ---@type table
     data = nil,
 
-    ---@type JoyOfPainting.Painting
+    ---@type JOP.Painting
     painting = nil
 }
 Easel.__index = Easel
 
 
----@return JoyOfPainting.Easel|nil
+---@return JOP.Easel|nil
 function Easel:new(reference)
     if not self.isEasel(reference) then return nil end
     local easel = setmetatable({}, self)
@@ -52,7 +52,7 @@ function Easel:new(reference)
         location = nil,
         artStyle = nil
     }
-    ---@type JoyOfPainting.CanvasData
+    ---@type JOP.CanvasData
     easel.data = reference.data.joyOfPainting
     easel.painting = Painting:new(reference)
     return easel

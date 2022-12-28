@@ -4,7 +4,62 @@ local logger = common.createLogger("artStyle")
 local interop = require("mer.joyOfPainting.interop")
 local SkillService = require("mer.joyOfPainting.services.SkillService")
 
----@type JoyOfPainting.ArtStyle[]
+local shaders = {
+    oil = "jop_oil",
+    watercolor = "jop_watercolor",
+    ink = "jop_ink",
+    adjuster = "jop_adjuster",
+    charcoal = "jop_charcoal",
+    greyscale = "jop_greyscale",
+    vignette = "jop_vignette",
+}
+
+local controls = {
+    brightness = {
+        id = "brightness",
+        shader = "jop_adjuster",
+        name = "Brightness",
+        sliderDefault = 50,
+        shaderMin = -0.5,
+        shaderMax = 0.5,
+    },
+    contrast = {
+        id = "contrast",
+        shader = "jop_adjuster",
+        name = "Contrast",
+        sliderDefault = 50,
+        shaderMin = 0,
+        shaderMax = 2,
+    },
+    saturation = {
+        id = "saturation",
+        shader = "jop_adjuster",
+        name = "Saturation",
+        sliderDefault = 50,
+        shaderMin = 0,
+        shaderMax = 2,
+    },
+
+    inkThickness = {
+        id = "inkThickness",
+        shader = "jop_ink",
+        name = "Line Thickness",
+        sliderDefault = 50,
+        shaderMin = 0.0005,
+        shaderMax = 0.002,
+    },
+    inkDistance = {
+        id = "distance",
+        shader = "jop_ink",
+        name = "Background",
+        sliderDefault = 100,
+        shaderMin = 50,
+        shaderMax = 5000,
+    }
+}
+
+
+---@type JOP.ArtStyle[]
 local artStyles = {
     {
         name = "Oil Painting",
@@ -23,6 +78,7 @@ local artStyles = {
                 :param(image.screenshotPath)
                 :trim()
                 --:autoGamma()
+                :blur(detailLevel)
                 :paint(detailLevel)
                 :resizeHard(image.canvas.textureWidth, image.canvas.textureHeight)
                 :repage()
@@ -32,7 +88,12 @@ local artStyles = {
             end
         end,
         shaders = {
-            "jop_oil"
+            shaders.oil,
+            shaders.adjuster,
+        },
+        controls = {
+            controls.brightness,
+            controls.contrast,
         },
         valueModifier = 10,
         soundEffect = "jop_brush_stroke_01",
@@ -64,8 +125,8 @@ local artStyles = {
                 :param(image.screenshotPath)
                 :trim()
                 :autoGamma()
-                :paint(detailLevel)
                 :blur(detailLevel)
+                :paint(detailLevel)
                 --:charcoal(tes3.player.data.charcoal or 1)
                 :sketch()
                 :brightnessContrast(-80, 90)
@@ -80,10 +141,13 @@ local artStyles = {
             end
         end,
         shaders = {
-            --"jop_ink",
-            --"jop_vignette",
-            "jop_charcoal",
-            "jop_greyscale"
+            shaders.charcoal,
+            shaders.greyscale,
+            shaders.adjuster,
+        },
+        controls = {
+            controls.brightness,
+            controls.contrast,
         },
         valueModifier = 1,
         soundEffect = "jop_brush_stroke_01",
@@ -103,8 +167,8 @@ local artStyles = {
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
                 config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
-                8, 0
-            ), 8, 0)
+                8, 1
+            ), 8, 1)
             logger:debug("Ink Sketch detail level is %d", detailLevel)
             return function(next)
                 image.magick:new("createInkSketch")
@@ -126,7 +190,13 @@ local artStyles = {
             end
         end,
         shaders = {
-            "jop_ink",
+            shaders.ink,
+            shaders.adjuster,
+        },
+        controls = {
+            controls.contrast,
+            controls.inkDistance,
+            controls.inkThickness,
         },
         valueModifier = 1,
         soundEffect = "jop_brush_stroke_01",
@@ -166,7 +236,13 @@ local artStyles = {
             end
         end,
         shaders = {
-            "jop_watercolor"
+            shaders.watercolor,
+            shaders.adjuster,
+        },
+        controls = {
+            controls.brightness,
+            controls.contrast,
+            controls.saturation,
         },
         valueModifier = 5,
         soundEffect = "jop_brush_stroke_01",

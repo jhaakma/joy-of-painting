@@ -12,7 +12,7 @@
 ---@field paintingPath string? The painting texture
 ---@field iconPath string? The icon of the painting
 ---@field framedIconPath string? The framed icon of the painting
----@field canvas JoyOfPainting.Canvas? The canvas used for the painting
+---@field canvas JOP.Canvas? The canvas used for the painting
 ---@field iconSize integer? The size of the icon
 ---@field iconBorder integer? The transparent padding around the icon
 ---@field framePath string? The icon of the picture frame

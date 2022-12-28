@@ -44,7 +44,6 @@ local function openFrameMenu(e)
                             noResultsText = "No canvases found",
                             filter = function(e2)
                                 local id = e2.item.id:lower()
-
                                 local canvasConfig = Painting.getCanvasData(e2.item, e2.itemData)
                                 local isFrame = config.frames[id]
                                 if isFrame then
@@ -52,20 +51,26 @@ local function openFrameMenu(e)
                                     return false
                                 end
                                 if frameConfig.frameSize then
-                                    logger:trace("Filtering on frame size: %s", frameConfig.frameSize)
+                                    logger:debug("Filtering on frame size: %s", frameConfig.frameSize)
                                     if canvasConfig and frameConfig.frameSize ~= canvasConfig.frameSize then
-                                        logger:trace("Frame size does not match( %s ~= %s)",
+                                        logger:debug("Frame size does not match( %s ~= %s)",
                                             frameConfig.frameSize, canvasConfig.frameSize)
                                         return false
                                     end
                                 end
-                                return canvasConfig  ~= nil
+                                if canvasConfig == nil then
+                                    return false
+                                end
+                                logger:debug("Filtering on canvas: %s", id)
+                                logger:debug("Frame Size = %s", frameConfig.frameSize)
+                                logger:debug("canvas frame size: %s", canvasConfig.frameSize)
+                                return true
                             end,
                             callback = function(e2)
                                 local painting = Painting:new(ref)
                                 painting:attachCanvas(e2.item, e2.itemData)
-                                        --Remove the canvas from the player's inventory
-                                logger:debug("Removing canvas %s from inventory", item.id)
+                                --Remove the canvas from the player's inventory
+                                logger:debug("Removing canvas %s from inventory", e2.item.id)
                                 tes3.removeItem{
                                     reference = tes3.player,
                                     item = e2.item.id,

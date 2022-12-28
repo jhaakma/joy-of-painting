@@ -1,7 +1,8 @@
-#define LineThickness 0.001
+
 #define SensitivityUpper 10
 #define SensitivityLower 10
 #define Saturation 1.0
+extern float inkThickness = 0.001;
 extern float Brightness = 0.2;
 extern float distance = 5000;
 
@@ -35,8 +36,8 @@ float4 brightness(float2 tex: TEXCOORD0) : COLOR0
 
 float4 edge_detect(float2 tex : TEXCOORD0) : COLOR
 {
-	float dx =width/height * LineThickness;
-	float dy =LineThickness;
+	float dx =width/height * inkThickness;
+	float dy =inkThickness;
 
 	float4 c1 = tex2D(s2, tex + float2(-dx,-dy));
 	float4 c2 = tex2D(s2, tex + float2(0,-dy));

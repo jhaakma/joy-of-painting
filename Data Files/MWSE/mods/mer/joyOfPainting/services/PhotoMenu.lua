@@ -14,14 +14,13 @@ local SkillService = require("mer.joyOfPainting.services.SkillService")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
 
 local alwaysOnShaders = {
-    config.shaders.adjuster,
     config.shaders.window,
 }
 
 ---@class JOP.PhotoMenu
 local PhotoMenu = {
     shaders = nil,
-    ---@type JoyOfPainting.ArtStyle
+    ---@type JOP.ArtStyle
     artStyle = nil,
     canvas = nil,
     paintingName = nil,
@@ -236,79 +235,73 @@ function PhotoMenu:createVignetteToggleButton(parent)
     end)
 end
 
-function PhotoMenu:setBrightness()
-    Shader.setUniform(config.shaders.adjuster, "brightness", (config.persistent.brightness-50) / 100)
+function PhotoMenu:setShaderValue(control)
+    local shaderValue = math.remap(config.persistent[control.id], 0, 100, control.shaderMin, control.shaderMax)
+    logger:debug("Setting %s to %s", control.id, shaderValue)
+    Shader.setUniform(control.shader, control.id, shaderValue)
 end
 
-function PhotoMenu:createBrightnessSlider(parent)
-    logger:debug("Creating brightness slider")
-    config.persistent.brightness = config.persistent.brightness or 50
+---@param parent any
+---@param control JOP.ArtStyle.control
+function PhotoMenu:createControlSlider(parent, control)
+    logger:debug("Creating slider for %s", control.id)
+    config.persistent[control.id] = config.persistent[control.id] or control.sliderDefault
     local slider = mwse.mcm.createSlider(parent, {
-        label = "Brightness: %s%%",
-        current = config.persistent.brightness,
+        label = control.name .. ": %s",
+        current = control.sliderDefault,
         min = 0,
         max = 100,
         step = 1,
         jump = 10,
         variable = mwse.mcm.createTableVariable {
-            id = "brightness",
+            id = control.id,
             table = config.persistent
         }
     })
+    self.controlSliders = self.controlSliders or {}
+    table.insert(self.controlSliders, slider)
     slider.callback = function()
-        logger:debug("Setting brightness to %s", config.persistent.brightness)
-        self:setBrightness()
+        self:setShaderValue(control)
     end
 end
 
-function PhotoMenu:setContrast()
-    Shader.setUniform(config.shaders.adjuster, "contrast", (config.persistent.contrast) / 50)
+function PhotoMenu:getControlsBlock()
+    return self.menu:findChild("JOP.ControlsBlock")
 end
 
-function PhotoMenu:createContrastSlider(parent)
-    logger:debug("Creating contrast slider")
-    config.persistent.contrast = config.persistent.contrast or 50
-    local slider = mwse.mcm.createSlider(parent, {
-        label = "Contrast: %s%%",
-        current = config.persistent.contrast,
-        min = 0,
-        max = 100,
-        step = 1,
-        jump = 10,
-        variable = mwse.mcm.createTableVariable {
-            id = "contrast",
-            table = config.persistent
-        }
-    })
-    slider.callback = function()
-        logger:debug("Setting contrast to %s", config.persistent.contrast)
-        self:setContrast()
+function PhotoMenu:createControlsBlock(parent)
+    local controlsBlock = parent:createBlock {id = "JOP.ControlsBlock"}
+    controlsBlock.flowDirection = "top_to_bottom"
+    controlsBlock.widthProportional = 1.0
+    controlsBlock.autoHeight = true
+    return controlsBlock
+end
+
+function PhotoMenu:createShaderControls(parent)
+    local controlsBlock = self:getControlsBlock()
+        or self:createControlsBlock(parent)
+    if not self.artStyle.controls then
+        logger:debug("ArtStyle %s has no controls", self.artStyle.name)
+        return
+    end
+    logger:debug("Creating shader controls")
+    local controls = self.artStyle.controls
+    for _, control in ipairs(controls) do
+        self:createControlSlider(controlsBlock, control)
+        self:setShaderValue(control)
     end
 end
 
-function PhotoMenu:setSaturation()
-    Shader.setUniform(config.shaders.adjuster, "saturation", (config.persistent.saturation) / 50)
-end
-
-function PhotoMenu:createSaturationSlider(parent)
-    logger:debug("Creating saturation slider")
-    config.persistent.saturation = config.persistent.saturation or 50
-    local slider = mwse.mcm.createSlider(parent, {
-        label = "Saturation: %s%%",
-        current = config.persistent.saturation,
-        min = 0,
-        max = 100,
-        step = 1,
-        jump = 10,
-        variable = mwse.mcm.createTableVariable {
-            id = "saturation",
-            table = config.persistent
-        }
-    })
-    slider.callback = function()
-        logger:debug("Setting saturation to %s", config.persistent.saturation)
-        self:setSaturation()
+function PhotoMenu:resetControls()
+    for _, control in ipairs(self.artStyle.controls) do
+        config.persistent[control.id] = control.sliderDefault
+        Shader.setUniform(control.shader, control.id, math.remap(50, 0, 100, control.shaderMin, control.shaderMax))
     end
+    local controlsBlock = self:getControlsBlock()
+    if controlsBlock then
+        controlsBlock:destroyChildren()
+    end
+    self:createShaderControls(self.menu)
 end
 
 function PhotoMenu:createResetButton(parent)
@@ -318,12 +311,7 @@ function PhotoMenu:createResetButton(parent)
         text = "Reset"
     }
     button:register("mouseClick", function(e)
-        config.persistent.brightness = 50
-        config.persistent.contrast = 50
-        config.persistent.saturation = 50
-        self:setBrightness()
-        self:setContrast()
-        self:setSaturation()
+        self:resetControls()
     end)
 end
 
@@ -341,8 +329,6 @@ function PhotoMenu:createCloseButton(parent)
         end
     end)
 end
-
-
 
 function PhotoMenu:setAspectRatio()
     local frameSize = config.frameSizes[self.canvas.frameSize]
@@ -453,6 +439,7 @@ function PhotoMenu:unregisterIOEvents()
     event.unregister(tes3.event.mouseWheel, scrollToZoom)
 end
 
+
 function PhotoMenu:createMenu()
     logger:debug("Creating Menu")
     local menu = tes3ui.createMenu {
@@ -466,11 +453,7 @@ function PhotoMenu:createMenu()
 
     self:createHeader(menu)
     self:createZoomSlider(menu)
-    self:createBrightnessSlider(menu)
-    self:createContrastSlider(menu)
-    --self:createSaturationSlider(menu)
-    --self:createVignetteToggleButton(menu)
-    --self:createLightingModeButton(menu)
+    self:createShaderControls(menu)
     self:createResetButton(menu)
     self:createCaptureButtons(menu)
     self:createCloseButton(menu)
@@ -486,10 +469,6 @@ function PhotoMenu:open()
     self:setAspectRatio()
     self:enableShaders()
     self:registerIOEvents()
-    --self:setVignette()
-    self:setBrightness()
-    self:setContrast()
-    self:setSaturation()
 end
 
 --Destroy the menu
