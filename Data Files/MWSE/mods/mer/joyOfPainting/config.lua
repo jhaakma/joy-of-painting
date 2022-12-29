@@ -20,6 +20,9 @@ config.skills = {
         attribute = tes3.attribute.personality,
     }
 }
+
+config.BASE_PRICE = 2
+config.MAX_RANDOM_PRICE_EFFECT = 1.5
 --Configs for how much the painting skill affects the quality of the painting
 config.skillPaintEffect = {
     MAX_RADIUS = 8.0,
@@ -30,11 +33,10 @@ config.skillPaintEffect = {
 }
 --Configs for how much the painting skill affects the value of the painting
 config.skillGoldEffect = {
-    MIN_GOLD = 100,
-    MAX_GOLD = 1000,
+    MIN_EFFECT = 1,
+    MAX_EFFECT = 30,
     MIN_SKILL = 10,
     MAX_SKILL = 100,
-    MAX_RANDOM = 20.0
 }
 config.skillProgress = {
     BASE_PROGRESS_PAINTING = 30,

@@ -91,7 +91,7 @@ local recipes = {
             local reference = e.reference
             local easel = Easel:new(reference)
             if easel and easel.painting and easel.data.canvasId then
-                easel.painting:takeCanvas()
+                easel.painting:takeCanvas{blockSound = true}
             end
         end,
         category = "Painting",
@@ -130,7 +130,7 @@ local recipes = {
                     end
                 end
             },
-            {
+            { --DISABLED
                 text = "Scrape Painting",
                 callback = function(e)
                     local safeRef = tes3.makeSafeObjectHandle(e.reference)
@@ -141,14 +141,16 @@ local recipes = {
                     timer.delayOneFrame(function()
                         UIHelper.scrapePaintingMessage(function()
                             if safeRef:valid() then
-                                Painting:new(safeRef:getObject()):cleanCanvas()
+                                Painting:new{
+                                    reference = safeRef:getObject() ---@type any
+                                }:cleanCanvas()
                             else
                                 logger:warn("Unable to clean canvas: Easel reference is no longer valid")
                             end
                         end)
                     end)
                 end,
-                showRequirements = hasPainting,
+                showRequirements = function() return false end --hasPainting,
             },
             {
                 text = "Attach Canvas",

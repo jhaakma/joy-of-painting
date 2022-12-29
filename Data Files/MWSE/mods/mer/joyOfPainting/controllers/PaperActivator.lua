@@ -3,18 +3,21 @@
 ]]
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
-local logger = common.createLogger("SketchController")
+local logger = common.createLogger("PaintingActivator")
 local Painting = require("mer.joyOfPainting.items.Painting")
 local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
 
 local function paperPaint(target, artStyleName)
-    local painting = Painting:new(target)
+    local painting = Painting:new{
+        reference = target
+    }
     painting.data.artStyle = artStyleName
-    local canvas = Painting.getCanvasData(painting.reference.object, painting.reference)
-    if canvas then
+
+    local canvasConfig = painting:getCanvasConfig()
+    if canvasConfig then
         timer.delayOneFrame(function()
             PhotoMenu:new{
-                canvas = canvas,
+                canvasConfig = canvasConfig,
                 artStyle = config.artStyles[artStyleName],
                 captureCallback = function(e)
                     --set paintingTexture before creating object
@@ -30,7 +33,7 @@ local function paperPaint(target, artStyleName)
                 finalCallback = function(e)
                     logger:debug("Creating new object for painting %s", e.paintingName)
                     ---@type any
-                    local newPaintingObject = painting:createPaintingObject(e.paintingName)
+                    local newPaintingObject = painting:createPaintingObject()
                     local newPaper = tes3.createReference{
                         object = newPaintingObject,
                         position = painting.reference.position,
@@ -38,21 +41,22 @@ local function paperPaint(target, artStyleName)
                         cell = painting.reference.cell,
                     }
                     newPaper.data.joyOfPainting = {}
-                    local paperPainting = Painting:new(newPaper)
+                    local paperPainting = Painting:new{
+                        reference = newPaper
+                    }
                     for _, field in ipairs(Painting.canvasFields) do
                         paperPainting.data[field] = painting.data[field]
                     end
                     paperPainting.data.paintingId = newPaintingObject.id
                     paperPainting.data.canvasId = painting.reference.object.id:lower()
-                    paperPainting.data.paintingName = newPaintingObject.name
+                    paperPainting.data.paintingName = e.paintingName
                     paperPainting:doVisuals()
 
                     tes3.messageBox("Successfully created %s", newPaintingObject.name)
-                    --assert all canvas fields are filled in
+                    --assert all canvasConfig fields are filled in
                     for _, field in ipairs(Painting.canvasFields) do
                         assert(paperPainting.data[field] ~= nil, string.format("Missing field %s", field))
                     end
-
                     painting.reference:delete()
                 end
             }:open()
@@ -93,10 +97,10 @@ local function openPaperMenu(target)
                         reference = tes3.player,
                         item = target.object,
                         count = 1,
-                        itemData = target.attachments.variables[1],
+                        itemData = target.itemData,
                     })
+                    target.itemData = nil
                     target:delete()
-                    tes3.playItemPickupSound({ item = target.object })
                 end,
             }
         },
@@ -104,26 +108,21 @@ local function openPaperMenu(target)
     }
 end
 
-local function isStack(reference)
-    return (
-        reference.attachments and
-        reference.attachments.variables and
-        reference.attachments.variables.count > 1
-    )
-end
 
 --On activate paper, open paint menu
 ---@param e activateEventData
 local function onActivatePaper(e)
-
-    if e.activator ~= tes3.player then
-        return
-    end
-    if isStack(e.target) then
+    if tes3ui.menuMode() then return end
+    if common.isShiftDown() then return end
+    if e.activator ~= tes3.player then return end
+    if common.isStack(e.target) then
         logger:debug("%s is stack, skip", e.target.object.id)
         return
     end
-    local canvasConfig = Painting.getCanvasData(e.target.object, e.target)
+    local painting = Painting:new{
+        reference = e.target
+    }
+    local canvasConfig = painting:getCanvasConfig()
     if not canvasConfig then
         return
     end
@@ -131,7 +130,7 @@ local function onActivatePaper(e)
         logger:debug("%s Requires easel, skip", e.target.object.id)
         return
     end
-    if Painting.hasPaintingData(e.target) then
+    if painting:hasPaintingData() then
         logger:debug("%s already has painting data, skip", e.target.object.id)
         return
     end

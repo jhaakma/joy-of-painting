@@ -22,7 +22,7 @@ local PhotoMenu = {
     shaders = nil,
     ---@type JOP.ArtStyle
     artStyle = nil,
-    canvas = nil,
+    canvasConfig = nil,
     paintingName = nil,
     captureCallback = nil,
     closeCallback = nil,
@@ -67,7 +67,7 @@ function PhotoMenu:capture()
 
     local imageData = {
         paintingPath = "Data Files\\" .. PaintService.getPaintingTexturePath(paintingTexture),
-        canvas = self.canvas,
+        canvasConfig = self.canvasConfig,
         iconSize = 32,
         iconBorder = 3,
         iconPath = config.locations.paintingIconsDir .. paintingTexture,
@@ -87,12 +87,13 @@ function PhotoMenu:capture()
             logger:debug("Starting painting")
             self:hideMenu()
             self:finishMenu()
-            tes3.playSound{sound = self.artStyle.soundEffect}
+            tes3.playSound{sound = self.canvasConfig.animSound}
         end)
         :registerStep("waitForPaintingAnim", function(next)
-            logger:debug("Waiting for painting animation to finish")
+            logger:debug("Waiting %G seconds for painting animation to finish",
+                self.canvasConfig.animSpeed)
             timer.start{
-                duration = 6.5,
+                duration = self.canvasConfig.animSpeed,
                 type = timer.simulate,
                 callback = next
             }
@@ -106,10 +107,11 @@ function PhotoMenu:capture()
             SkillService.progressSkillFromPainting()
         end)
         :registerStep("namePainting", function(next)
+            self.paintingName = "Untitled"
             UIHelper.openPaintingMenu{
                 dataHolder = self,
                 paintingTexture = paintingTexture,
-                canvasId = self.canvas.canvasId,
+                canvasId = self.canvasConfig.canvasId,
                 callback = next,
                 cancelCallback = self.cancelCallback
             }
@@ -118,6 +120,9 @@ function PhotoMenu:capture()
         :registerStep("doFinalCallback", function()
             if self.finalCallback then
                 logger:debug("Calling finalCallback")
+                if self.paintingName == nil or self.paintingName == "" then
+                    self.paintingName = "Untitled"
+                end
                 self.finalCallback{
                     paintingName = self.paintingName
                 }
@@ -331,9 +336,9 @@ function PhotoMenu:createCloseButton(parent)
 end
 
 function PhotoMenu:setAspectRatio()
-    local frameSize = config.frameSizes[self.canvas.frameSize]
+    local frameSize = config.frameSizes[self.canvasConfig.frameSize]
     if not frameSize then
-        logger:error("Frame Size '%s' is not registered.", self.canvas.frameSize)
+        logger:error("Frame Size '%s' is not registered.", self.canvasConfig.frameSize)
         return
     end
     Shader.setUniform(config.shaders.window, "aspectRatio", frameSize.aspectRatio)
@@ -473,6 +478,7 @@ end
 
 --Destroy the menu
 function PhotoMenu:hideMenu()
+    ---@diagnostic disable-next-line: redundant-parameter
     tes3ui.leaveMenuMode(self.menuID)
     tes3ui.findMenu(self.menuID):destroy()
     self.active = false

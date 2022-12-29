@@ -16,9 +16,11 @@ local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local skipActivate = false
 ---@param e activateEventData
 local function openFrameMenu(e)
-
-    local hasCanvas = Painting.hasCanvasData(e.target)
-    local isPainted = Painting.hasPaintingData(e.target)
+    local painting = Painting:new{
+        reference = e.target
+    }
+    local hasCanvas = painting:hasCanvasData()
+    local isPainted = painting:hasPaintingData()
     local safeRef = tes3.makeSafeObjectHandle(e.target)
     local frameConfig = config.frames[e.target.object.id:lower()]
     if safeRef == nil then
@@ -30,12 +32,12 @@ local function openFrameMenu(e)
             {
                 text = "Add Painting",
                 callback = function()
-
                     timer.delayOneFrame(function()
                         if not safeRef:valid() then
                             logger:warn("Skipping add painting because reference is invalid")
                             return
                         end
+
                         local ref = safeRef:getObject()
 
                         logger:debug("Add Painting")
@@ -44,16 +46,23 @@ local function openFrameMenu(e)
                             noResultsText = "No canvases found",
                             filter = function(e2)
                                 local id = e2.item.id:lower()
-                                local canvasConfig = Painting.getCanvasData(e2.item, e2.itemData)
+                                local painting = Painting:new{
+                                    item = e2.item,
+                                    itemData = e2.itemData
+                                }
+                                if not painting:hasPaintingData() then
+                                    return false
+                                end
+                                local canvasConfig = painting:getCanvasConfig()
                                 local isFrame = config.frames[id]
                                 if isFrame then
-                                    logger:trace("Filtering on frame: %s", id)
+                                    logger:debug("Filtering on frame: %s", id)
                                     return false
                                 end
                                 if frameConfig.frameSize then
-                                    logger:trace("Filtering on frame size: %s", frameConfig.frameSize)
+                                    logger:debug("Filtering on frame size: %s", frameConfig.frameSize)
                                     if canvasConfig and frameConfig.frameSize ~= canvasConfig.frameSize then
-                                        logger:trace("Frame size does not match( %s ~= %s)",
+                                        logger:debug("Frame size does not match( %s ~= %s)",
                                             frameConfig.frameSize, canvasConfig.frameSize)
                                         return false
                                     end
@@ -61,13 +70,16 @@ local function openFrameMenu(e)
                                 if canvasConfig == nil then
                                     return false
                                 end
-                                logger:trace("Filtering on canvas: %s", id)
-                                logger:trace("Frame Size = %s", frameConfig.frameSize)
-                                logger:trace("canvas frame size: %s", canvasConfig.frameSize)
+                                logger:debug("Filtering on canvas: %s", id)
+                                logger:debug("Frame Size = %s", frameConfig.frameSize)
+                                logger:debug("canvas frame size: %s", canvasConfig.frameSize)
                                 return true
                             end,
                             callback = function(e2)
-                                local painting = Painting:new(ref)
+                                if not e2.item then return end
+                                local painting = Painting:new{
+                                    reference = ref---@type any
+                                }
                                 painting:attachCanvas(e2.item, e2.itemData)
                                 --Remove the canvas from the player's inventory
                                 logger:debug("Removing canvas %s from inventory", e2.item.id)
@@ -75,7 +87,8 @@ local function openFrameMenu(e)
                                     reference = tes3.player,
                                     item = e2.item.id,
                                     itemData = e2.itemData,
-                                    count = 1
+                                    count = 1,
+                                    playSound = false,
                                 }
                             end,
                             noResultsCallback = function()
@@ -99,7 +112,9 @@ local function openFrameMenu(e)
                         local ref = safeRef:getObject()
 
                         logger:debug("Remove Painting")
-                        local painting = Painting:new(ref)
+                        local painting = Painting:new{
+                            reference = ref---@type any
+                        }
                         painting:takeCanvas()
                     end)
                 end,
@@ -115,8 +130,9 @@ local function openFrameMenu(e)
                             logger:warn("Skipping view painting because reference is invalid")
                             return
                         end
-                        local ref = safeRef:getObject()
-                        Painting.paintingMenu(ref.object, ref)
+                        Painting:new{
+                            reference = safeRef:getObject()---@type any
+                        }:paintingMenu()
                     end)
                 end,
                 showRequirements = function()
@@ -137,6 +153,10 @@ local function openFrameMenu(e)
 
                         logger:debug("Take Frame")
                         skipActivate = true
+                        painting = Painting:new{
+                            reference = ref
+                        }
+                        painting:takeCanvas()
                         tes3.player:activate(ref)
                     end)
                 end,
@@ -151,18 +171,27 @@ local function openFrameMenu(e)
     }
 end
 
+
 ---@param e activateEventData
 local function onActivate(e)
     if skipActivate then
         skipActivate = false
         return
     end
+    logger:debug("Frame onActivate")
     if tes3ui.menuMode() then return end
-    if tes3.worldController.inputController:isKeyDown(tes3.scanCode.lShift) then return end
+    if common.isShiftDown() then return end
+    if common.isStack(e.target) then
+        logger:debug("%s is stack, skip", e.target.object.id)
+        return
+    end
     --check if registered frame
     local id = e.target.object.id:lower()
     local isFrame = config.frames[id]
-    if not isFrame then return end
+    if not isFrame then
+        logger:debug("%s is not a frame", id)
+        return
+    end
     logger:debug("Frame activated: %s", id)
     openFrameMenu(e)
     --block activate

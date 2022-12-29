@@ -6,6 +6,7 @@ local Interop = {}
 
 ---@class JOP.Canvas
 ---@field canvasId string The id of the canvas. Must be unique.
+---@field rotatedId string? The id of the canvas to use when rotated. If not provided, the canvas will not be rotatable.
 ---@field textureWidth number The width of the texture to be used for the canvas.
 ---@field textureHeight number The height of the texture to be used for the canvas.
 ---@field frameSize string The size of the frame to use for the canvas. Must be one of "sqaure", "tall", or "wide"
@@ -13,6 +14,8 @@ local Interop = {}
 ---@field canvasTexture string The texture to use for the canvas
 ---@field meshOverride string? An optional mesh override for the canvas
 ---@field requiresEasel boolean? Whether the canvas requires an easel to be painted on
+---@field animSpeed number The speed of the painting animation
+---@field animSound string The sound to play while painting
 
 local function logAssert(condition, message)
     if not condition then
@@ -30,6 +33,8 @@ function Interop.registerCanvas(e)
     logAssert(type(e.frameSize) == "string", "frameSize must be a string")
     logAssert(type(e.valueModifier) == "number", "valueModifier must be a number")
     logAssert(type(e.canvasTexture) == "string", "canvasTexture must be a string")
+    logAssert(type(e.animSpeed) == "number", "animSpeed must be a number")
+    logAssert(type(e.animSound) == "string", "animSound must be a string")
 
     logger:debug("Registering canvas %s with frameSize %s", e.canvasId, e.frameSize)
     local id = e.canvasId:lower()
@@ -66,7 +71,6 @@ end
 ---@field shaders string[] A list of shaders to apply to the painting
 ---@field controls JOP.ArtStyle.control[] A list of controls to use for this art style
 ---@field valueModifier number The value modifier for the painting
----@field soundEffect string The sound effect to play when painting
 ---@field animAlphaTexture string The texture used to control the alpha during painting animation
 ---@field equipment JOP.PaintingEquipment[] A list of painting equipment to use for this art style
 
@@ -77,9 +81,7 @@ function Interop.registerArtStyle(e)
     logAssert(type(e.magickCommand) == "function", "magickCommand must be a function")
     logAssert(type(e.shaders) == "table", "shaders must be a table")
     logAssert(type(e.valueModifier) == "number", "valueModifier must be a number")
-    logAssert(type(e.soundEffect) == "string", "soundEffect must be a string")
     logger:debug("Registering art style %s", e.name)
-
     config.artStyles[e.name] = table.copy(e, {})
 end
 
@@ -95,6 +97,7 @@ function Interop.registerFrameSize(e)
     config.frameSizes[id] = table.copy(e, {
         aspectRatio = e.width / e.height,
     })
+    assert(math.isclose(config.frameSizes[id].aspectRatio, e.width / e.height) )
 end
 
 function Interop.registerFrame(e)

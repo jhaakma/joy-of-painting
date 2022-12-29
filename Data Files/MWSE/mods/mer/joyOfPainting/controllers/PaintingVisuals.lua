@@ -7,13 +7,12 @@ local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("PaintingVisuals")
 
 local function manageSceneNodeCreated(e)
-
+    local painting =  Painting:new{
+        reference = e.reference---@type any
+    }
     --Attach canvas then add paint to canvas
-    if Painting.hasCanvasData(e.reference) then
-        local paint = Painting:new(e.reference)
-        if paint then
-            paint:doVisuals()
-        end
+    if painting:hasCanvasData() then
+        painting:doVisuals()
     end
 end
 

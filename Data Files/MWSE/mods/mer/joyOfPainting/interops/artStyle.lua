@@ -46,23 +46,23 @@ local controls = {
         name = "Line Thickness",
         sliderDefault = 50,
         shaderMin = 0.0005,
-        shaderMax = 0.002,
+        shaderMax = 0.0030,
     },
-    inkDistance = {
+    distance = {
         id = "distance",
-        shader = "jop_ink",
+        shader = "jop_adjuster",
         name = "Background",
         sliderDefault = 100,
-        shaderMin = 50,
-        shaderMax = 5000,
+        shaderMin = 8,
+        shaderMax = 500,
     }
 }
-
 
 ---@type JOP.ArtStyle[]
 local artStyles = {
     {
         name = "Oil Painting",
+        ---@param image JOP.Image
         magickCommand = function(image)
             local skill = SkillService.skills.painting.value
             logger:debug("Painting skill is %d", skill)
@@ -80,7 +80,7 @@ local artStyles = {
                 --:autoGamma()
                 :blur(detailLevel)
                 :paint(detailLevel)
-                :resizeHard(image.canvas.textureWidth, image.canvas.textureHeight)
+                :resizeHard(image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
                 :repage()
                 :param(image.paintingPath)
                 :execute(next)
@@ -95,8 +95,7 @@ local artStyles = {
             controls.brightness,
             controls.contrast,
         },
-        valueModifier = 10,
-        soundEffect = "jop_brush_stroke_01",
+        valueModifier = 15,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
         equipment = {
             {
@@ -105,18 +104,19 @@ local artStyles = {
                 consumesPaintHolder = false,
                 paintConsumed = 10,
             }
-        }
+        },
+        requiresEasel = true,
     },
 
     {
-        name = "Charcoal Sketch",
+        name = "Charcoal Drawing",
         magickCommand = function(image)
             local skill = SkillService.skills.painting.value
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
                 config.skillPaintEffect.MIN_SKILL, 40,
-                10, 3
-            ), 10, 3)
+                10, 1
+            ), 10, 1)
             logger:debug("Charcoal Sketch detail level is %d", detailLevel)
             return function(next)
                 image.magick:new("createCharoalSketch")
@@ -131,9 +131,9 @@ local artStyles = {
                 :sketch()
                 :brightnessContrast(-80, 90)
                 :removeWhite(90)
-                :resizeHard(image.canvas.textureWidth, image.canvas.textureHeight)
+                :resizeHard(image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
                 :gravity("center")
-                :compositeClone(image.canvas.canvasTexture, image.canvas.textureWidth, image.canvas.textureHeight)
+                :compositeClone(image.canvasConfig.canvasTexture, image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
                 :repage()
                 :param(image.paintingPath)
                 :execute(next)
@@ -148,9 +148,9 @@ local artStyles = {
         controls = {
             controls.brightness,
             controls.contrast,
+            controls.distance,
         },
         valueModifier = 1,
-        soundEffect = "jop_brush_stroke_01",
         equipment = {
             {
                 toolId = "jop_brush_01",
@@ -179,10 +179,10 @@ local artStyles = {
                 :autoGamma()
                 :removeWhite(50)
                 :paint(detailLevel)
-                :resizeHard(image.canvas.textureWidth, image.canvas.textureHeight)
+                :resizeHard(image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
                 --:blur(detailLevel)
                 :gravity("center")
-                :compositeClone(image.canvas.canvasTexture, image.canvas.textureWidth, image.canvas.textureHeight)
+                :compositeClone(image.canvasConfig.canvasTexture, image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
                 :repage()
                 :param(image.paintingPath)
                 :execute(next)
@@ -195,11 +195,9 @@ local artStyles = {
         },
         controls = {
             controls.contrast,
-            controls.inkDistance,
             controls.inkThickness,
         },
-        valueModifier = 1,
-        soundEffect = "jop_brush_stroke_01",
+        valueModifier = 1.5,
         equipment = {
             {
                 toolId = "jop_brush_01",
@@ -228,7 +226,7 @@ local artStyles = {
                 --:autoGamma()
                 :blur(detailLevel)
                 :paint(detailLevel)
-                :resizeHard(image.canvas.textureWidth, image.canvas.textureHeight)
+                :resizeHard(image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
                 :repage()
                 :param(image.paintingPath)
                 :execute(next)
@@ -244,8 +242,7 @@ local artStyles = {
             controls.contrast,
             controls.saturation,
         },
-        valueModifier = 5,
-        soundEffect = "jop_brush_stroke_01",
+        valueModifier = 8,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
         equipment = {
             {
@@ -254,7 +251,8 @@ local artStyles = {
                 consumesPaintHolder = false,
                 paintConsumed = 10,
             }
-        }
+        },
+        requiresEasel = true,
     }
 }
 event.register(tes3.event.initialized, function()

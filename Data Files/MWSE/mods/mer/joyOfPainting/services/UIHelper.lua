@@ -54,14 +54,13 @@ end
 ---@param e JOP.UIHelper.createNamePainting.params
 function UIHelper.createNamePaintingField(parent, e)
     local textField = mwse.mcm.createTextField(parent, {
-        buttonText = "Name your Painting",
-        --label = "Name your Painting: ",
+        buttonText = "Set Name",
         variable = mwse.mcm.createTableVariable {
             id = "paintingName",
             table = e.dataHolder
         },
         callback = function()
-            if e.dataHolder.paintingName:len() > ( 31 - ("Painting: "):len()) then
+            if e.dataHolder.paintingName:len() > 31 then
                 tes3ui.showMessageMenu{
                     message = "Name too long. Max 22 characters.",
                     buttons = {
@@ -72,13 +71,6 @@ function UIHelper.createNamePaintingField(parent, e)
                 }
                 return
             else
-                if e.dataHolder.paintingName and e.dataHolder.paintingName:startswith("Painting: ") then
-                    --already has prefix
-                elseif e.dataHolder.paintingName and e.dataHolder.paintingName ~= "" then
-                    e.dataHolder.paintingName = "Painting: " .. e.dataHolder.paintingName
-                else
-                    e.dataHolder.paintingName = "Painting"
-                end
                 logger:debug("Painting name set to %s", e.dataHolder.paintingName)
                 if e.callback then e.callback() end
             end
@@ -113,6 +105,7 @@ end
 ---@field tooltipHeader string? The header to show in the on-hover tooltip
 ---@field tooltipText string? The text to show in the on-hover tooltip
 ---@field buttons JOP.UIHelper.openNamePaintingMenu.button[] list of additional buttons to show at the bottom of the menu
+---@field cancels boolean True if the menu has a cancel button
 
 --[[
     The UI for showing the painting and allowing the user to name it
@@ -129,20 +122,11 @@ function UIHelper.openPaintingMenu(e)
         tooltipText = e.tooltipText,
     })
 
-    --build button block
-    local nameBlock = menu:createBlock()
-    nameBlock.flowDirection = 'left_to_right'
-    nameBlock.autoHeight = true
-    nameBlock.widthProportional = 1.0
-
-    UIHelper.createNamePaintingField(nameBlock, {
-        dataHolder = e.dataHolder,
-        callback = function()
-            tes3ui.leaveMenuMode(menu.id)
-            tes3ui.findMenu(menu.id):destroy()
-            if e.callback then e.callback() end
-        end
-    })
+    -- --build button block
+    -- local nameBlock = menu:createBlock()
+    -- nameBlock.flowDirection = 'left_to_right'
+    -- nameBlock.autoHeight = true
+    -- nameBlock.widthProportional = 1.0
 
     local buttonBlock
     buttonBlock = menu:createBlock()
@@ -150,6 +134,17 @@ function UIHelper.openPaintingMenu(e)
     buttonBlock.autoHeight = true
     buttonBlock.widthProportional = 1.0
     buttonBlock.childAlignX = 1.0
+
+    UIHelper.createNamePaintingField(buttonBlock, {
+        dataHolder = e.dataHolder,
+        callback = function()
+            ---@diagnostic disable-next-line: redundant-parameter
+            tes3ui.leaveMenuMode(menu.id)
+            tes3ui.findMenu(menu.id):destroy()
+            if e.callback then e.callback() end
+        end
+    })
+
     if e.buttons then
         --add buttons
         for _, b in ipairs(e.buttons) do
@@ -157,6 +152,7 @@ function UIHelper.openPaintingMenu(e)
             local button = buttonBlock:createButton{ text = b.text, id = b.id }
             button:register("mouseClick", function()
                 if b.closesMenu then
+                    ---@diagnostic disable-next-line: redundant-parameter
                     tes3ui.leaveMenuMode(menu.id)
                     tes3ui.findMenu(menu.id):destroy()
                 end
@@ -165,14 +161,24 @@ function UIHelper.openPaintingMenu(e)
         end
     end
     --do cancel
-    local button = buttonBlock:createButton{ text = "Cancel", id = "MenuMessage_CancelButton" }
-    button:register("mouseClick", function()
-        tes3ui.leaveMenuMode(menu.id)
-        tes3ui.findMenu(menu.id):destroy()
-        if e.cancelCallback then e.cancelCallback() end
-    end)
+    if e.cancels then
+        local button = buttonBlock:createButton{ text = "Cancel", id = "MenuMessage_CancelButton" }
+        button.borderAllSides = 0
+        button.paddingTop = 2
+        button.paddingBottom = 4
+        button:register("mouseClick", function()
+            ---@diagnostic disable-next-line: redundant-parameter
+            tes3ui.leaveMenuMode(menu.id)
+            tes3ui.findMenu(menu.id):destroy()
+            if e.cancelCallback then e.cancelCallback() end
+        end)
+    end
+
     tes3ui.enterMenuMode(menu.id)
 end
+
+
+
 
 function UIHelper.scrapePaintingMessage(callback)
     tes3ui.showMessageMenu{

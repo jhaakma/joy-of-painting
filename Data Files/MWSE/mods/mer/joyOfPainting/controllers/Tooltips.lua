@@ -1,11 +1,24 @@
 local common = require("mer.joyOfPainting.common")
+local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("Tooltips")
 local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local Painting = require("mer.joyOfPainting.items.Painting")
 
 ---@param e uiObjectTooltipEventData
 local function manageTooltips(e)
-    local labelText = Painting.getPaintingOrCanvasName(e.reference or e.itemData)
+    local painting = Painting:new{
+        reference = e.reference,
+        item = e.object, ---@type any
+        itemData = e.itemData
+    }
+    if not painting:hasCanvasData() then return end
+    local labelText
+    if painting.data.paintingName then
+        local paintingName = painting.data.paintingName
+        labelText = string.format('"%s"', paintingName)
+    elseif painting.data.canvasId then
+        labelText = tes3.getObject(painting.data.canvasId).name
+    end
     if labelText then
         UIHelper.addLabelToTooltip{
             tooltip = e.tooltip,

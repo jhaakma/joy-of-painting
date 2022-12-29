@@ -15,46 +15,42 @@ local PaintService = require("mer.joyOfPainting.services.PaintService")
 ---@field textureHeight number|nil The height of the painting texture
 ---@field artStyle JOP.ArtStyle The art style the canvas was painted with
 
-
----@class JOP.EaselData
-
 -- Easel class
 ---@class JOP.Easel
 local Easel = {
-    -- name
     ---@type string
     name = nil,
-
-    -- reference
     ---@type tes3reference
     reference = nil,
-    -- reference data
     ---@type table
     data = nil,
-
     ---@type JOP.Painting
     painting = nil
 }
 Easel.__index = Easel
 
-
+---@param reference tes3reference
 ---@return JOP.Easel|nil
 function Easel:new(reference)
     if not self.isEasel(reference) then return nil end
     local easel = setmetatable({}, self)
     easel.name = reference.object.name or "Easel"
     easel.reference = reference
-    -- reference data
-    reference.data.joyOfPainting = reference.data.joyOfPainting or {
-        canvasId = nil,
-        paintingId = nil,
-        paintingTexture = nil,
-        location = nil,
-        artStyle = nil
-    }
-    ---@type JOP.CanvasData
-    easel.data = reference.data.joyOfPainting
-    easel.painting = Painting:new(reference)
+    easel.data = setmetatable({}, {
+        __index = function(t, k)
+            if not easel.reference.data.joyOfPainting then
+                return nil
+            end
+            return easel.reference.data.joyOfPainting[k]
+        end,
+        __newindex = function(t, k, v)
+            if not easel.reference.data.joyOfPainting then
+                easel.reference.data.joyOfPainting = {}
+            end
+            easel.reference.data.joyOfPainting[k] = v
+        end
+    })
+    easel.painting = Painting:new{ reference = easel.reference }
     return easel
 end
 
@@ -95,15 +91,24 @@ function Easel:openAttachCanvasMenu()
                 end)
             end,
             filter = function(e2)
-                local id = e2.item.id:lower()
-                local canvasConfig = Painting.getCanvasData(e2.item, e2.itemData)
-                local isFrame = config.frames[id]
+                local painting = Painting:new{ item = e2.item, itemData = e2.itemData }
+                local canvasId = (painting.data.canvasId or e2.item.id):lower()
+                local canvasConfig = config.canvases[canvasId]
+                local isFrame = config.frames[e2.item.id]
                 if isFrame then
-                    logger:trace("Filtering on frame: %s", id)
+                    logger:debug("Filtering on frame: %s", e2.item.id)
                     return false
                 end
-                return (canvasConfig  ~= nil)
-                    and (canvasConfig.requiresEasel == true)
+                if not canvasConfig then
+                    logger:debug("Filtering on canvas %s: no config", e2.item.id)
+                    return false
+                end
+                if not canvasConfig.requiresEasel then
+                    logger:debug("Filtering on canvas %s: does not require easel", e2.item.id)
+                    return false
+                end
+                logger:debug("Filtering on canvas %s", e2.item.id)
+                return true
             end,
             noResultsCallback = function()
                 tes3.messageBox("You don't have any canvases in your inventory.")
@@ -116,11 +121,12 @@ end
 function Easel:paint(artStyle)
     self.data.artStyle = artStyle
     self.reference.sceneNode.appCulled = true
-    local canvas = Painting.getCanvasData(self.reference.object, self.reference)
-    if canvas then
+    local canvasConfig = config.canvases[self.data.canvasId]
+    assert(canvasConfig, "No canvas config found for canvas " .. self.data.canvasId)
+    if canvasConfig then
         timer.delayOneFrame(function()
             PhotoMenu:new{
-                canvas = canvas,
+                canvasConfig = canvasConfig,
                 artStyle = config.artStyles[artStyle],
                 captureCallback = function(e)
                     --set paintingTexture before creating object
@@ -139,10 +145,10 @@ function Easel:paint(artStyle)
                 end,
                 finalCallback = function(e)
                     logger:debug("Creating new object for painting %s", e.paintingName)
-                    local newPaintingObject = self.painting:createPaintingObject(e.paintingName)
+                    local newPaintingObject = self.painting:createPaintingObject()
                     self.data.paintingId = newPaintingObject.id
-                    self.data.canvasId = self.data.canvasId or self.reference.object.id:lower()
-                    self.data.paintingName = newPaintingObject.name
+                    self.data.canvasId = self.data.canvasId
+                    self.data.paintingName = e.paintingName
                     self.painting:doVisuals()
                     tes3.messageBox("Successfully created %s", newPaintingObject.name)
                     --assert all canvas fields are filled in

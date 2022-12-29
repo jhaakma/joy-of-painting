@@ -12,15 +12,15 @@ local logger = common.createLogger("Painting")
 
 ---@class JOP.Painting
 local Painting = {
-    -- id
     ---@type string
     id = nil,
-    -- reference
     ---@type tes3reference
     reference = nil,
-    -- reference data
     ---@type table
     data = nil,
+
+    item = nil,
+    itemData = nil,
 }
 
 Painting.__index = Painting
@@ -35,25 +35,6 @@ Painting.canvasFields = {
 }
 
 
-function Painting.hasCanvasData(dataHolder)
-    return (dataHolder
-        and dataHolder.data
-        and dataHolder.data.joyOfPainting
-        and dataHolder.data.joyOfPainting.canvasId) ~= nil
-end
-
-function Painting.getCanvasId(dataHolder)
-    if Painting.hasCanvasData(dataHolder) then
-        return dataHolder.data.joyOfPainting.canvasId
-    end
-end
-
-function Painting.hasPaintingData(dataHolder)
-    return (dataHolder
-        and dataHolder.data
-        and dataHolder.data.joyOfPainting
-        and dataHolder.data.joyOfPainting.paintingTexture) ~= nil
-end
 
 function Painting.getCanvasObject(dataHolder)
     --get canvas object from id
@@ -62,13 +43,6 @@ function Painting.getCanvasObject(dataHolder)
     end
 end
 
-function Painting.getCanvasData(item, dataHolder)
-    local canvasId = Painting.getCanvasId(dataHolder)
-        or item.id:lower()
-    ---@type JOP.Canvas
-    local canvasConfig = config.canvases[canvasId]
-    return canvasConfig
-end
 
 function Painting.getPaintingOrCanvasName(dataHolder)
     local paintingData = dataHolder
@@ -82,24 +56,92 @@ function Painting.getPaintingOrCanvasName(dataHolder)
     end
 end
 
-function Painting.clearCanvas(item, dataHolder)
-    logger:debug("Clearing painting data")
-    if config.frames[item.id:lower()] then
-        dataHolder.data.joyOfPainting.paintingTexture = nil
-        dataHolder.data.joyOfPainting.paintingName = nil
-        dataHolder.data.joyOfPainting.paintingId = nil
 
-        if dataHolder.object then Painting:new(dataHolder):doVisuals() end
+---@class JOP.Painting.params
+---@field reference tes3reference
+---@field item tes3item
+---@field itemData tes3itemData
+
+---@param e JOP.Painting.params
+---@return JOP.Painting
+function Painting:new(e)
+    local painting = setmetatable({}, self)
+    assert(e.reference ~= nil or e.item ~= nil,
+        "Painting:new() requires either a reference or an item")
+    painting.reference = e.reference
+    painting.item = e.item or e.reference.object
+    painting.dataHolder = e.itemData or e.reference
+    painting.id = painting.item.id:lower()
+    -- reference data
+    painting.data = setmetatable({}, {
+        __index = function(_, k)
+            if not (
+                painting.dataHolder
+                and painting.dataHolder.data
+                and painting.dataHolder.data.joyOfPainting
+            ) then
+                return nil
+            end
+            return painting.dataHolder.data.joyOfPainting[k]
+        end,
+        __newindex = function(_, k, v)
+            if not (
+                painting.dataHolder
+                and painting.dataHolder.data
+                and painting.dataHolder.data.joyOfPainting
+            ) then
+                if not painting.reference then
+                    --create itemData
+                    painting.dataholder = tes3.addItemData{
+                        to = tes3.player,
+                        item = painting.item,---@type any
+                    }
+                end
+                painting.dataHolder.data.joyOfPainting = {}
+            end
+            painting.dataHolder.data.joyOfPainting[k] = v
+        end
+    })
+    return painting
+end
+
+
+function Painting:clearCanvas()
+    logger:debug("Clearing painting data")
+
+    --Clear frame data
+    if config.frames[self.item.id:lower()] then
+        logger:debug("clearing data for frame")
+        for _, field in ipairs(self.canvasFields) do
+            self.data[field] = nil
+        end
+        if self.reference then
+            logger:debug("Frame doVisuals")
+            self:doVisuals()
+        end
+
+    --Replace reference with original canvas
+    elseif self.reference then
+        logger:debug("Replacing reference with original canvas")
+        tes3.createReference{
+            object = self.data.canvasId,
+            position = self.reference.position,
+            orientation = self.reference.orientation,
+            cell = self.reference.cell,
+        }
+        self.reference:delete()
+    --Replace item in inventory with original canvas
     else
+        logger:debug("Replacing item in inventory with original canvas")
         tes3.addItem{
-            item = dataHolder.data.joyOfPainting.canvasId,
+            item = self.data.canvasId,
             count = 1,
             reference = tes3.player,
             playSound = false,
         }
         tes3.removeItem{
-            item = item.id,
-            itemData = dataHolder,
+            item = self.item.id,
+            itemData = self.itemData,
             count = 1,
             reference = tes3.player,
             playSound = false,
@@ -107,14 +149,18 @@ function Painting.clearCanvas(item, dataHolder)
     end
 end
 
-function Painting.paintingMenu(item, dataHolder)
-    local isPainting = Painting.hasPaintingData(dataHolder)
+function Painting:paintingMenu()
+    local isPainting = self:hasPaintingData()
     if isPainting then
         logger:debug("Canvas Activated")
-        local paintingData = dataHolder.data.joyOfPainting
+        local paintingData = self.data
         local paintingTexture = paintingData.paintingTexture
         local tooltipText = string.format("Location: %s.", paintingData.location)
-        local paintingName = paintingData.paintingName or item.name
+        local paintingName = self.item.name
+        if paintingData.paintingName then
+            paintingName = config.artStyles[paintingData.artStyle].name .. paintingData.paintingName
+        end
+
         local tooltipHeader = paintingName
         logger:debug("Painting Name: %s", paintingName)
         UIHelper.openPaintingMenu{
@@ -125,36 +171,29 @@ function Painting.paintingMenu(item, dataHolder)
             dataHolder = paintingData,
             callback = function()
                 tes3.messageBox("Renamed to '%s'", paintingData.paintingName)
-                if not config.frames[item.id:lower()] then
-                    item.name = paintingData.paintingName
-                end
             end,
-            buttons = {
-                {
-                    text = "Scrape",
-                    callback = function()
-                        UIHelper.scrapePaintingMessage(function()
-                            Painting.clearCanvas(item, dataHolder)
-                        end)
-                    end,
-                    closesMenu = true
-                },
-            }
+            cancels = true
         }
     end
 end
 
-
----@return JOP.Painting
-function Painting:new(reference)
-    local painting = setmetatable({}, Painting)
-    painting.id = reference.object.id:lower()
-    painting.reference = reference
-    -- reference data
-    reference.data.joyOfPainting = reference.data.joyOfPainting or {}
-    painting.data = reference.data.joyOfPainting
-    return painting
+function Painting:hasPaintingData()
+    return self.data.paintingTexture ~= nil
 end
+
+function Painting:hasCanvasData()
+    return self.data.canvasId ~= nil
+end
+
+function Painting:getCanvasConfig()
+    ---@type JOP.Canvas
+    local canvasConfig = config.canvases[self.data.canvasId]
+    if not canvasConfig then
+        return config.canvases[self.item.id:lower()]
+    end
+    return canvasConfig
+end
+
 
 function Painting:doVisuals()
     self:doCanvasVisuals()
@@ -162,8 +201,8 @@ function Painting:doVisuals()
 end
 
 function Painting:doCanvasVisuals()
-    if not self.data.canvasId then return end
-    logger:trace("doCanvasVisuals for %s", self.id)
+    if not self.reference then return end
+    logger:debug("doCanvasVisuals for %s", self.id)
     --Attach the canvas mesh to the attach_canvas node
     local attachNode = NodeManager.getCanvasAttachNode(self.reference.sceneNode)
     if attachNode then
@@ -172,6 +211,7 @@ function Painting:doCanvasVisuals()
                 attachNode:detachChildAt(i)
             end
         end
+        if not self.data.canvasId then return end
         local canvasObject = tes3.getObject(self.data.canvasId)
         local mesh = tes3.loadMesh(canvasObject.mesh, false)
         local clonedMesh = mesh:clone() ---@type any
@@ -224,16 +264,44 @@ function Painting:doPaintAnim()
     end)
 end
 
+function Painting:calculateValue()
+    local value = config.BASE_PRICE
+    logger:debug("Base value = %s", value)
+    --skill
+    local skillEffect = SkillService.getValueEffect()
+    logger:debug("Skill effect = %s", skillEffect)
+    value = value * skillEffect
+    logger:debug("Value after skill effect = %s", value)
+    --canvas
+    local canvasConfig = self:getCanvasConfig()
+    local canvasEffect = canvasConfig.valueModifier
+    logger:debug("Canvas effect = %s", canvasEffect)
+    value = value * canvasEffect
+    logger:debug("Value after canvas effect = %s", value)
+    --art style
+    local artStyleEffect = config.artStyles[self.data.artStyle].valueModifier
+    logger:debug("Art style effect = %s", artStyleEffect)
+    value = value * artStyleEffect
+    logger:debug("Value after art style effect = %s", value)
+    --Random (config.MAX_RANDOM_PRICE_EFFECT)
+    local randomEffect = math.random(100, config.MAX_RANDOM_PRICE_EFFECT*100)/100
+    logger:debug("Random effect = %s", randomEffect)
+    value = value * randomEffect
+    logger:debug("Value after random effect = %s", value)
+    value = math.floor(value)
+    logger:debug("FINAL painting value = %s", value)
+    return value
+end
 
 --Creates a new misc item with the paintingTexture as the ID and the path to the icon
-function Painting:createPaintingObject(paintingName)
+function Painting:createPaintingObject()
     assert(self.data.paintingTexture ~= nil, "No painting texture set")
-
+    logger:debug("artstyle name: ", self.data.artStyle.name)
     local canvasObj = tes3.getObject(self.data.canvasId or self.reference.object.id:lower())
     logger:debug("EnchantCapacity = %s", canvasObj.enchantCapacity)
     local paintingObject = tes3.createObject{
         id = self.data.paintingTexture,
-        name = paintingName,
+        name = config.artStyles[self.data.artStyle].name,
         mesh = canvasObj.mesh,
         enchantment = canvasObj.enchantment,
         weight = canvasObj.weight,
@@ -252,7 +320,7 @@ function Painting:createPaintingObject(paintingName)
         getIfExists = false,
         objectType = tes3.objectType.miscItem,--canvasObj.objectType,
         icon = PaintService.getPaintingIconPath(self.data.paintingTexture),
-        value = SkillService.getPaintingValue(),
+        value = self:calculateValue(),
     }
     logger:debug("Created painting object %s", paintingObject.id)
     return paintingObject
@@ -261,6 +329,7 @@ end
 
 
 function Painting:doPaintingVisuals()
+    if not self.reference then return end
     if not self.data.paintingTexture then return end
     logger:debug("doPaintingVisuals for %s", self.id)
     local paintingTexture = PaintService.createTexture(self.data.paintingTexture)
@@ -309,13 +378,14 @@ function Painting:attachCanvas(item, itemData)
             logger:trace("Canvas is blank")
             self.data.canvasId = item.id:lower()
         end
-        if Painting.hasCanvasData(self.reference) then
+        if self:hasCanvasData() then
             self:doVisuals()
         end
     else
         logger:trace("No canvas selected")
     end
 end
+
 
 function Painting:cleanCanvas()
     logger:debug("Cleaning canvas")
@@ -327,14 +397,19 @@ function Painting:cleanCanvas()
 end
 
 
-function Painting:takeCanvas()
+function Painting:takeCanvas(e)
+    e = e or { blockSound = false }
     local attachedId = self.data.paintingId or self.data.canvasId
-        or self.reference.object.id
+    if not attachedId then
+        logger:debug("No canvas to take")
+        return
+    end
     logger:debug("Taking canvas %s", attachedId)
     tes3.addItem{
         reference = tes3.player,
         item = attachedId,
-        count = 1
+        count = 1,
+        playSound = not e.blockSound,
     }
     local itemData = tes3.addItemData{
         item = attachedId,
@@ -342,18 +417,12 @@ function Painting:takeCanvas()
         updateGUI = true,
     }
     if self.data.paintingId then
-        itemData.data.joyOfPainting = {
-            paintingTexture = self.data.paintingTexture,
-            location = self.data.location,
-            canvasId = self.data.canvasId,
-            paintingId = self.data.paintingId,
-            artStyle = self.data.artStyle
-        }
+        itemData.data.joyOfPainting = {}
+        for _, field in ipairs(Painting.canvasFields) do
+            itemData.data.joyOfPainting[field] = self.data[field]
+        end
     end
     self:resetCanvas()
 end
-
-
-
 
 return Painting

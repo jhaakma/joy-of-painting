@@ -13,9 +13,13 @@ function Async.execute(command, callback)
         logger:trace("waiting for executor")
         if executor.errorCode and executor.errorCode ~= 0 then
             logger:error("Error executing command. Error Code: %s", executor.errorCode)
+            logger:error("Output: %s", executor:getOutput())
             event.unregister("enterFrame", waitForExecutor)
         end
-        logger:info(executor:getOutput())
+        local output = executor:getOutput()
+        if output and output ~= "" then
+            logger:info(output)
+        end
         if executor.ready then
             logger:trace("Executor ready")
             event.unregister("enterFrame", waitForExecutor)

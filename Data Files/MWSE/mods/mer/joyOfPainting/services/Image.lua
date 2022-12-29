@@ -12,7 +12,7 @@
 ---@field paintingPath string? The painting texture
 ---@field iconPath string? The icon of the painting
 ---@field framedIconPath string? The framed icon of the painting
----@field canvas JOP.Canvas? The canvas used for the painting
+---@field canvasConfig JOP.Canvas? The canvasConfig used for the painting
 ---@field iconSize integer? The size of the icon
 ---@field iconBorder integer? The transparent padding around the icon
 ---@field framePath string? The icon of the picture frame
@@ -59,6 +59,7 @@ end
 ---@param callback function
 function Image:takeScreenshot(callback)
     logger:debug("[takeScreenshot] Taking screenshot and waiting for file to appear")
+    ---@diagnostic disable-next-line: undefined-field
     mge.saveScreenshot{ path = config.locations.screenshot}
 
     ---@type mwseTimer
@@ -93,13 +94,12 @@ end
 ---@param self JOP.Image
 ---@param callback function
 function Image:createIcon(callback)
-    logger:debug("[createIcon] Creating icon %s with width: %s height: %s",
-        self.paintingPath, self.iconSize, self.iconSize)
-
-    local aspectRatio = self.canvas.textureWidth / self.canvas.textureHeight
+    logger:debug("[createIcon] Creating icon %s with width: %s height: %s, frameSize = %s",
+        self.paintingPath, self.iconSize, self.iconSize, self.canvasConfig.frameSize)
+    local aspectRatio = config.frameSizes[self.canvasConfig.frameSize].aspectRatio
     local iconWidth, iconHeight
     local iconInnerSize = self.iconSize - self.iconBorder * 2
-    if self.canvas.textureWidth > self.canvas.textureHeight then
+    if self.canvasConfig.textureWidth > self.canvasConfig.textureHeight then
         iconWidth = iconInnerSize
         iconHeight = iconInnerSize / aspectRatio
     else

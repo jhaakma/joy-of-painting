@@ -1,6 +1,6 @@
 
 extern float brightness = 0;
-extern float contrast = 2;
+extern float contrast = 1.8;
 extern float saturation = 1;
 
 texture lastshader;

@@ -21,16 +21,17 @@ function SkillService.getDetailLevel()
     return paintRadius
 end
 
-function SkillService.getPaintingValue()
+function SkillService.getValueEffect()
     local paintingSkill = SkillService.skills.painting.value
-    local MAX_GOLD = config.skillGoldEffect.MAX_GOLD
-    local MIN_GOLD = config.skillGoldEffect.MIN_GOLD
-    local MIN_SKILL = config.skillGoldEffect.MIN_SKILL
-    local MAX_SKILL = config.skillGoldEffect.MAX_SKILL
-    local MAX_RANDOM = config.skillGoldEffect.MAX_RANDOM
-    local goldValue = math.remap(paintingSkill, MIN_SKILL, MAX_SKILL, MIN_GOLD, MAX_GOLD)
-    goldValue = goldValue + math.random(0, MAX_RANDOM)
-    return goldValue
+    local c = config.skillGoldEffect
+    local valueEffect = math.remap(
+        paintingSkill,
+        c.MIN_SKILL,
+        c.MAX_SKILL,
+        c.MIN_EFFECT,
+        c.MAX_EFFECT
+    )
+    return valueEffect
 end
 
 local function initRegionsTable()
