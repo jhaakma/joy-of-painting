@@ -15,24 +15,27 @@ local shaders = {
 }
 
 local controls = {
-    brightness = {
+    {
         id = "brightness",
+        uniform = "brightness",
         shader = "jop_adjuster",
         name = "Brightness",
         sliderDefault = 50,
         shaderMin = -0.5,
         shaderMax = 0.5,
     },
-    contrast = {
+    {
         id = "contrast",
+        uniform = "contrast",
         shader = "jop_adjuster",
         name = "Contrast",
         sliderDefault = 50,
         shaderMin = 0,
         shaderMax = 2,
     },
-    saturation = {
+    {
         id = "saturation",
+        uniform = "saturation",
         shader = "jop_adjuster",
         name = "Saturation",
         sliderDefault = 50,
@@ -40,21 +43,41 @@ local controls = {
         shaderMax = 2,
     },
 
-    inkThickness = {
+    {
         id = "inkThickness",
+        uniform = "inkThickness",
         shader = "jop_ink",
         name = "Line Thickness",
         sliderDefault = 50,
         shaderMin = 0.0005,
         shaderMax = 0.0030,
     },
-    distance = {
+    {
         id = "distance",
+        uniform = "distance",
         shader = "jop_adjuster",
-        name = "Background",
+        name = "Fog",
         sliderDefault = 100,
         shaderMin = 8,
         shaderMax = 500,
+    },
+    {
+        id = "inkDistance",
+        uniform = "distance",
+        shader = "jop_ink",
+        name = "Fog",
+        sliderDefault = 100,
+        shaderMin = 8,
+        shaderMax = 500,
+    },
+    {
+        id = "bgColor",
+        uniform = "bgColor",
+        shader = "jop_adjuster",
+        name = "Fog Color",
+        sliderDefault = 50,
+        shaderMin = 0,
+        shaderMax = 1,
     }
 }
 
@@ -92,8 +115,8 @@ local artStyles = {
             shaders.adjuster,
         },
         controls = {
-            controls.brightness,
-            controls.contrast,
+            "brightness",
+            "contrast",
         },
         valueModifier = 15,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
@@ -146,9 +169,10 @@ local artStyles = {
             shaders.adjuster,
         },
         controls = {
-            controls.brightness,
-            controls.contrast,
-            controls.distance,
+            "brightness",
+            "contrast",
+            "distance",
+            "bgColor",
         },
         valueModifier = 1,
         equipment = {
@@ -194,8 +218,9 @@ local artStyles = {
             shaders.adjuster,
         },
         controls = {
-            controls.contrast,
-            controls.inkThickness,
+            "brightness",
+            "inkThickness",
+            "inkDistance",
         },
         valueModifier = 1.5,
         equipment = {
@@ -238,9 +263,9 @@ local artStyles = {
             shaders.adjuster,
         },
         controls = {
-            controls.brightness,
-            controls.contrast,
-            controls.saturation,
+            "brightness",
+            "contrast",
+            "saturation",
         },
         valueModifier = 8,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
@@ -255,7 +280,11 @@ local artStyles = {
         requiresEasel = true,
     }
 }
+
 event.register(tes3.event.initialized, function()
+    for _, control in ipairs(controls) do
+        interop.registerControl(control)
+    end
     for _, artStyle in ipairs(artStyles) do
         interop.registerArtStyle(artStyle)
     end

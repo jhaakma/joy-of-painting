@@ -27,4 +27,15 @@ function common.isShiftDown()
     return tes3.worldController.inputController:isKeyDown(tes3.scanCode.lShift)
 end
 
+function common.pickUp(target)
+    tes3.addItem({
+        reference = tes3.player,
+        item = target.object, ---@type any
+        count = 1,
+        itemData = target.itemData,
+    })
+    target.itemData = nil
+    target:delete()
+end
+
 return common

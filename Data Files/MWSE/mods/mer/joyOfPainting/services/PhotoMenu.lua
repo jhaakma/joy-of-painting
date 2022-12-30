@@ -32,7 +32,6 @@ local PhotoMenu = {
 }
 PhotoMenu.menuID = "TJOP.PhotoMenu"
 
-
 local function getpaintingTexture()
     return GUID.generate() .. ".dds"
 end
@@ -55,7 +54,6 @@ function PhotoMenu:new(data)
 
     return o
 end
-
 
 --[[
     Captures the current scene and saves it to a painting
@@ -113,7 +111,8 @@ function PhotoMenu:capture()
                 paintingTexture = paintingTexture,
                 canvasId = self.canvasConfig.canvasId,
                 callback = next,
-                cancelCallback = self.cancelCallback
+                cancelCallback = self.cancelCallback,
+                setNameText = "Name " .. self.artStyle.name,
             }
             return true
         end)
@@ -243,7 +242,7 @@ end
 function PhotoMenu:setShaderValue(control)
     local shaderValue = math.remap(config.persistent[control.id], 0, 100, control.shaderMin, control.shaderMax)
     logger:debug("Setting %s to %s", control.id, shaderValue)
-    Shader.setUniform(control.shader, control.id, shaderValue)
+    Shader.setUniform(control.shader, control.uniform, shaderValue)
 end
 
 ---@param parent any
@@ -291,16 +290,35 @@ function PhotoMenu:createShaderControls(parent)
     end
     logger:debug("Creating shader controls")
     local controls = self.artStyle.controls
-    for _, control in ipairs(controls) do
-        self:createControlSlider(controlsBlock, control)
-        self:setShaderValue(control)
+    for _, controlName in ipairs(controls) do
+        local control = config.controls[controlName]
+        if not control then
+            logger:error("Control %s not found", controlName)
+        else
+            self:createControlSlider(controlsBlock, control)
+            self:setShaderValue(control)
+        end
     end
 end
 
 function PhotoMenu:resetControls()
-    for _, control in ipairs(self.artStyle.controls) do
-        config.persistent[control.id] = control.sliderDefault
-        Shader.setUniform(control.shader, control.id, math.remap(50, 0, 100, control.shaderMin, control.shaderMax))
+    logger:debug("Resetting controls")
+    for shader in ipairs(self.shaders) do
+        logger:debug("- shader %s", shader)
+    end
+
+    ---@param control JOP.ArtStyle.control
+    for _, control in pairs(config.controls) do
+        logger:debug("Control %s for shader %s", control.id, control.shader )
+        if table.find(self.shaders, control.shader)then
+            logger:debug("Shader is active, Resetting %s", control.id)
+            config.persistent[control.id] = control.sliderDefault
+            Shader.setUniform(
+                control.shader,
+                control.uniform,
+                math.remap(control.sliderDefault, 0, 100, control.shaderMin, control.shaderMax)
+            )
+        end
     end
     local controlsBlock = self:getControlsBlock()
     if controlsBlock then
@@ -341,7 +359,11 @@ function PhotoMenu:setAspectRatio()
         logger:error("Frame Size '%s' is not registered.", self.canvasConfig.frameSize)
         return
     end
-    Shader.setUniform(config.shaders.window, "aspectRatio", frameSize.aspectRatio)
+    Shader.setUniform(
+        config.shaders.window,
+        "aspectRatio",
+        frameSize.aspectRatio
+    )
 end
 
 function PhotoMenu:initMGESettings()
@@ -474,6 +496,7 @@ function PhotoMenu:open()
     self:setAspectRatio()
     self:enableShaders()
     self:registerIOEvents()
+    self:resetControls()
 end
 
 --Destroy the menu

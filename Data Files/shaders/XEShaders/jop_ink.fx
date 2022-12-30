@@ -4,7 +4,8 @@
 #define Saturation 1.0
 extern float inkThickness = 0.001;
 extern float Brightness = 0.2;
-extern float distance = 5000;
+extern float distance = 500;
+extern float maxDistance = 500-2;
 
 texture lastshader;
 texture lastpass;
@@ -29,7 +30,10 @@ float4 brightness(float2 tex: TEXCOORD0) : COLOR0
   color.rgb += Brightness;
 
   float depth = readDepth(tex);
-  color = color * ( smoothstep(0, depth, distance ));
+  float distance_exp = pow(distance, 2);
+  float maxDistance_exp = pow(maxDistance, 2);
+  float transitionD = 100 + distance * 10;
+  color = lerp(color, 1, ( smoothstep(distance_exp, distance_exp + transitionD , depth ) * ( step(distance_exp, maxDistance_exp) )) );
   return color;
 
 }

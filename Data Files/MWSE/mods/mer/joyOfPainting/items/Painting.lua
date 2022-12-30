@@ -20,7 +20,7 @@ local Painting = {
     data = nil,
 
     item = nil,
-    itemData = nil,
+    dataHolder = nil,
 }
 
 Painting.__index = Painting
@@ -33,8 +33,6 @@ Painting.canvasFields = {
     "location",
     "artStyle",
 }
-
-
 
 function Painting.getCanvasObject(dataHolder)
     --get canvas object from id
@@ -106,6 +104,11 @@ function Painting:new(e)
 end
 
 
+function Painting:isSketch()
+    return self:hasPaintingData()
+        and not self:getCanvasConfig().requiresEasel
+end
+
 function Painting:clearCanvas()
     logger:debug("Clearing painting data")
 
@@ -128,6 +131,7 @@ function Painting:clearCanvas()
             position = self.reference.position,
             orientation = self.reference.orientation,
             cell = self.reference.cell,
+            scale = self.reference.scale,
         }
         self.reference:delete()
     --Replace item in inventory with original canvas

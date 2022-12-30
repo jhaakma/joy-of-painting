@@ -225,8 +225,39 @@ local recipes = {
         },
         rotationAxis = 'y'
     },
+    {
+        id = "jop_sketchbook_01",
+        description = "A sketchbook to store drawings and sketches",
+        category = "Painting",
+        soundType = "leather",
+        skillRequirements = {
+            {
+                skill = "Bushcrafting",
+                requirement = 20,
+            }
+        },
+        materials = {
+            { material = "leather", count = 1 },
+            { material = "paper", count = 2 }
+        },
+        rotationAxis = 'y'
+    }
 }
 
+local materials = {
+    {
+        id = "paper",
+        name = "Paper",
+        ids = {
+            "sc_paper plain",
+            "jop_paper_01",
+        }
+    }
+}
+local CraftingFramework = include("CraftingFramework")
+if CraftingFramework then
+    CraftingFramework.Material:registerMaterials(materials)
+end
 
 ---@param e MenuActivatorRegisteredEvent
 local function registerAshfallRecipes(e)
@@ -236,3 +267,4 @@ local function registerAshfallRecipes(e)
     end
 end
 event.register("Ashfall:ActivateBushcrafting:Registered", registerAshfallRecipes)
+

@@ -38,7 +38,6 @@ local canvases = {
         animSpeed = 6.5,
         animSound = "jop_brush_stroke_01"
     },
-
     {
         canvasId = "sc_paper plain",
         meshOverride = "meshes\\jop\\medium\\paper_01.nif",

@@ -50,11 +50,12 @@ end
 ---@class JOP.UIHelper.createNamePainting.params
 ---@field dataHolder table The table holding the paintingName field to update
 ---@field callback function? The function to call when the okay button is pressed
+---@field setNameText string? The text to display on the rename button
 
 ---@param e JOP.UIHelper.createNamePainting.params
 function UIHelper.createNamePaintingField(parent, e)
     local textField = mwse.mcm.createTextField(parent, {
-        buttonText = "Set Name",
+        buttonText = e.setNameText or "Rename",
         variable = mwse.mcm.createTableVariable {
             id = "paintingName",
             table = e.dataHolder
@@ -74,9 +75,13 @@ function UIHelper.createNamePaintingField(parent, e)
                 logger:debug("Painting name set to %s", e.dataHolder.paintingName)
                 if e.callback then e.callback() end
             end
-        end
+        end,
+        indent = 4,
+        paddingBottom = 0
     })
+    textField.elements.outerContainer.borderLeft = 4
     tes3ui.acquireTextInput(textField.elements.inputField)
+    return textField
 end
 
 function UIHelper.createBaseMenu(menuId)
@@ -106,6 +111,7 @@ end
 ---@field tooltipText string? The text to show in the on-hover tooltip
 ---@field buttons JOP.UIHelper.openNamePaintingMenu.button[] list of additional buttons to show at the bottom of the menu
 ---@field cancels boolean True if the menu has a cancel button
+---@field setNameText string? The text to display on the rename button
 
 --[[
     The UI for showing the painting and allowing the user to name it
@@ -121,7 +127,6 @@ function UIHelper.openPaintingMenu(e)
         tooltipHeader = e.tooltipHeader,
         tooltipText = e.tooltipText,
     })
-
     -- --build button block
     -- local nameBlock = menu:createBlock()
     -- nameBlock.flowDirection = 'left_to_right'
@@ -137,6 +142,7 @@ function UIHelper.openPaintingMenu(e)
 
     UIHelper.createNamePaintingField(buttonBlock, {
         dataHolder = e.dataHolder,
+        setNameText = e.setNameText,
         callback = function()
             ---@diagnostic disable-next-line: redundant-parameter
             tes3ui.leaveMenuMode(menu.id)
@@ -176,9 +182,6 @@ function UIHelper.openPaintingMenu(e)
 
     tes3ui.enterMenuMode(menu.id)
 end
-
-
-
 
 function UIHelper.scrapePaintingMessage(callback)
     tes3ui.showMessageMenu{

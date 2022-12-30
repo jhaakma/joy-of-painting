@@ -15,7 +15,7 @@ float4 greyscale(float2 tex: TEXCOORD0) : COLOR0
   return color;
 }
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "scene";  >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final";  >
 {
 	pass p0 { PixelShader = compile ps_3_0 greyscale(); }
 }

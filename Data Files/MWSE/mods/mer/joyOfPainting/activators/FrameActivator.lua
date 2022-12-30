@@ -2,9 +2,10 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("FrameActivator")
 local Painting = require("mer.joyOfPainting.items.Painting")
-local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 
-
+local FrameActivator = {
+    name = "FrameActivator",
+}
 --[[
     Menu options:
     Add Painting
@@ -13,18 +14,22 @@ local UIHelper = require("mer.joyOfPainting.services.UIHelper")
     Take Frame
     Cancel
 ]]
-local skipActivate = false
----@param e activateEventData
-local function openFrameMenu(e)
+
+---@param e equipEventData|activateEventData
+function FrameActivator.activate(e)
+
     local painting = Painting:new{
-        reference = e.target
+        reference = e.target,
+        item = e.item, ---@type any
+        itemData = e.itemData,
     }
+
     local hasCanvas = painting:hasCanvasData()
     local isPainted = painting:hasPaintingData()
-    local safeRef = tes3.makeSafeObjectHandle(e.target)
-    local frameConfig = config.frames[e.target.object.id:lower()]
+    local safeRef = tes3.makeSafeObjectHandle(painting.reference)
+    local frameConfig = config.frames[painting.reference.object.id:lower()]
     if safeRef == nil then
-        logger:warn("Failed to make safe handle for %s", e.target.object.id)
+        logger:warn("Failed to make safe handle for %s", painting.reference.object.id)
     end
     tes3ui.showMessageMenu{
         message = "Frame Menu",
@@ -42,8 +47,8 @@ local function openFrameMenu(e)
 
                         logger:debug("Add Painting")
                         tes3ui.showInventorySelectMenu{
-                            title = "Select a painting",
-                            noResultsText = "No canvases found",
+                            title = "Select Painting",
+                            noResultsText = "You don't have any paintings in your inventory.",
                             filter = function(e2)
                                 local id = e2.item.id:lower()
                                 local painting = Painting:new{
@@ -77,7 +82,7 @@ local function openFrameMenu(e)
                             end,
                             callback = function(e2)
                                 if not e2.item then return end
-                                local painting = Painting:new{
+                                painting = Painting:new{
                                     reference = ref---@type any
                                 }
                                 painting:attachCanvas(e2.item, e2.itemData)
@@ -91,9 +96,6 @@ local function openFrameMenu(e)
                                     playSound = false,
                                 }
                             end,
-                            noResultsCallback = function()
-                                tes3.messageBox("You don't have any canvases in your inventory.")
-                            end
                         }
                     end)
                 end,
@@ -112,7 +114,7 @@ local function openFrameMenu(e)
                         local ref = safeRef:getObject()
 
                         logger:debug("Remove Painting")
-                        local painting = Painting:new{
+                        painting = Painting:new{
                             reference = ref---@type any
                         }
                         painting:takeCanvas()
@@ -152,12 +154,11 @@ local function openFrameMenu(e)
                         local ref = safeRef:getObject()
 
                         logger:debug("Take Frame")
-                        skipActivate = true
                         painting = Painting:new{
                             reference = ref
                         }
                         painting:takeCanvas()
-                        tes3.player:activate(ref)
+                        common.pickUp(ref)
                     end)
                 end,
             },
@@ -171,31 +172,4 @@ local function openFrameMenu(e)
     }
 end
 
-
----@param e activateEventData
-local function onActivate(e)
-    if skipActivate then
-        skipActivate = false
-        return
-    end
-    logger:debug("Frame onActivate")
-    if tes3ui.menuMode() then return end
-    if common.isShiftDown() then return end
-    if common.isStack(e.target) then
-        logger:debug("%s is stack, skip", e.target.object.id)
-        return
-    end
-    --check if registered frame
-    local id = e.target.object.id:lower()
-    local isFrame = config.frames[id]
-    if not isFrame then
-        logger:debug("%s is not a frame", id)
-        return
-    end
-    logger:debug("Frame activated: %s", id)
-    openFrameMenu(e)
-    --block activate
-    return false
-end
-
-event.register(tes3.event.activate, onActivate)
+return FrameActivator

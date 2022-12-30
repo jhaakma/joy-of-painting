@@ -3,8 +3,9 @@
 extern float brightness = 0;
 extern float contrast = 1;
 extern float saturation = 1;
-extern float distance = 200;
+extern float distance = 500;
 extern float maxDistance = 500-1;
+extern float bgColor = 0.5;
 texture lastshader;
 texture lastpass;
 texture depthframe;
@@ -34,7 +35,8 @@ float4 brightness_contrast_saturation(float2 tex: TEXCOORD0) : COLOR0
   float depth = readDepth(tex);
   float distance_exp = pow(distance, 2);
   float maxDistance_exp = pow(maxDistance, 2);
-  color = color * ( 1 - smoothstep(distance_exp, distance_exp + 500, depth ) * ( step(distance_exp, maxDistance_exp) ) );
+  float transitionD = 100 + distance * 10;
+  color = lerp(color, bgColor, ( smoothstep(distance_exp, distance_exp + transitionD , depth ) * ( step(distance_exp, maxDistance_exp) )) );
   return color;
 }
 

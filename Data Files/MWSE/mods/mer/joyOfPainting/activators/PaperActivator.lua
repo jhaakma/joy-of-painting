@@ -3,13 +3,17 @@
 ]]
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
-local logger = common.createLogger("PaintingActivator")
+local logger = common.createLogger("PaperActivator")
 local Painting = require("mer.joyOfPainting.items.Painting")
 local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
 
-local function paperPaint(target, artStyleName)
+local PaperActivator = {
+    name = "PaperActivator",
+}
+
+local function paperPaint(reference, artStyleName)
     local painting = Painting:new{
-        reference = target
+        reference = reference
     }
     painting.data.artStyle = artStyleName
 
@@ -39,6 +43,7 @@ local function paperPaint(target, artStyleName)
                         position = painting.reference.position,
                         orientation = painting.reference.orientation,
                         cell = painting.reference.cell,
+                        scale = painting.reference.scale,
                     }
                     newPaper.data.joyOfPainting = {}
                     local paperPainting = Painting:new{
@@ -67,40 +72,41 @@ local function paperPaint(target, artStyleName)
     end
 end
 
-local function openPaperMenu(target)
+---@param e equipEventData|activateEventData
+function PaperActivator.activate(e)
+    local painting = Painting:new{
+        reference = e.target,
+        item = e.item, ---@type any
+        itemData = e.itemData,
+    }
     tes3ui.showMessageMenu{
-        message = target.object.name,
+        message = painting.reference.object.name,
         buttons = {
             {
                 text = "Draw/Paint",
-                callback = function(e)
+                callback = function()
                     local buttons = {}
                     for _, artStyle in pairs(config.artStyles) do
-                        table.insert(buttons, {
-                            text = artStyle.name,
-                            callback = function()
-                                paperPaint(target, artStyle.name)
-                            end,
-                        })
+                        if artStyle.requiresEasel ~= true then
+                            table.insert(buttons, {
+                                text = artStyle.name,
+                                callback = function()
+                                    paperPaint(painting.reference, artStyle.name)
+                                end,
+                            })
+                        end
                     end
                     tes3ui.showMessageMenu{
                         text = "Select Art Style",
-                        buttons = buttons
+                        buttons = buttons,
+                        cancels = true
                     }
                 end,
             },
             {
                 text = "Pick Up",
-                callback = function(e)
-                    -- Add it to the player's inventory manually.
-                    tes3.addItem({
-                        reference = tes3.player,
-                        item = target.object,
-                        count = 1,
-                        itemData = target.itemData,
-                    })
-                    target.itemData = nil
-                    target:delete()
+                callback = function()
+                    common.pickUp(painting.reference)
                 end,
             }
         },
@@ -108,34 +114,4 @@ local function openPaperMenu(target)
     }
 end
 
-
---On activate paper, open paint menu
----@param e activateEventData
-local function onActivatePaper(e)
-    if tes3ui.menuMode() then return end
-    if common.isShiftDown() then return end
-    if e.activator ~= tes3.player then return end
-    if common.isStack(e.target) then
-        logger:debug("%s is stack, skip", e.target.object.id)
-        return
-    end
-    local painting = Painting:new{
-        reference = e.target
-    }
-    local canvasConfig = painting:getCanvasConfig()
-    if not canvasConfig then
-        return
-    end
-    if canvasConfig.requiresEasel then
-        logger:debug("%s Requires easel, skip", e.target.object.id)
-        return
-    end
-    if painting:hasPaintingData() then
-        logger:debug("%s already has painting data, skip", e.target.object.id)
-        return
-    end
-    openPaperMenu(e.target)
-    return false
-end
-
-event.register("activate", onActivatePaper)
+return PaperActivator

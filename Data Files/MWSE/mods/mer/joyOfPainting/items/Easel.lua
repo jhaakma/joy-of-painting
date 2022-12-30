@@ -68,7 +68,8 @@ function Easel:attachCanvasFromInventory(item, itemData)
             reference = tes3.player,
             item = item.id,
             itemData = itemData,
-            count = 1
+            count = 1,
+            playSound = false,
         }
     else
         logger:debug("No canvas selected")
