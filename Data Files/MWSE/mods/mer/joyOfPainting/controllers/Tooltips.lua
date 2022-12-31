@@ -37,7 +37,7 @@ end
 local function manageTooltips(e)
     local painting = Painting:new{
         reference = e.reference,
-        item = e.object, ---@type any
+        item = e.object --[[@as JOP.tes3itemChildren]],
         itemData = e.itemData
     }
     if painting:hasPaintingData() then
@@ -47,7 +47,7 @@ local function manageTooltips(e)
     if config.sketchbooks[e.object.id:lower()] then
         local sketchbook = Sketchbook:new{
             reference = e.reference,
-            item = e.object, ---@type any
+            item = e.object --[[@as JOP.tes3itemChildren]],
             itemData = e.itemData
         }
         doSketchbookTooltips(e, sketchbook)
