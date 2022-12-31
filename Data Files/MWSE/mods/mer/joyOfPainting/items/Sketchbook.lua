@@ -27,10 +27,14 @@ Sketchbook.__index = Sketchbook
 
 ---@param e JOP.Sketchbook.params
 function Sketchbook:new(e)
+    assert(e.reference or e.item, "Sketchbook requires either a reference or an item")
     local sketchbook = setmetatable({}, self)
     sketchbook.reference = e.reference
-    sketchbook.item = e.item or e.reference.object
-    sketchbook.dataHolder = e.itemData or e.reference
+    sketchbook.item = e.item
+    if e.reference and not e.item then
+        sketchbook.item = e.reference.object
+    end
+    sketchbook.dataHolder = (e.itemData ~= nil) and e.itemData or e.reference
     sketchbook.data = setmetatable({}, {
         __index = function(_, k)
             if not (
@@ -49,11 +53,16 @@ function Sketchbook:new(e)
                 and sketchbook.dataHolder.data.joyOfPainting
             ) then
                 if not sketchbook.reference then
+                    logger:debug("sketchbook.item: %s", sketchbook.item)
                     --create itemData
                     sketchbook.dataholder = tes3.addItemData{
                         to = tes3.player,
                         item = sketchbook.item,---@type any
                     }
+                    if not sketchbook.dataHolder then
+                        logger:error("Failed to create itemData for sketchbook")
+                        return
+                    end
                 end
                 sketchbook.dataHolder.data.joyOfPainting = {
                     sketches = {}
@@ -410,7 +419,7 @@ function Sketchbook:createActionButtons(parent)
         --take sketchbook
         self:createSketchButton{
             parent = bottomRow,
-            text = "Take",
+            text = "Pick Up",
             callback = function()
                 self:close()
                 common.pickUp(self.reference)

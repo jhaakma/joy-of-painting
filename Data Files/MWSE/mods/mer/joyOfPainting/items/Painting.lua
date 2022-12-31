@@ -145,7 +145,7 @@ function Painting:clearCanvas()
         }
         tes3.removeItem{
             item = self.item.id,
-            itemData = self.itemData,
+            itemData = self.dataHolder,
             count = 1,
             reference = tes3.player,
             playSound = false,

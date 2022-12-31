@@ -9,10 +9,18 @@ local SketchbookActivator = {
 
 ---@param e equipEventData|activateEventData
 function SketchbookActivator.activate(e)
+    logger:debug("Activating sketchbook")
+    local reference = e.target
+    local item
+    local itemData
+    if not e.target then
+        item = e.item
+        itemData = e.itemData
+    end
     local sketchbook = Sketchbook:new{
-        reference = e.target,
-        item = e.item,
-        itemData = e.itemData,
+        reference = reference,
+        item = item,
+        itemData = itemData,
     }
     sketchbook:open()
 end

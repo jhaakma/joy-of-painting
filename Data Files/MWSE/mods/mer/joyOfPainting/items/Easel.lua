@@ -215,7 +215,8 @@ function Easel.playerHasCanvas()
         end
         if stack.variables then
             for _, variable in ipairs(stack.variables) do
-                if variable.data
+                if variable
+                    and variable.data
                     and variable.data.joyOfPainting
                     and variable.data.joyOfPainting.paintingTexture
                 then
