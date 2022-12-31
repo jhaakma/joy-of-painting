@@ -191,12 +191,6 @@ function Sketchbook:selectSketch()
     }
 end
 
-function Sketchbook:close()
-    tes3ui.leaveMenuMode()
-    tes3ui.forcePlayerInventoryUpdate()
-end
-
-
 function Sketchbook:createBaseMenu()
     local menu = tes3ui.findMenu("JOP_SketchbookMenu")
     if menu then
@@ -205,15 +199,13 @@ function Sketchbook:createBaseMenu()
     menu = tes3ui.createMenu{
         id = "JOP_SketchbookMenu",
         fixedFrame = true,
-        dragFrame = true,
-        frameWidth = 400,
-        frameHeight = 400,
     }
     return menu
 end
 
 function Sketchbook:createTitle(parent)
     local title = parent:createLabel{
+        id = "JOP_SketchbookTitle",
         text = self.item.name,
     }
     title.absolutePosAlignX = 0.5
@@ -246,6 +238,7 @@ function Sketchbook:createSketchBlock(parent)
     else
         --create a big rect instead
         local rect = parent:createRect{
+            id = "JOP_Sketchbook_EmptyRect",
             color = {0,0,0},
         }
         rect.width = 400
@@ -282,7 +275,12 @@ function Sketchbook:createSketchButton(e)
     local parent = e.parent
     local text = e.text
     local callback = e.callback
-    local button = parent:createButton{text = text}
+    local id = e.id or string.format("JOP_SketchbookButton_%s", string.gsub(text, " ", "_"))
+    local button = parent:createButton{
+        id = id,
+        text = text
+    }
+    if e.enabled == nil then e.enabled = true end
     button:register("mouseClick", callback)
     self:setButtonState(button, e.enabled)
     button.widthProportional = 1.0
@@ -380,6 +378,8 @@ end
 
 function Sketchbook:createActionButtons(parent)
     --Add, remove and close buttons
+
+    ---@type tes3uiElement
     local bottomRow = parent:createBlock{
         id = tes3ui.registerID("JOP_SketchbookButtons"),
         flowDirection = "left_to_right",
@@ -406,14 +406,25 @@ function Sketchbook:createActionButtons(parent)
         end
     }
 
+    if self.reference then
+        --take sketchbook
+        self:createSketchButton{
+            parent = bottomRow,
+            text = "Take",
+            callback = function()
+                self:close()
+                common.pickUp(self.reference)
+            end,
+        }
+    end
+
     --close
     self:createSketchButton{
+        id = "JOP_SketchbookMenu_ExitButton",
         parent = bottomRow,
         text = "Close",
-        enabled = true,
         callback = function()
-            tes3ui.leaveMenuMode(self.menu.id)
-            self.menu:destroy()
+            self:close()
         end
     }
 end
@@ -429,8 +440,16 @@ function Sketchbook:open()
     self:createNavbar(self.menu)
     self:createNameField(self.menu)
     self:createActionButtons(self.menu)
-    self.menu:updateLayout()
     tes3ui.enterMenuMode(self.menu.id)
+    self.menu:updateLayout()
+    self.menu:updateLayout()
+    self.menu:updateLayout()
 end
+
+function Sketchbook:close()
+    tes3ui.leaveMenuMode(self.menu.id)
+    self.menu:destroy()
+end
+
 
 return Sketchbook

@@ -168,7 +168,7 @@ function UIHelper.openPaintingMenu(e)
     end
     --do cancel
     if e.cancels then
-        local button = buttonBlock:createButton{ text = "Cancel", id = "MenuMessage_CancelButton" }
+        local button = buttonBlock:createButton{ text = "Cancel", id = "JOP.CloseButton" }
         button.borderAllSides = 0
         button.paddingTop = 2
         button.paddingBottom = 4
@@ -257,21 +257,18 @@ function UIHelper.createPaintingImage(parent, e)
         logger:error("Could not get dimensions for painting %s", e.canvasId)
         return
     end
-    local outerBlock = parent:createBlock()
+    local outerBlock = parent:createBlock{ id = "JOP_PaintingImage_block"}
     outerBlock.flowDirection = "left_to_right"
     outerBlock.borderAllSides = 6
     outerBlock.autoHeight = true
     outerBlock.autoWidth = true
 
-    --create white rect under image
-    local whiteRect = outerBlock:createRect({color = tes3ui.getPalette(tes3.palette.whiteColor)})
-    whiteRect.width = dimensions.width
-    whiteRect.height = dimensions.height
-    whiteRect.absolutePosAlignX = 0
-
     --create image
     local paintingPath = PaintService.getPaintingTexturePath(e.paintingTexture)
-    local image = outerBlock:createImage({path = paintingPath})
+    local image = outerBlock:createImage{
+        id = "JOP_PaintingImage",
+        path = paintingPath
+    }
     image.width = dimensions.width
     image.height = dimensions.height
     image.scaleMode = true

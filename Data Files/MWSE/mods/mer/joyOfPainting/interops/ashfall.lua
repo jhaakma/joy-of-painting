@@ -112,7 +112,8 @@ local recipes = {
                     end
                     tes3ui.showMessageMenu{
                         text = "Select Art Style",
-                        buttons = buttons
+                        buttons = buttons,
+                        cancels = true
                     }
                 end,
                 enableRequirements = function(e)
