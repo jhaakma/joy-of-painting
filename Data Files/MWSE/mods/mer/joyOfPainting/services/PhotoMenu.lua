@@ -408,23 +408,20 @@ function PhotoMenu:disableShaders()
     end
 end
 
-local function isRightClickPressed(e)
-    return e.button == 1
-end
 
 local function isTabPressed(e)
     return e.keyCode == tes3.scanCode.tab
 end
 
-local hideMenuOnRightClick
+local toggleMenuOnTab
 --local restoreMenuOnReleaseRightClick
 local scrollToZoom
 function PhotoMenu:registerIOEvents()
     logger:debug("Registering IO events.")
 
     --When tab key is held down, hide the menu
-    hideMenuOnRightClick = function(e)
-        if isRightClickPressed(e) then
+    toggleMenuOnTab = function(e)
+        if isTabPressed(e) then
             if self.isLooking then
                 self.isLooking = false
                 self:createMenu()
@@ -453,15 +450,15 @@ function PhotoMenu:registerIOEvents()
     end
 
     timer.frame.delayOneFrame(function()
-        event.register("mouseButtonDown", hideMenuOnRightClick)
-        --event.register("mouseButtonUp", restoreMenuOnReleaseRightClick)
+        event.register("keyDown", toggleMenuOnTab)
+
         event.register(tes3.event.mouseWheel, scrollToZoom)
     end)
 end
 
 function PhotoMenu:unregisterIOEvents()
     logger:debug("Unregistering IO events.")
-    event.unregister("mouseButtonDown", hideMenuOnRightClick)
+    event.unregister("keyDown", toggleMenuOnTab)
     --event.unregister("mouseButtonUp", restoreMenuOnReleaseRightClick)
     event.unregister(tes3.event.mouseWheel, scrollToZoom)
 end

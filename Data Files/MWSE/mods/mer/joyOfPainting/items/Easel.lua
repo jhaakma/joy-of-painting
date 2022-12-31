@@ -97,18 +97,18 @@ function Easel:openAttachCanvasMenu()
                 local canvasConfig = config.canvases[canvasId]
                 local isFrame = config.frames[e2.item.id]
                 if isFrame then
-                    logger:debug("Filtering on frame: %s", e2.item.id)
+                    logger:trace("Filtering on frame: %s", e2.item.id)
                     return false
                 end
                 if not canvasConfig then
-                    logger:debug("Filtering on canvas %s: no config", e2.item.id)
+                    logger:trace("Filtering on canvas %s: no config", e2.item.id)
                     return false
                 end
                 if not canvasConfig.requiresEasel then
-                    logger:debug("Filtering on canvas %s: does not require easel", e2.item.id)
+                    logger:trace("Filtering on canvas %s: does not require easel", e2.item.id)
                     return false
                 end
-                logger:debug("Filtering on canvas %s", e2.item.id)
+                logger:trace("Filtering on canvas %s", e2.item.id)
                 return true
             end,
             noResultsCallback = function()
