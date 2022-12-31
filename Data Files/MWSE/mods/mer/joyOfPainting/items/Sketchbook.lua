@@ -540,7 +540,7 @@ function Sketchbook:activate()
 end
 
 function Sketchbook:close()
-    tes3ui.leaveMenuMode(self.menu.id)
+    tes3ui.leaveMenuMode()
     self.menu:destroy()
 end
 

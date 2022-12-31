@@ -144,7 +144,7 @@ function UIHelper.openPaintingMenu(e)
         dataHolder = e.dataHolder,
         setNameText = e.setNameText,
         callback = function()
-            tes3ui.leaveMenuMode(menu.id)
+            tes3ui.leaveMenuMode()
             tes3ui.findMenu(menu.id):destroy()
             if e.callback then e.callback() end
         end
@@ -157,7 +157,7 @@ function UIHelper.openPaintingMenu(e)
             local button = buttonBlock:createButton{ text = b.text, id = b.id }
             button:register("mouseClick", function()
                 if b.closesMenu then
-                    tes3ui.leaveMenuMode(menu.id)
+                    tes3ui.leaveMenuMode()
                     tes3ui.findMenu(menu.id):destroy()
                 end
                 b.callback()
@@ -171,7 +171,7 @@ function UIHelper.openPaintingMenu(e)
         button.paddingTop = 2
         button.paddingBottom = 4
         button:register("mouseClick", function()
-            tes3ui.leaveMenuMode(menu.id)
+            tes3ui.leaveMenuMode()
             tes3ui.findMenu(menu.id):destroy()
             if e.cancelCallback then e.cancelCallback() end
         end)
