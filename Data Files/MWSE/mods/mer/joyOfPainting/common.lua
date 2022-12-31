@@ -15,6 +15,8 @@ function common.createLogger(serviceName)
     return logger
 end
 
+---@param reference tes3reference
+---@return boolean
 function common.isStack(reference)
     return (
         reference.attachments and
@@ -27,10 +29,11 @@ function common.isShiftDown()
     return tes3.worldController.inputController:isKeyDown(tes3.scanCode.lShift)
 end
 
+---@param target tes3reference
 function common.pickUp(target)
     tes3.addItem({
         reference = tes3.player,
-        item = target.object, ---@type any
+        item = target.object,
         count = 1,
         itemData = target.itemData,
     })

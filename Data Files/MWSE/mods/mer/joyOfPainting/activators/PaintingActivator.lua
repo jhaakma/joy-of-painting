@@ -17,7 +17,7 @@ local PaintingActivator = {
 function PaintingActivator.activate(e)
     local painting = Painting:new{
         reference = e.target,
-        item = e.item, ---@type any
+        item = e.item,
         itemData = e.itemData,
     }
     tes3ui.showMessageMenu{

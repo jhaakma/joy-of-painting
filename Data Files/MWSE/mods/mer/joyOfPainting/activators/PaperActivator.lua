@@ -36,7 +36,6 @@ local function paperPaint(reference, artStyleName)
                 end,
                 finalCallback = function(e)
                     logger:debug("Creating new object for painting %s", e.paintingName)
-                    ---@type any
                     local newPaintingObject = painting:createPaintingObject()
                     local newPaper = tes3.createReference{
                         object = newPaintingObject,
@@ -76,7 +75,7 @@ end
 function PaperActivator.activate(e)
     local painting = Painting:new{
         reference = e.target,
-        item = e.item, ---@type any
+        item = e.item,
         itemData = e.itemData,
     }
     tes3ui.showMessageMenu{

@@ -63,7 +63,7 @@ event.register("activate", onActivate)
 ---@param e equipEventData
 local function onEquip(e)
     local painting = Painting:new{
-        item = e.item, ---@type any
+        item = e.item,
         itemData = e.itemData
     }
     if painting:hasPaintingData() then

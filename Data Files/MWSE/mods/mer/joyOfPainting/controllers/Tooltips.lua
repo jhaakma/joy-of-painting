@@ -8,7 +8,7 @@ local Painting = require("mer.joyOfPainting.items.Painting")
 local function manageTooltips(e)
     local painting = Painting:new{
         reference = e.reference,
-        item = e.object, ---@type any
+        item = e.object --[[@as JOP.tes3itemChildren]],
         itemData = e.itemData
     }
     if not painting:hasCanvasData() then return end

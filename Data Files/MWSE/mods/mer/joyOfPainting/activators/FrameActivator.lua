@@ -20,7 +20,7 @@ function FrameActivator.activate(e)
 
     local painting = Painting:new{
         reference = e.target,
-        item = e.item, ---@type any
+        item = e.item,
         itemData = e.itemData,
     }
 
@@ -83,7 +83,7 @@ function FrameActivator.activate(e)
                             callback = function(e2)
                                 if not e2.item then return end
                                 painting = Painting:new{
-                                    reference = ref---@type any
+                                    reference = ref
                                 }
                                 painting:attachCanvas(e2.item, e2.itemData)
                                 --Remove the canvas from the player's inventory
@@ -115,7 +115,7 @@ function FrameActivator.activate(e)
 
                         logger:debug("Remove Painting")
                         painting = Painting:new{
-                            reference = ref---@type any
+                            reference = ref
                         }
                         painting:takeCanvas()
                     end)
@@ -133,7 +133,7 @@ function FrameActivator.activate(e)
                             return
                         end
                         Painting:new{
-                            reference = safeRef:getObject()---@type any
+                            reference = safeRef:getObject()
                         }:paintingMenu()
                     end)
                 end,
@@ -149,8 +149,6 @@ function FrameActivator.activate(e)
                             logger:warn("Skipping take frame because reference is invalid")
                             return
                         end
-                        ---@type tes3reference
-                        ---@diagnostic disable-next-line: assign-type-mismatch
                         local ref = safeRef:getObject()
 
                         logger:debug("Take Frame")
