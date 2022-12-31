@@ -59,7 +59,7 @@ end
 ---@param callback function
 function Image:takeScreenshot(callback)
     logger:debug("[takeScreenshot] Taking screenshot and waiting for file to appear")
-    ---@diagnostic disable-next-line: undefined-field
+
     mge.saveScreenshot{ path = config.locations.screenshot}
 
     ---@type mwseTimer

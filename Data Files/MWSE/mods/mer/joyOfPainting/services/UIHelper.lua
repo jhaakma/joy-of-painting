@@ -144,7 +144,6 @@ function UIHelper.openPaintingMenu(e)
         dataHolder = e.dataHolder,
         setNameText = e.setNameText,
         callback = function()
-            ---@diagnostic disable-next-line: redundant-parameter
             tes3ui.leaveMenuMode(menu.id)
             tes3ui.findMenu(menu.id):destroy()
             if e.callback then e.callback() end
@@ -158,7 +157,6 @@ function UIHelper.openPaintingMenu(e)
             local button = buttonBlock:createButton{ text = b.text, id = b.id }
             button:register("mouseClick", function()
                 if b.closesMenu then
-                    ---@diagnostic disable-next-line: redundant-parameter
                     tes3ui.leaveMenuMode(menu.id)
                     tes3ui.findMenu(menu.id):destroy()
                 end
@@ -173,7 +171,6 @@ function UIHelper.openPaintingMenu(e)
         button.paddingTop = 2
         button.paddingBottom = 4
         button:register("mouseClick", function()
-            ---@diagnostic disable-next-line: redundant-parameter
             tes3ui.leaveMenuMode(menu.id)
             tes3ui.findMenu(menu.id):destroy()
             if e.cancelCallback then e.cancelCallback() end

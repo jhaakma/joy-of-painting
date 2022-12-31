@@ -143,7 +143,7 @@ local recipes = {
                         UIHelper.scrapePaintingMessage(function()
                             if safeRef:valid() then
                                 Painting:new{
-                                    reference = safeRef:getObject() ---@type any
+                                    reference = safeRef:getObject()
                                 }:cleanCanvas()
                             else
                                 logger:warn("Unable to clean canvas: Easel reference is no longer valid")

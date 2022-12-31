@@ -8,9 +8,12 @@ local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local Sketchbook = {
     ---@type tes3reference
     reference = nil,
+	---@type JOP.tes3itemChildren
     item = nil,
+	---@type tes3itemData|tes3reference|nil
     dataHolder = nil,
     data = nil,
+	---@type integer
     currentSketchIndex = nil,
 }
 Sketchbook.__index = Sketchbook
@@ -22,8 +25,8 @@ Sketchbook.__index = Sketchbook
 
 ---@class JOP.Sketchbook.params
 ---@field reference tes3reference?
----@field item tes3item|any
----@field itemData tes3itemData
+---@field item JOP.tes3itemChildren
+---@field itemData tes3itemData?
 
 ---@param e JOP.Sketchbook.params
 function Sketchbook:new(e)
@@ -32,7 +35,7 @@ function Sketchbook:new(e)
     sketchbook.reference = e.reference
     sketchbook.item = e.item
     if e.reference and not e.item then
-        sketchbook.item = e.reference.object
+        sketchbook.item = e.reference.object --[[@as JOP.tes3itemChildren]]
     end
     sketchbook.dataHolder = (e.itemData ~= nil) and e.itemData or e.reference
     sketchbook.data = setmetatable({}, {
@@ -57,7 +60,7 @@ function Sketchbook:new(e)
                     --create itemData
                     sketchbook.dataholder = tes3.addItemData{
                         to = tes3.player,
-                        item = sketchbook.item,---@type any
+                        item = sketchbook.item,
                     }
                     if not sketchbook.dataHolder then
                         logger:error("Failed to create itemData for sketchbook")
@@ -137,7 +140,7 @@ function Sketchbook:getSketchObject(sketch)
         logger:error("getSketchObject: Tried to get non-existent sketch")
         return nil
     end
-    return tes3.getObject(sketch.itemId)
+    return tes3.getObject(sketch.itemId) --[[@as JOP.tes3itemChildren]]
 end
 
 function Sketchbook:removeSketch()
@@ -164,7 +167,7 @@ function Sketchbook:removeSketch()
 
     logger:debug("removing sketch %s", currentSketch.itemId)
     tes3.addItem{
-        item = currentSketchObject, ---@type any
+        item = currentSketchObject,
         reference = tes3.player,
         playSound = false,
     }
@@ -392,7 +395,6 @@ function Sketchbook:playerHasSketches()
     for _, stack in pairs(tes3.player.object.inventory) do
         --iterate variables
         if stack.variables then
-            ---@param itemData tes3itemData
             for _, itemData in pairs(stack.variables) do
                 local painting = Painting:new{
                     item = stack.object,

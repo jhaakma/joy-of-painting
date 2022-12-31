@@ -498,7 +498,6 @@ end
 
 --Destroy the menu
 function PhotoMenu:hideMenu()
-    ---@diagnostic disable-next-line: redundant-parameter
     tes3ui.leaveMenuMode(self.menuID)
     tes3ui.findMenu(self.menuID):destroy()
     self.active = false

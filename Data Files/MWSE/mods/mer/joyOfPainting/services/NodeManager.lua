@@ -20,6 +20,9 @@ NodeManager.nodes = {
     ATTACH_FRAME = "ATTACH_FRAME",
 }
 
+---@param node niNode
+---@param name string
+---@return integer?
 function NodeManager.getIndex(node, name)
 	for i, child in ipairs(node.children) do
         local isMatch = name and child and child.name
@@ -30,14 +33,15 @@ function NodeManager.getIndex(node, name)
 	end
 end
 
+---@param node niNode
 function NodeManager.cloneTextureProperty(node)
     local prop = node:detachProperty(ni.propertyType.texturing)
     assert(prop ~= nil, "No material property found on node")
-    local clonedProp = prop:clone() ---@type any
+    local clonedProp = prop:clone() --[[@as niTexturingProperty]]
     node:attachProperty(clonedProp)
 end
 
-
+---@param sceneNode niNode
 function NodeManager.getCanvasAttachNode(sceneNode)
     return sceneNode:getObjectByName(NodeManager.nodes.ATTACH_CANVAS)
 end

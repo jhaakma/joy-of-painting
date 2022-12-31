@@ -10,6 +10,8 @@ local logger = common.createLogger("Painting")
     Painting class for managing any item that has a painting
 ]]
 
+---@alias JOP.tes3itemChildren tes3alchemy|tes3apparatus|tes3armor|tes3book|tes3clothing|tes3ingredient|tes3light|tes3lockpick|tes3misc|tes3probe|tes3repairTool|tes3weapon
+
 ---@class JOP.Painting
 local Painting = {
     ---@type string
@@ -18,8 +20,9 @@ local Painting = {
     reference = nil,
     ---@type table
     data = nil,
-
+	---@type JOP.tes3itemChildren
     item = nil,
+	---@type tes3itemData?
     dataHolder = nil,
 }
 
@@ -57,7 +60,7 @@ end
 
 ---@class JOP.Painting.params
 ---@field reference tes3reference
----@field item tes3item
+---@field item JOP.tes3itemChildren
 ---@field itemData tes3itemData
 
 ---@param e JOP.Painting.params
@@ -92,7 +95,7 @@ function Painting:new(e)
                     --create itemData
                     painting.dataholder = tes3.addItemData{
                         to = tes3.player,
-                        item = painting.item,---@type any
+                        item = painting.item,
                     }
                 end
                 painting.dataHolder.data.joyOfPainting = {}
@@ -218,7 +221,8 @@ function Painting:doCanvasVisuals()
         if not self.data.canvasId then return end
         local canvasObject = tes3.getObject(self.data.canvasId)
         local mesh = tes3.loadMesh(canvasObject.mesh, false)
-        local clonedMesh = mesh:clone() ---@type any
+        local clonedMesh = mesh:clone()
+        ---@cast clonedMesh niNode
         NodeManager.moveOriginToAttachPoint(clonedMesh)
         attachNode:attachChild(clonedMesh)
         attachNode:update()
@@ -246,13 +250,11 @@ function Painting:doPaintAnim()
     logger:debug("doPaintAnim()")
 
     --get texture node
-    local paintTexNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_ANIM_TEX_NODE)
+    local paintTexNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_ANIM_TEX_NODE) --[[@as niNode]]
     assert(paintTexNode ~= nil, "No paint node found")
 
     --set texture
     NodeManager.cloneTextureProperty(paintTexNode)
-    ---@type niSourceTexture
-    ---@diagnostic disable-next-line: assign-type-mismatch
     paintTexNode.texturingProperty.baseMap.texture = PaintService.createTexture(self.data.paintingTexture)
     paintTexNode:update()
     paintTexNode:updateProperties()
@@ -262,7 +264,7 @@ function Painting:doPaintAnim()
 
     timer.delayOneFrame(function()
         --set index to animation node
-        local switchNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_SWITCH)
+        local switchNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_SWITCH) --[[@as niSwitchNode]]
         local animIndex = NodeManager.getIndex(switchNode, NodeManager.nodes.PAINT_SWITCH_ANIMATING )
         switchNode.switchIndex = animIndex
     end)
@@ -325,7 +327,7 @@ function Painting:createPaintingObject()
         objectType = tes3.objectType.miscItem,--canvasObj.objectType,
         icon = PaintService.getPaintingIconPath(self.data.paintingTexture),
         value = self:calculateValue(),
-    }
+    } --[[@as JOP.tes3itemChildren]]
     logger:debug("Created painting object %s", paintingObject.id)
     return paintingObject
 end
@@ -337,8 +339,8 @@ function Painting:doPaintingVisuals()
     if not self.data.paintingTexture then return end
     logger:debug("doPaintingVisuals for %s", self.id)
     local paintingTexture = PaintService.createTexture(self.data.paintingTexture)
-    local switchPaintNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_SWITCH)
-    local paintTextureNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_TEX_NODE)
+    local switchPaintNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_SWITCH) --[[@as niSwitchNode]]
+    local paintTextureNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_TEX_NODE) --[[@as niNode]]
     -- check if the ref has a painting (reference.data.joyOfPainting.paintingTexture)
     if paintingTexture and switchPaintNode and paintTextureNode then
         logger:debug("Painting texture found for %s", self.id)
