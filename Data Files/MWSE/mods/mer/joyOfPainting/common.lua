@@ -33,7 +33,7 @@ end
 function common.pickUp(target)
     tes3.addItem({
         reference = tes3.player,
-        item = target.object,
+        item = target.object --[[@as JOP.tes3itemChildren]],
         count = 1,
         itemData = target.itemData,
     })
