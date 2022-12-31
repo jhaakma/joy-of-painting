@@ -82,8 +82,9 @@ function Sketchbook:new(e)
             end
         end
     end
-
-    sketchbook.currentSketchIndex = (sketchbook.data.sketches ~= nil) and 1 or 0
+    local hasSketches = (sketchbook.data.sketches ~= nil)
+        and #sketchbook.data.sketches > 0
+    sketchbook.currentSketchIndex = hasSketches and 1 or 0
     logger:debug("sketchindex = %s", sketchbook.currentSketchIndex)
     return sketchbook
 end
@@ -118,7 +119,11 @@ function Sketchbook:addSketch(e)
         playSound = false
     }
     tes3.messageBox('"%s" added to sketchbook.', newSketch.data.paintingName)
-    self:open()
+    self:createSketchMenu()
+    tes3.playSound{
+        sound = "scroll",
+        reference = tes3.player
+    }
 end
 
 ---@return JOP.Sketchbook.sketch
@@ -169,7 +174,11 @@ function Sketchbook:removeSketch()
     }
     itemData.data.joyOfPainting = currentSketch.data
     tes3.messageBox('"%s" removed from sketchbook.', currentSketch.data.paintingName)
-    self:open()
+    self:createSketchMenu()
+    tes3.playSound{
+        sound = "scroll",
+        reference = tes3.player
+    }
 end
 
 function Sketchbook:selectSketch()
@@ -205,9 +214,14 @@ function Sketchbook:createBaseMenu()
 end
 
 function Sketchbook:createTitle(parent)
+    local titleText = self.item.name
+    if self.data.sketchbookName then
+        titleText = string.format("%s: %s", titleText, self.data.sketchbookName)
+    end
+
     local title = parent:createLabel{
         id = "JOP_SketchbookTitle",
-        text = self.item.name,
+        text = titleText,
     }
     title.absolutePosAlignX = 0.5
     title.color = tes3ui.getPalette("header_color")
@@ -255,7 +269,7 @@ function Sketchbook:createNameField(parent)
             dataHolder = currentSketch.data,
             callback = function()
                 tes3.messageBox("Renamed to '%s'", currentSketch.data.paintingName)
-                self:open()
+                self:createSketchMenu()
             end
         })
         nameField.elements.outerContainer.borderBottom = 5
@@ -306,7 +320,11 @@ function Sketchbook:createNavbar(parent)
         enabled = self.currentSketchIndex > 1,
         callback = function()
             self.currentSketchIndex = 1
-            self:open()
+            self:createSketchMenu()
+            tes3.playSound{
+                sound = "scroll",
+                reference = tes3.player
+            }
         end
     }
     --Previous
@@ -316,7 +334,11 @@ function Sketchbook:createNavbar(parent)
         enabled = self.currentSketchIndex > 1,
         callback = function()
             self.currentSketchIndex = self.currentSketchIndex - 1
-            self:open()
+            self:createSketchMenu()
+            tes3.playSound{
+                sound = "scroll",
+                reference = tes3.player
+            }
         end
     }
 
@@ -340,7 +362,11 @@ function Sketchbook:createNavbar(parent)
         enabled = self.currentSketchIndex < #self.data.sketches,
         callback = function()
             self.currentSketchIndex = self.currentSketchIndex + 1
-            self:open()
+            self:createSketchMenu()
+            tes3.playSound{
+                sound = "scroll",
+                reference = tes3.player
+            }
         end
     }
     --Last
@@ -350,7 +376,11 @@ function Sketchbook:createNavbar(parent)
         enabled = self.currentSketchIndex < #self.data.sketches,
         callback = function()
             self.currentSketchIndex = #self.data.sketches
-            self:open()
+            self:createSketchMenu()
+            tes3.playSound{
+                sound = "scroll",
+                reference = tes3.player
+            }
         end
     }
 
@@ -431,9 +461,8 @@ function Sketchbook:createActionButtons(parent)
 end
 
 
-function Sketchbook:open()
+function Sketchbook:createSketchMenu()
     self.data.sketches = self.data.sketches or {}
-
     self.menu = self:createBaseMenu()
     self:createTitle(self.menu)
     self:createSubtitle(self.menu)
@@ -445,9 +474,66 @@ function Sketchbook:open()
     self.menu:updateLayout()
     self.menu:updateLayout()
     self.menu:updateLayout()
+end
+
+function Sketchbook:open()
+    self:createSketchMenu()
     tes3.playSound{
         sound = "scroll",
         reference = tes3.player
+    }
+end
+
+function Sketchbook:rename()
+    local menu = UIHelper.createBaseMenu("JOP.NamePaintingMenu")
+    menu:createLabel{
+        text = "Enter a new name for your sketchbook:",
+    }
+    local textField = mwse.mcm.createTextField(menu, {
+        buttonText = "Submit",
+        variable = mwse.mcm.createTableVariable{
+            id = "sketchbookName",
+            table = self.data,
+        },
+        callback = function()
+            tes3.messageBox("Sketchbook renamed to: %s", self.data.sketchbookName)
+            menu:destroy()
+            ---@diagnostic disable-next-line: redundant-parameter
+            tes3ui.leaveMenuMode("JOP.NamePaintingMenu")
+        end,
+    })
+    tes3ui.acquireTextInput(textField.elements.inputField)
+    tes3ui.enterMenuMode("JOP.NamePaintingMenu")
+end
+
+function Sketchbook:activate()
+    tes3ui.showMessageMenu{
+        message = self.item.name,
+        buttons = {
+            {
+                text = "Open",
+                callback = function()
+                    timer.delayOneFrame(function()
+                        self:open()
+                    end)
+                end
+            },
+            {
+                text = "Rename",
+                callback = function()
+                    timer.delayOneFrame(function()
+                        self:rename()
+                    end)
+                end
+            },
+            {
+                text = "Pick Up",
+                callback = function()
+                    common.pickUp(self.reference)
+                end
+            },
+        },
+        cancels = true
     }
 end
 

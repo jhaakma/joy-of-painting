@@ -22,7 +22,7 @@ function SketchbookActivator.activate(e)
         item = item,
         itemData = itemData,
     }
-    sketchbook:open()
+    sketchbook:activate()
 end
 
 return SketchbookActivator

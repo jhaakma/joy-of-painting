@@ -2,7 +2,7 @@
     Register items that can be quickkeyed
 ]]
 local items = {
-    jop_sketchbook_01 = true
+    jop_sketchbook_01 = true,
 }
 
 local function canQuickKey(e)

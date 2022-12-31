@@ -31,6 +31,15 @@ local function doSketchbookTooltips(e, sketchbook)
         labelText = labelText,
         color = tes3ui.getPalette("normal_color")
     }
+
+    if sketchbook.data.sketchbookName then
+        local labelText = string.format('"%s"', sketchbook.data.sketchbookName)
+        UIHelper.addLabelToTooltip{
+            tooltip = e.tooltip,
+            labelText = labelText,
+            color = tes3ui.getPalette("normal_color")
+        }
+    end
 end
 
 ---@param e uiObjectTooltipEventData
