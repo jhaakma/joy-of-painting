@@ -266,7 +266,11 @@ function Painting:doPaintAnim()
         --set index to animation node
         local switchNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_SWITCH) --[[@as niSwitchNode]]
         local animIndex = NodeManager.getIndex(switchNode, NodeManager.nodes.PAINT_SWITCH_ANIMATING )
-        switchNode.switchIndex = animIndex
+        if animIndex then
+            switchNode.switchIndex = animIndex
+        else
+            logger:error("No animating node found")
+        end
     end)
 end
 
@@ -346,12 +350,16 @@ function Painting:doPaintingVisuals()
         logger:debug("Painting texture found for %s", self.id)
         -- set switch to paintNode
         local paintedNodeIndex = NodeManager.getIndex(switchPaintNode, NodeManager.nodes.PAINT_SWITCH_PAINTED)
-        switchPaintNode.switchIndex = paintedNodeIndex
-        --set texture
-        NodeManager.cloneTextureProperty(paintTextureNode)
-        paintTextureNode.texturingProperty.baseMap.texture = paintingTexture
-        paintTextureNode:update()
-        paintTextureNode:updateProperties()
+        if paintedNodeIndex then
+            switchPaintNode.switchIndex = paintedNodeIndex
+            --set texture
+            NodeManager.cloneTextureProperty(paintTextureNode)
+            paintTextureNode.texturingProperty.baseMap.texture = paintingTexture
+            paintTextureNode:update()
+            paintTextureNode:updateProperties()
+        else
+            logger:warn("Painted node not found for %s", self.id)
+        end
     end
 end
 
