@@ -118,10 +118,6 @@ function Sketchbook:addSketch(e)
         playSound = false
     }
     tes3.messageBox('"%s" added to sketchbook.', newSketch.data.paintingName)
-    tes3.playSound{
-        sound = "scroll",
-        reference = tes3.player
-    }
     self:open()
 end
 
@@ -173,10 +169,6 @@ function Sketchbook:removeSketch()
     }
     itemData.data.joyOfPainting = currentSketch.data
     tes3.messageBox('"%s" removed from sketchbook.', currentSketch.data.paintingName)
-    tes3.playSound{
-        sound = "scroll",
-        reference = tes3.player
-    }
     self:open()
 end
 
@@ -453,6 +445,10 @@ function Sketchbook:open()
     self.menu:updateLayout()
     self.menu:updateLayout()
     self.menu:updateLayout()
+    tes3.playSound{
+        sound = "scroll",
+        reference = tes3.player
+    }
 end
 
 function Sketchbook:close()
