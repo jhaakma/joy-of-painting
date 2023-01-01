@@ -5,6 +5,7 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("PaperActivator")
 local Painting = require("mer.joyOfPainting.items.Painting")
+local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
 
 local PaperActivator = {
@@ -82,17 +83,15 @@ function PaperActivator.activate(e)
         message = painting.reference.object.name,
         buttons = {
             {
-                text = "Draw/Paint",
+                text = "Draw",
                 callback = function()
                     local buttons = {}
-                    for _, artStyle in pairs(config.artStyles) do
-                        if artStyle.requiresEasel ~= true then
-                            table.insert(buttons, {
-                                text = artStyle.name,
-                                callback = function()
-                                    paperPaint(painting.reference, artStyle.name)
-                                end,
-                            })
+                    for _, artStyleData in pairs(config.artStyles) do
+                        local artStyle = ArtStyle:new(artStyleData)
+                        if not artStyle.requiresEasel then
+                            table.insert(buttons, artStyle:getButton(function()
+                                paperPaint(painting.reference, artStyle.name)
+                            end))
                         end
                     end
                     tes3ui.showMessageMenu{

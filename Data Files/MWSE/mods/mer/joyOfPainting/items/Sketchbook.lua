@@ -58,7 +58,7 @@ function Sketchbook:new(e)
                 if not sketchbook.reference then
                     logger:debug("sketchbook.item: %s", sketchbook.item)
                     --create itemData
-                    sketchbook.dataholder = tes3.addItemData{
+                    sketchbook.dataHolder = tes3.addItemData{
                         to = tes3.player,
                         item = sketchbook.item,
                     }

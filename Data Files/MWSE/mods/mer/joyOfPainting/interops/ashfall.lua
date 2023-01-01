@@ -3,6 +3,7 @@ local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("AshfallInterop")
 local Easel = require("mer.joyOfPainting.items.Easel")
 local Painting = require("mer.joyOfPainting.items.Painting")
+local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 
 local function hasCanvas(e)
@@ -22,6 +23,13 @@ local function canAttachCanvas(e)
     return Easel:new(e.reference):canAttachCanvas()
 end
 
+local bushcraftingSkillReq = {
+    {
+        skill = "Bushcrafting",
+        requirement = 20,
+    }
+}
+
 local recipes = {
     {
         id = "jop_frame_sq_01",
@@ -30,12 +38,7 @@ local recipes = {
             { material = "wood", count = 4 },
             { material = "rope", count = 1 },
         },
-        skillRequirements = {
-            {
-                skill = "Bushcrafting",
-                requirement = 20,
-            }
-        },
+        skillRequirements = bushcraftingSkillReq,
         category = "Painting",
         soundType = "wood",
         maxSteepness = 0.1,
@@ -47,12 +50,7 @@ local recipes = {
             { material = "wood", count = 4 },
             { material = "rope", count = 1 },
         },
-        skillRequirements = {
-            {
-                skill = "Bushcrafting",
-                requirement = 20,
-            }
-        },
+        skillRequirements = bushcraftingSkillReq,
         category = "Painting",
         soundType = "wood",
         maxSteepness = 0.1,
@@ -64,12 +62,7 @@ local recipes = {
             { material = "wood", count = 4 },
             { material = "rope", count = 1 },
         },
-        skillRequirements = {
-            {
-                skill = "Bushcrafting",
-                requirement = 20,
-            }
-        },
+        skillRequirements = bushcraftingSkillReq,
         category = "Painting",
         soundType = "wood",
         maxSteepness = 0.1,
@@ -81,12 +74,7 @@ local recipes = {
             { material = "wood", count = 6 },
             { material = "rope", count = 4}
         },
-        skillRequirements = {
-            {
-                skill = "Bushcrafting",
-                requirement = 20,
-            }
-        },
+        skillRequirements = bushcraftingSkillReq,
         destroyCallback = function(_recipe, e)
             local reference = e.reference
             local easel = Easel:new(reference)
@@ -99,16 +87,14 @@ local recipes = {
         maxSteepness = 0.1,
         additionalMenuOptions = {
             {
-                text = "Draw/Paint",
+                text = "Paint",
                 callback = function(e)
                     local buttons = {}
-                    for _, artStyle in pairs(config.artStyles) do
-                        table.insert(buttons, {
-                            text = artStyle.name,
-                            callback = function()
-                                Easel:new(e.reference):paint(artStyle.name)
-                            end,
-                        })
+                    for _, artStyleData in pairs(config.artStyles) do
+                        local artStyle = ArtStyle:new(artStyleData)
+                        table.insert(buttons, artStyle:getButton(function()
+                            Easel:new(e.reference):paint(artStyle.name)
+                        end))
                     end
                     tes3ui.showMessageMenu{
                         text = "Select Art Style",
@@ -197,12 +183,7 @@ local recipes = {
         description = "A tall canvas. Place on an easel to start painting.",
         category = "Painting",
         soundType = "fabric",
-        skillRequirements = {
-            {
-                skill = "Bushcrafting",
-                requirement = 20,
-            }
-        },
+        skillRequirements = bushcraftingSkillReq,
         materials = {
             { material = "fibre", count = 20 },
             { material = "resin", count = 1 }
@@ -214,12 +195,7 @@ local recipes = {
         description = "A wide canvas. Place on an easel to start painting.",
         category = "Painting",
         soundType = "fabric",
-        skillRequirements = {
-            {
-                skill = "Bushcrafting",
-                requirement = 20,
-            }
-        },
+        skillRequirements = bushcraftingSkillReq,
         materials = {
             { material = "fibre", count = 20 },
             { material = "resin", count = 1 }
@@ -228,21 +204,62 @@ local recipes = {
     },
     {
         id = "jop_sketchbook_01",
-        description = "A sketchbook to store drawings and sketches",
+        description = "A sketchbook to store drawings and sketches.",
         category = "Painting",
         soundType = "leather",
-        skillRequirements = {
-            {
-                skill = "Bushcrafting",
-                requirement = 20,
-            }
-        },
+        skillRequirements = bushcraftingSkillReq,
         materials = {
             { material = "leather", count = 1 },
             { material = "paper", count = 2 }
         },
         rotationAxis = 'y'
+    },
+
+    {
+        id = "jop_brush_01",
+        description = "A brush for painting.",
+        category = "Painting",
+        soundType = "wood",
+        skillRequirements = bushcraftingSkillReq,
+        materials = {
+            { material = "wood", count = 1 },
+            { material = "fibre", count = 1 },
+        },
+        rotationAxis = 'y'
+    },
+
+    {
+        id = "jop_oil_palette_01",
+        description = "A palette for mixing oil paints.",
+        category = "Painting",
+        soundType = "wood",
+        skillRequirements = bushcraftingSkillReq,
+        materials = {
+            { material = "wood", count = 2 },
+            { material = "ingred_fire_salts_01", count = 1 },
+            { material = "ingred_frost_salts_01", count = 1 },
+            { material = "ingred_ash_salts_01", count = 1 },
+        },
+        rotationAxis = 'y'
     }
+
+    -- {
+    --     id = "jop_coal_sticks_01",
+    --     description = "Carved sticks of charcoal used for sketching.",
+    --     category = "Painting",
+    --     soundType = "carve",
+    --     skillRequirements = bushcraftingSkillReq,
+    --     materials = {
+    --         { material = "coal", count = 4 }
+    --     },
+    --     toolRequirements = {
+    --         {
+    --             tool = "knife",
+    --             equipped = true,
+    --             conditionPerUse = 1
+    --         }
+    --     },
+    -- }
 }
 
 local materials = {
@@ -253,7 +270,7 @@ local materials = {
             "sc_paper plain",
             "jop_paper_01",
         }
-    }
+    },
 }
 local CraftingFramework = include("CraftingFramework")
 if CraftingFramework then

@@ -62,9 +62,16 @@ config.canvases = {}
 config.frameSizes = {}
 config.frames = {}
 config.easels = {}
+---@type table<string, JOP.ArtStyle.data>
 config.artStyles = {}
 config.controls = {}
+---@type table<string, JOP.PaintType>
+config.paintTypes = {}
+
+--A table of item ids and the paint type they are associated with
 config.paints = {}
+---@type table<string, JOP.BrushType>
+config.brushTypes = {}
 config.easelActiveToMiscMap = {}
 config.meshOverrides = {}
 config.sketchbooks = {}
@@ -77,7 +84,6 @@ config.shaders = {
     greyscale = "jop_greyscale",
     sketch = "jop_sketch",
 }
-
 
 local persistentDefault = {
     zoom = 100,

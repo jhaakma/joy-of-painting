@@ -82,7 +82,7 @@ local controls = {
     }
 }
 
----@type JOP.ArtStyle[]
+---@type JOP.ArtStyle.data[]
 local artStyles = {
     {
         name = "Charcoal Drawing",
@@ -132,14 +132,7 @@ local artStyles = {
             "bgColor",
         },
         valueModifier = 1,
-        equipment = {
-            {
-                toolId = "jop_brush_01",
-                paintHolder = "jop_paint_01",
-                consumesPaintHolder = false,
-                paintConsumed = 10,
-            }
-        },
+        paintType = "charcoal",
     },
     {
         name = "Ink Sketch",
@@ -181,14 +174,7 @@ local artStyles = {
             "inkDistance",
         },
         valueModifier = 1.5,
-        equipment = {
-            {
-                toolId = "jop_brush_01",
-                paintHolder = "jop_paint_01",
-                consumesPaintHolder = false,
-                paintConsumed = 10,
-            }
-        },
+        paintType = "ink",
     },
     {
         name = "Watercolor Painting",
@@ -228,14 +214,7 @@ local artStyles = {
         },
         valueModifier = 8,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
-        equipment = {
-            {
-                toolId = "jop_brush_01",
-                paintHolder = "jop_paint_01",
-                consumesPaintHolder = false,
-                paintConsumed = 10,
-            }
-        },
+        paintType = "watercolor",
         requiresEasel = true,
     },
 
@@ -277,14 +256,7 @@ local artStyles = {
         },
         valueModifier = 15,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
-        equipment = {
-            {
-                toolId = "jop_brush_01",
-                paintHolder = "jop_paint_01",
-                consumesPaintHolder = false,
-                paintConsumed = 10,
-            }
-        },
+        paintType = "oil",
         requiresEasel = true,
     },
 }

@@ -12,7 +12,7 @@ local GUID = require("mer.joyOfPainting.services.GUID")
 local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local SkillService = require("mer.joyOfPainting.services.SkillService")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
-
+local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 local alwaysOnShaders = {
     config.shaders.window,
 }
@@ -41,6 +41,7 @@ function PhotoMenu:new(data)
     local o = setmetatable(data, self)
     self.__index = self
     o.shaders = {}
+    o.artStyle = ArtStyle:new(data.artStyle)
     --add always on shaders
     for _, shader in ipairs(alwaysOnShaders) do
         table.insert(o.shaders, shader)
@@ -83,6 +84,7 @@ function PhotoMenu:capture()
             end
         end)
         :registerStep("startPainting", function()
+            self.artStyle:usePaint()
             logger:debug("Starting painting")
             self:hideMenu()
             self:finishMenu()

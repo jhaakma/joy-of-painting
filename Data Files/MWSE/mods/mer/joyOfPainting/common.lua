@@ -41,4 +41,8 @@ function common.pickUp(target)
     target:delete()
 end
 
+function common.closeEnough(reference)
+    return reference.position:distance(tes3.player.position) < tes3.getPlayerActivationDistance()
+end
+
 return common
