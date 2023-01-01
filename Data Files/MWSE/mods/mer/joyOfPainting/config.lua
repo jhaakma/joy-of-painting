@@ -87,7 +87,10 @@ local persistentDefault = {
 }
 local mcmDefault = {
     enabled = true,
-    logLevel = "INFO",
+    logLevel = "DEBUG", --TODO: Change to INFO before full release
+    savedPaintingIndex = 1,
+    maxSavedPaintings = 20,
+    savedPaintingSize = 1080,
 }
 --MCM Config (stored as JSON)
 config.mcm = mwse.loadConfig(config.configPath, mcmDefault)

@@ -64,6 +64,7 @@ function PhotoMenu:capture()
     logger:debug("Painting name: %s", paintingTexture)
 
     local imageData = {
+        savedPaintingPath = "Data Files\\" .. PaintService.getSavedPaintingPath(),
         paintingPath = "Data Files\\" .. PaintService.getPaintingTexturePath(paintingTexture),
         canvasConfig = self.canvasConfig,
         iconSize = 32,
@@ -133,6 +134,8 @@ function PhotoMenu:capture()
     builder:start()
         :takeScreenshot()
         [self.artStyle.name](builder)
+        :incrementSavedPaintingIndex()
+        :createPaintingTexture()
         :createIcon()
         :deleteScreenshot()
         :calculateAverageColor()

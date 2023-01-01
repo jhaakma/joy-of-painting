@@ -3,6 +3,7 @@ local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("artStyle")
 local interop = require("mer.joyOfPainting.interop")
 local SkillService = require("mer.joyOfPainting.services.SkillService")
+local PaintService = require("mer.joyOfPainting.services.PaintService")
 
 local shaders = {
     oil = "jop_oil",
@@ -84,56 +85,11 @@ local controls = {
 ---@type JOP.ArtStyle[]
 local artStyles = {
     {
-        name = "Oil Painting",
+        name = "Charcoal Drawing",
         ---@param image JOP.Image
         magickCommand = function(image)
-            local skill = SkillService.skills.painting.value
-            logger:debug("Painting skill is %d", skill)
-            local detailLevel = math.clamp(math.remap(skill,
-                config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
-                10, 0
-            ), 10,0)
-            logger:debug("Oil Painting detail level is %d", detailLevel)
-            return function(next)
-                image.magick:new("createPainting")
-                :magick()
-                :formatDDS()
-                :param(image.screenshotPath)
-                :trim()
-                --:autoGamma()
-                :blur(detailLevel)
-                :paint(detailLevel)
-                :resizeHard(image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
-                :repage()
-                :param(image.paintingPath)
-                :execute(next)
-                return true
-            end
-        end,
-        shaders = {
-            shaders.oil,
-            shaders.adjuster,
-        },
-        controls = {
-            "brightness",
-            "contrast",
-        },
-        valueModifier = 15,
-        animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
-        equipment = {
-            {
-                toolId = "jop_brush_01",
-                paintHolder = "jop_paint_01",
-                consumesPaintHolder = false,
-                paintConsumed = 10,
-            }
-        },
-        requiresEasel = true,
-    },
+            local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
 
-    {
-        name = "Charcoal Drawing",
-        magickCommand = function(image)
             local skill = SkillService.skills.painting.value
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
@@ -142,6 +98,7 @@ local artStyles = {
             ), 10, 1)
             logger:debug("Charcoal Sketch detail level is %d", detailLevel)
             return function(next)
+
                 image.magick:new("createCharoalSketch")
                 :magick()
                 :formatDDS()
@@ -154,11 +111,11 @@ local artStyles = {
                 :sketch()
                 :brightnessContrast(-80, 90)
                 :removeWhite(90)
-                :resizeHard(image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
+                :resizeHard(savedWidth, savedHeight)
                 :gravity("center")
-                :compositeClone(image.canvasConfig.canvasTexture, image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
+                :compositeClone(image.canvasConfig.canvasTexture, savedWidth, savedHeight)
                 :repage()
-                :param(image.paintingPath)
+                :param(image.savedPaintingPath)
                 :execute(next)
                 return true
             end
@@ -187,6 +144,7 @@ local artStyles = {
     {
         name = "Ink Sketch",
         magickCommand = function(image)
+            local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
             local skill = SkillService.skills.painting.value
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
@@ -203,12 +161,12 @@ local artStyles = {
                 :autoGamma()
                 :removeWhite(50)
                 :paint(detailLevel)
-                :resizeHard(image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
+                :resizeHard(savedWidth, savedHeight)
                 --:blur(detailLevel)
                 :gravity("center")
-                :compositeClone(image.canvasConfig.canvasTexture, image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
+                :compositeClone(image.canvasConfig.canvasTexture, savedWidth, savedHeight)
                 :repage()
-                :param(image.paintingPath)
+                :param(image.savedPaintingPath)
                 :execute(next)
                 return true
             end
@@ -235,6 +193,7 @@ local artStyles = {
     {
         name = "Watercolor Painting",
         magickCommand = function(image)
+            local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
             local skill = SkillService.skills.painting.value
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
@@ -251,9 +210,9 @@ local artStyles = {
                 --:autoGamma()
                 :blur(detailLevel)
                 :paint(detailLevel)
-                :resizeHard(image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
+                :resizeHard(savedWidth, savedHeight)
                 :repage()
-                :param(image.paintingPath)
+                :param(image.savedPaintingPath)
                 :execute(next)
                 return true
             end
@@ -278,7 +237,56 @@ local artStyles = {
             }
         },
         requiresEasel = true,
-    }
+    },
+
+    {
+        name = "Oil Painting",
+        ---@param image JOP.Image
+        magickCommand = function(image)
+            local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
+            local skill = SkillService.skills.painting.value
+            logger:debug("Painting skill is %d", skill)
+            local detailLevel = math.clamp(math.remap(skill,
+                config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
+                10, 0
+            ), 10,0)
+            logger:debug("Oil Painting detail level is %d", detailLevel)
+            return function(next)
+                image.magick:new("createPainting")
+                :magick()
+                :formatDDS()
+                :param(image.screenshotPath)
+                :trim()
+                --:autoGamma()
+                :blur(detailLevel)
+                :paint(detailLevel)
+                :resizeHard(savedWidth, savedHeight)
+                :repage()
+                :param(image.savedPaintingPath)
+                :execute(next)
+                return true
+            end
+        end,
+        shaders = {
+            shaders.oil,
+            shaders.adjuster,
+        },
+        controls = {
+            "brightness",
+            "contrast",
+        },
+        valueModifier = 15,
+        animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
+        equipment = {
+            {
+                toolId = "jop_brush_01",
+                paintHolder = "jop_paint_01",
+                consumesPaintHolder = false,
+                paintConsumed = 10,
+            }
+        },
+        requiresEasel = true,
+    },
 }
 
 event.register(tes3.event.initialized, function()

@@ -18,6 +18,28 @@ function PaintService.getPaintingTexturePath(texture)
     return "textures\\jop\\p\\" .. texture
 end
 
+function PaintService.getSavedPaintingDimensions(image)
+    local aspectRatio = config.frameSizes[image.canvasConfig.frameSize].aspectRatio
+    local savedImageSize = config.mcm.savedPaintingSize
+
+    local width
+    local height
+    if image.canvasConfig.textureWidth > image.canvasConfig.textureHeight then
+        width = savedImageSize * aspectRatio
+        height = savedImageSize
+    else
+        width = savedImageSize
+        height = savedImageSize / aspectRatio
+    end
+    return width, height
+end
+
+function PaintService.getSavedPaintingPath()
+    local currentPaintingIndex = config.mcm.savedPaintingIndex
+    return "textures\\jop\\saved\\" .. currentPaintingIndex .. ".png"
+end
+
+
 function PaintService.getPaintingIconPath(texture)
     return "jop\\p\\" .. texture
 end

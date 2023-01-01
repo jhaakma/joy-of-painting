@@ -45,10 +45,14 @@ end
 
 function Magick:compositeClone(overlay, width, height)
     local resizeText = (width and height) and string.format('-resize "%sx%s!" ', width, height) or ""
-    self.command = string.format('%s ( "%s" %s) +swap -composite ',
-        self.command, overlay, resizeText)
+    self.command = string.format(
+        '%s ( "%s" %s) +swap -composite ',
+        self.command,
+        overlay,
+        resizeText)
     return self
 end
+
 
 ---@return JOP.Magick
 --Resizes an image to a given width and height, maintaining aspect ratio.

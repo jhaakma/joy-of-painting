@@ -8,8 +8,9 @@
     commands to convert images.
 ]]
 ---@class JOP.Image
----@field screenshotPath string? The intial screenshot
----@field paintingPath string? The painting texture
+---@field screenshotPath string? The path to the intial screenshot
+---@field savedPaintingPath string The path to the full-res painting image
+---@field paintingPath string? The path to the resized painting texture used in-game
 ---@field iconPath string? The icon of the painting
 ---@field framedIconPath string? The framed icon of the painting
 ---@field canvasConfig JOP.Canvas? The canvasConfig used for the painting
@@ -78,6 +79,38 @@ function Image:takeScreenshot(callback)
         end
     }
 end
+
+function Image:incrementSavedPaintingIndex(callback)
+    local currentPaintingIndex = config.mcm.savedPaintingIndex
+    local nextPaintingIndex = currentPaintingIndex + 1
+    if nextPaintingIndex >= config.mcm.maxSavedPaintings then
+        nextPaintingIndex = 1
+    end
+    config.mcm.savedPaintingIndex = nextPaintingIndex
+    config.save()
+    logger:debug("Incremented saved painting index to %s", nextPaintingIndex)
+    if callback then callback() end
+end
+
+function Image:createPaintingTexture(callback)
+    --[[
+        - find the savedPaintingPath image
+        - resize it with :resizeHard(image.canvasConfig.textureWidth, image.canvasConfig.textureHeight)
+        - save it to image.paintingPath
+        ]]
+    local textureWidth = self.canvasConfig.textureWidth
+    local textureHeight = self.canvasConfig.textureHeight
+    logger:debug("[createPaintingTexture] Creating painting texture %s with width: %s height: %s",
+        self.paintingPath, textureWidth, textureHeight)
+    Magick:new("createPaintingTexture")
+        :magick()
+        :formatDDS()
+        :param(self.savedPaintingPath)
+        :resizeHard(textureWidth, textureHeight)
+        :param(self.paintingPath)
+        :execute(callback)
+end
+
 
 function Image:deleteScreenshot(callback)
     assert(self.screenshotPath, "image.screenshotPath is nil")

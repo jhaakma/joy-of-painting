@@ -59,6 +59,23 @@ local function registerMCM()
         end
     }
 
+    page:createSlider{
+        label = "Max Saved Paintings",
+        description = "Set the maximum number of full-resolution paintings saved to `Data Files/Textures/jop/saved/`. Once the maximum is reached, the oldest painting will be deleted to make room for the new one.",
+        min = 1,
+        max = 100,
+        step = 1,
+        jump = 10,
+        variable = mwse.mcm.createTableVariable{ id = "maxSavedPaintings", table = config.mcm },
+    }
+
+    page:createTextField{
+        label = "Saved Painting Size",
+        description = "Set the size of the saved paintings. This will be the length of the smallest dimension of the painting.",
+        variable = mwse.mcm.createTableVariable{ id = "savedPaintingSize", table = config.mcm },
+        numbersOnly = true,
+    }
+
     page:createDropdown{
         label = "Log Level",
         description = "Set the logging level for all JoyOfPainting Loggers.",
