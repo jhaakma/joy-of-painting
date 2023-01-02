@@ -18,6 +18,7 @@ local PaintService = require("mer.joyOfPainting.services.PaintService")
 -- Easel class
 ---@class JOP.Easel
 local Easel = {
+    classname = "Easel",
     ---@type string
     name = nil,
     ---@type tes3reference
@@ -165,6 +166,19 @@ function Easel:paint(artStyle)
     end
 end
 
+function Easel:rotateCanvas()
+    local rotatedId = self.painting:getRotatedId()
+    if not rotatedId then
+        logger:warn("No rotated canvas found for easel %s with canvas %s",
+            self.reference.id, self.data.canvasId)
+    end
+    self.data.canvasId = rotatedId
+    self.painting:doVisuals()
+    tes3.playSound{
+        reference = self.reference,
+        sound = "Item Misc Up",
+    }
+end
 
 function Easel:pickUp()
     logger:debug("TODO: Pick up easel")

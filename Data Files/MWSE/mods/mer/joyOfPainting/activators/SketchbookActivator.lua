@@ -2,13 +2,9 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("SketchbookActivator")
 local Sketchbook = require("mer.joyOfPainting.items.Sketchbook")
-
-local SketchbookActivator = {
-    name = "SketchbookActivator",
-}
-
+local Activator = require("mer.joyOfPainting.services.Activator")
 ---@param e equipEventData|activateEventData
-function SketchbookActivator.activate(e)
+local function activate(e)
     logger:debug("Activating sketchbook")
     local reference = e.target
     local item
@@ -25,4 +21,10 @@ function SketchbookActivator.activate(e)
     sketchbook:activate()
 end
 
-return SketchbookActivator
+Activator.registerActivator{
+    onActivate = activate,
+    isActivatorItem = function(e)
+       return config.sketchbooks[e.object.id:lower()] ~= nil
+    end,
+    blockStackActivate = true
+}

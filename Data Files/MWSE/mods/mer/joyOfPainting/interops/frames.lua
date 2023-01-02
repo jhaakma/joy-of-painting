@@ -23,11 +23,6 @@ local frameSizes = {
         height = 120
     }
 }
-
-for _, frameSize in ipairs(frameSizes) do
-    interop.registerFrameSize(frameSize)
-end
-
 local frames = {
     {
         id = "jop_frame_sq_01",
@@ -43,7 +38,10 @@ local frames = {
     },
 }
 event.register(tes3.event.initialized, function()
+    for _, frameSize in ipairs(frameSizes) do
+        interop.Frame.registerFrameSize(frameSize)
+    end
     for _, frame in ipairs(frames) do
-        interop.registerFrame(frame)
+        interop.Frame.registerFrame(frame)
     end
 end)

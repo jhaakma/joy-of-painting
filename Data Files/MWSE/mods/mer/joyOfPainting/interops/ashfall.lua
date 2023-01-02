@@ -1,8 +1,12 @@
+local ashfall = include("mer.ashfall.interop")
+if not ashfall then return end
+
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("AshfallInterop")
 local Easel = require("mer.joyOfPainting.items.Easel")
 local Painting = require("mer.joyOfPainting.items.Painting")
+local Dye = require("mer.joyOfPainting.items.Dye")
 local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 
@@ -23,12 +27,6 @@ local function canAttachCanvas(e)
     return Easel:new(e.reference):canAttachCanvas()
 end
 
-local bushcraftingSkillReq = {
-    {
-        skill = "Bushcrafting",
-        requirement = 20,
-    }
-}
 
 local recipes = {
     {
@@ -38,7 +36,7 @@ local recipes = {
             { material = "wood", count = 4 },
             { material = "rope", count = 1 },
         },
-        skillRequirements = bushcraftingSkillReq,
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
         category = "Painting",
         soundType = "wood",
         maxSteepness = 0.1,
@@ -50,7 +48,7 @@ local recipes = {
             { material = "wood", count = 4 },
             { material = "rope", count = 1 },
         },
-        skillRequirements = bushcraftingSkillReq,
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
         category = "Painting",
         soundType = "wood",
         maxSteepness = 0.1,
@@ -62,7 +60,7 @@ local recipes = {
             { material = "wood", count = 4 },
             { material = "rope", count = 1 },
         },
-        skillRequirements = bushcraftingSkillReq,
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
         category = "Painting",
         soundType = "wood",
         maxSteepness = 0.1,
@@ -74,7 +72,7 @@ local recipes = {
             { material = "wood", count = 6 },
             { material = "rope", count = 4}
         },
-        skillRequirements = bushcraftingSkillReq,
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
         destroyCallback = function(_recipe, e)
             local reference = e.reference
             local easel = Easel:new(reference)
@@ -117,27 +115,11 @@ local recipes = {
                     end
                 end
             },
-            { --DISABLED
-                text = "Scrape Painting",
+            {
+                text = "Rotate Canvas",
                 callback = function(e)
-                    local safeRef = tes3.makeSafeObjectHandle(e.reference)
-                    if safeRef == nil then
-                        logger:warn("Unable to scrape painting: Easel reference is no longer valid")
-                        return
-                    end
-                    timer.delayOneFrame(function()
-                        UIHelper.scrapePaintingMessage(function()
-                            if safeRef:valid() then
-                                Painting:new{
-                                    reference = safeRef:getObject()
-                                }:cleanCanvas()
-                            else
-                                logger:warn("Unable to clean canvas: Easel reference is no longer valid")
-                            end
-                        end)
-                    end)
+                    Easel:new(e.reference):rotateCanvas()
                 end,
-                showRequirements = function() return false end --hasPainting,
             },
             {
                 text = "Attach Canvas",
@@ -179,23 +161,11 @@ local recipes = {
         rotationAxis = 'y'
     },
     {
-        id = "jop_canvas_tall_01",
-        description = "A tall canvas. Place on an easel to start painting.",
-        category = "Painting",
-        soundType = "fabric",
-        skillRequirements = bushcraftingSkillReq,
-        materials = {
-            { material = "fibre", count = 20 },
-            { material = "resin", count = 1 }
-        },
-        rotationAxis = 'y'
-    },
-    {
         id = "jop_canvas_wide_01",
         description = "A wide canvas. Place on an easel to start painting.",
         category = "Painting",
         soundType = "fabric",
-        skillRequirements = bushcraftingSkillReq,
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
         materials = {
             { material = "fibre", count = 20 },
             { material = "resin", count = 1 }
@@ -207,7 +177,7 @@ local recipes = {
         description = "A sketchbook to store drawings and sketches.",
         category = "Painting",
         soundType = "leather",
-        skillRequirements = bushcraftingSkillReq,
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
         materials = {
             { material = "leather", count = 1 },
             { material = "paper", count = 2 }
@@ -220,45 +190,77 @@ local recipes = {
         description = "A brush for painting.",
         category = "Painting",
         soundType = "wood",
-        skillRequirements = bushcraftingSkillReq,
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.apprentice},
         materials = {
             { material = "wood", count = 1 },
             { material = "fibre", count = 1 },
         },
+        rotationAxis = 'x'
     },
 
     {
         id = "jop_oil_palette_01",
-        description = "A palette for mixing oil paints.",
+        description = "A palette for storing and mixing oil paints.",
         category = "Painting",
         soundType = "wood",
-        skillRequirements = bushcraftingSkillReq,
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.apprentice},
         materials = {
             { material = "wood", count = 2 },
-            { material = "ingred_fire_salts_01", count = 1 },
-            { material = "ingred_frost_salts_01", count = 1 },
-            { material = "ingred_ash_salts_01", count = 1 },
         },
-        rotationAxis = 'y'
-    }
+        rotationAxis = 'x'
+    },
 
-    -- {
-    --     id = "jop_coal_sticks_01",
-    --     description = "Carved sticks of charcoal used for sketching.",
-    --     category = "Painting",
-    --     soundType = "carve",
-    --     skillRequirements = bushcraftingSkillReq,
-    --     materials = {
-    --         { material = "coal", count = 4 }
-    --     },
-    --     toolRequirements = {
-    --         {
-    --             tool = "knife",
-    --             equipped = true,
-    --             conditionPerUse = 1
-    --         }
-    --     },
-    -- }
+    {
+        id = "jop_water_palette_01",
+        description = "A palette for storing and mixing watercolor paints.",
+        category = "Painting",
+        soundType = "wood",
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.apprentice},
+        materials = {
+            { material = "wood", count = 2 },
+        },
+        rotationAxis = 'x'
+    },
+
+    {
+        id = "jop_dye_blue",
+        description = "Blue dye for refilling a watercolor palette.",
+        category = "Painting",
+        soundType = "carve",
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.apprentice},
+        customRequirements = Dye.customRequirements,
+        materials = {
+            { material = "blue_pigment", count = 1 },
+        },
+        craftCallback = Dye.craftCallback
+    },
+
+    {
+        id = "jop_dye_red",
+        description = "Red dye for refilling a watercolor palette.",
+        category = "Painting",
+        soundType = "carve",
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.apprentice},
+        customRequirements = Dye.customRequirements,
+        materials = {
+            { material = "red_pigment", count = 1 },
+        },
+        craftCallback = Dye.craftCallback
+    },
+
+    {
+        id = "jop_dye_yellow",
+        description = "Yellow dye for refilling a watercolor palette.",
+        category = "Painting",
+        soundType = "carve",
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.apprentice},
+        customRequirements = Dye.customRequirements,
+        materials = {
+            { material = "yellow_pigment", count = 1 },
+        },
+        craftCallback = Dye.craftCallback
+    },
+
 }
 
 local materials = {
@@ -270,7 +272,49 @@ local materials = {
             "jop_paper_01",
         }
     },
+    {
+        id = "red_pigment",
+        name = "Red Pigment",
+        ids = {
+            "ingred_fire_petal_01",
+            "ingred_heather_01",
+            "ingred_holly_01",
+            "ingred_red_lichen_01",
+            "ab_ingflor_bloodgrass_01",
+            "ab_ingflor_bloodgrass_02",
+            "mr_berries",
+            "ingred_comberry_01",
+            "Ingred_timsa-come-by_01",
+            "Ingred_noble_sedge_01",
+        },
+    },
+    {
+        id = "blue_pigment",
+        name = "Blue Pigment",
+        ids = {
+            "ingred_bc_coda_flower",
+            "ingred_belladonna_01",
+            "ingred_stoneflower_petals_01",
+            "t_ingflor_lavender_01",
+            "ab_ingflor_bluekanet_01",
+            "ingred_wolfsbane_01",
+            "Ingred_meadow_rye_01",
+        },
+    },
+    {
+        id = "yellow_pigment",
+        name = "Yellow Pigment",
+        ids = {
+            "ingred_bittergreen_petals_01",
+            "ingred_gold_kanet_01",
+            "ingred_golden_sedge_01",
+            "ingred_timsa-come-by_01",
+            "ingred_wickwheat_01",
+            "ingred_willow_anther_01",
+        },
+    }
 }
+
 local CraftingFramework = include("CraftingFramework")
 if CraftingFramework then
     CraftingFramework.Material:registerMaterials(materials)

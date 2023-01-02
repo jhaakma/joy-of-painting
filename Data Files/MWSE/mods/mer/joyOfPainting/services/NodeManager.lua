@@ -1,3 +1,7 @@
+local common = require("mer.joyOfPainting.common")
+local config = require("mer.joyOfPainting.config")
+local logger = common.createLogger("NodeManager")
+local ReferenceManager = require("mer.joyOfPainting.services.ReferenceManager")
 --[[
     Enums for node names
 ]]
@@ -57,5 +61,73 @@ function NodeManager.moveOriginToAttachPoint(node)
         node.scale = node.scale * attachPoint.scale
     end
 end
+
+---@class JOP.Switch
+---@field id string The id of the switch
+---@field switchName string The name of the switch node
+---@field additionalReqs function The condition to check if the switch should be active
+---@field requirements function The full requirements check including whether the switch node exists
+---@field getActiveNode function The function to determine which node should be active
+
+---@type table<string, JOP.Switch>
+NodeManager.switches = {}
+
+
+---@param e JOP.Switch
+function NodeManager.registerSwitch(e)
+    common.logAssert(type(e.switchName) == "string", "switchName must be a string")
+    common.logAssert(type(e.getActiveNode) == "function", "getActiveNode must be a function")
+    e.requirements = function(_, reference)
+        local hasSceneNode = reference and reference.sceneNode
+        local hasSwitch = hasSceneNode and reference.sceneNode:getObjectByName(e.switchName) ~= nil
+        local meetsRequirements = e.additionalReqs == nil or e.additionalReqs(reference)
+        return hasSwitch and meetsRequirements
+    end
+
+    ReferenceManager.registerReferenceController{
+        id = e.id,
+        requirements = e.requirements
+    }
+
+    logger:debug("Registering switch %s", e.switchName)
+    NodeManager.switches[e.id] = e
+end
+
+---@param switch JOP.Switch
+function NodeManager.processSwitch(switch, reference)
+
+    logger:debug("Processing switch %s", switch.switchName)
+    local sceneNode = reference.sceneNode
+    local switchNode = sceneNode:getObjectByName(switch.switchName)
+    if not switchNode then return end
+    local activeNode = switchNode:getObjectByName(switch.getActiveNode{
+        reference = reference,
+        switchNode = switchNode
+    })
+    if not activeNode then return end
+    local activeIndex = NodeManager.getIndex(switchNode, activeNode.name)
+    switchNode.switchIndex = activeIndex
+end
+
+function NodeManager.updateSwitches()
+    for _, switch in pairs(NodeManager.switches) do
+        ReferenceManager.iterateReferences(switch.id, function(reference)
+            NodeManager.processSwitch(switch, reference)
+        end)
+    end
+end
+
+function NodeManager.updateSwitch(id)
+    logger:debug("Updating switch %s", id)
+    local switch = NodeManager.switches[id]
+    if not switch then
+        logger:warn("Switch %s not found", id)
+        return
+    end
+    ReferenceManager.iterateReferences(switch.id, function(reference)
+        NodeManager.processSwitch(switch, reference)
+    end)
+end
+
 
 return NodeManager

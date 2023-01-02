@@ -6,6 +6,7 @@ local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 
 ---@class JOP.Sketchbook
 local Sketchbook = {
+    classname = "Sketchbook",
     ---@type tes3reference
     reference = nil,
 	---@type JOP.tes3itemChildren
@@ -27,6 +28,12 @@ Sketchbook.__index = Sketchbook
 ---@field reference tes3reference?
 ---@field item JOP.tes3itemChildren
 ---@field itemData tes3itemData?
+
+function Sketchbook.registerSketchbook(e)
+    common.logAssert(logger, type(e.id) == "string", "id must be a string")
+    e.id = e.id:lower()
+    config.sketchbooks[e.id] = table.copy(e, {})
+end
 
 ---@param e JOP.Sketchbook.params
 function Sketchbook:new(e)

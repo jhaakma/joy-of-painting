@@ -6,6 +6,10 @@ local brushes = {
         brushType = "quill",
     },
     {
+        id = "sx2_quillSword",
+        brushType = "quill",
+    },
+    {
         id = "jop_brush_01",
         brushType = "brush",
     }
@@ -22,8 +26,8 @@ local brushTypes = {
     }
 }
 for _, brush in ipairs(brushTypes) do
-    interop.registerBrushType(brush)
+    interop.Brush.registerBrushType(brush)
 end
 for _, brush in ipairs(brushes) do
-    interop.registerBrush(brush)
+    interop.Brush.registerBrush(brush)
 end

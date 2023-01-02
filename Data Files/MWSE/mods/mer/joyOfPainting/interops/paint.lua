@@ -1,12 +1,13 @@
 local interop = require("mer.joyOfPainting.interop")
 
-local paintItems = {
+local paletteItems = {
     {
         id = "ashfall_ingred_coal_01",
         paintTypes = {
             charcoal = true,
         },
         breaks = true,
+        fullByDefault = true,
         uses = 5,
     },
     {
@@ -15,6 +16,7 @@ local paintItems = {
             charcoal = true,
         },
         breaks = true,
+        fullByDefault = true,
         uses = 5,
     },
     {
@@ -23,6 +25,7 @@ local paintItems = {
             charcoal = true,
         },
         breaks = true,
+        fullByDefault = true,
         uses = 20,
     },
     {
@@ -30,22 +33,22 @@ local paintItems = {
         paintTypes = {
             ink = true,
         },
+        fullByDefault = true,
         uses = 20,
     },
     {
-        id = "jop_watercolor_palette_01",
+        id = "jop_water_palette_01",
         paintTypes = {
             watercolor = true,
         },
-        uses = 20
+        uses = 15,
     },
     {
         id = "Jop_oil_palette_01",
         paintTypes = {
             oil = true,
-            watercolor = true,
         },
-        uses = 15
+        uses = 10
     },
 }
 
@@ -72,9 +75,9 @@ local paintTypes = {
     }
 }
 
-for _, item in ipairs(paintItems) do
-    interop.registerPaintItem(item)
+for _, item in ipairs(paletteItems) do
+    interop.Palette.registerPaletteItem(item)
 end
 for _, paintType in ipairs(paintTypes) do
-    interop.registerPaintType(paintType)
+    interop.Palette.registerPaintType(paintType)
 end

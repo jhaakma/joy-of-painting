@@ -54,7 +54,7 @@ local canvases = {
 event.register(tes3.event.initialized, function()
     ---@type JOP.ArtStyle[]
     for _, canvas in ipairs(canvases) do
-        interop.registerCanvas(canvas)
+        interop.Painting.registerCanvas(canvas)
     end
 end)
 

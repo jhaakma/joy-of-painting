@@ -7,10 +7,7 @@ local logger = common.createLogger("PaperActivator")
 local Painting = require("mer.joyOfPainting.items.Painting")
 local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
-
-local PaperActivator = {
-    name = "PaperActivator",
-}
+local Activator = require("mer.joyOfPainting.services.Activator")
 
 local function paperPaint(reference, artStyleName)
     local painting = Painting:new{
@@ -73,7 +70,7 @@ local function paperPaint(reference, artStyleName)
 end
 
 ---@param e equipEventData|activateEventData
-function PaperActivator.activate(e)
+local function activate(e)
     local painting = Painting:new{
         reference = e.target,
         item = e.item,
@@ -112,4 +109,21 @@ function PaperActivator.activate(e)
     }
 end
 
-return PaperActivator
+Activator.registerActivator{
+    onActivate = activate,
+    isActivatorItem = function(e)
+        --For now, only activate paper when its in the world
+        if not e.target then return false end
+        local painting = Painting:new{
+            reference = e.target,
+            item = e.item,
+            itemData = e.itemData,
+        }
+        local canvasConfig = painting:getCanvasConfig()
+        if canvasConfig and not canvasConfig.requiresEasel then
+            return true
+        end
+        return false
+    end,
+    blockStackActivate = true
+}

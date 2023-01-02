@@ -263,9 +263,9 @@ local artStyles = {
 
 event.register(tes3.event.initialized, function()
     for _, control in ipairs(controls) do
-        interop.registerControl(control)
+        interop.ArtStyle.registerControl(control)
     end
     for _, artStyle in ipairs(artStyles) do
-        interop.registerArtStyle(artStyle)
+        interop.ArtStyle.registerArtStyle(artStyle)
     end
 end)

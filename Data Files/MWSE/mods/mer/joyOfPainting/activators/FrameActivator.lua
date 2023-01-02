@@ -2,21 +2,10 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("FrameActivator")
 local Painting = require("mer.joyOfPainting.items.Painting")
-
-local FrameActivator = {
-    name = "FrameActivator",
-}
---[[
-    Menu options:
-    Add Painting
-    Remove Painting
-    View Painting
-    Take Frame
-    Cancel
-]]
+local Activator = require("mer.joyOfPainting.services.Activator")
 
 ---@param e equipEventData|activateEventData
-function FrameActivator.activate(e)
+local function activate(e)
 
     local painting = Painting:new{
         reference = e.target,
@@ -24,12 +13,15 @@ function FrameActivator.activate(e)
         itemData = e.itemData,
     }
 
-    local hasCanvas = painting:hasCanvasData()
     local isPainted = painting:hasPaintingData()
-    local safeRef = tes3.makeSafeObjectHandle(painting.reference)
-    local frameConfig = config.frames[painting.reference.object.id:lower()]
-    if safeRef == nil then
-        logger:warn("Failed to make safe handle for %s", painting.reference.object.id)
+    local frameConfig = config.frames[painting.item.id:lower()]
+
+    local safeRef
+    if e.target then
+        safeRef = tes3.makeSafeObjectHandle(painting.reference)
+        if safeRef == nil then
+            logger:warn("Failed to make safe handle for %s", painting.reference.object.id)
+        end
     end
     tes3ui.showMessageMenu{
         message = "Frame Menu",
@@ -38,12 +30,12 @@ function FrameActivator.activate(e)
                 text = "Add Painting",
                 callback = function()
                     timer.delayOneFrame(function()
-                        if not safeRef:valid() then
+                        if safeRef and not safeRef:valid() then
                             logger:warn("Skipping add painting because reference is invalid")
                             return
                         end
 
-                        local ref = safeRef:getObject()
+                        local ref = safeRef and safeRef:getObject()
 
                         logger:debug("Add Painting")
                         tes3ui.showInventorySelectMenu{
@@ -83,7 +75,9 @@ function FrameActivator.activate(e)
                             callback = function(e2)
                                 if not e2.item then return end
                                 painting = Painting:new{
-                                    reference = ref
+                                    reference = ref,
+                                    item = e.item,
+                                    itemData = e.itemData,
                                 }
                                 painting:attachCanvas(e2.item, e2.itemData)
                                 --Remove the canvas from the player's inventory
@@ -100,40 +94,45 @@ function FrameActivator.activate(e)
                     end)
                 end,
                 showRequirements = function()
-                    return not hasCanvas
+                    return not isPainted
                 end,
             },
             {
                 text = "Remove Painting",
                 callback = function()
                     timer.delayOneFrame(function()
-                        if not safeRef:valid() then
+                        if safeRef and not safeRef:valid() then
                             logger:warn("Skipping remove painting because reference is invalid")
                             return
                         end
-                        local ref = safeRef:getObject()
+                        local ref = safeRef and safeRef:getObject()
 
                         logger:debug("Remove Painting")
                         painting = Painting:new{
-                            reference = ref
+                            reference = ref,
+                            item = e.item,
+                            itemData = e.itemData,
                         }
                         painting:takeCanvas()
                     end)
                 end,
                 showRequirements = function()
-                    return hasCanvas
+                    return isPainted
                 end,
             },
             {
                 text = "View Painting",
                 callback = function()
                     timer.delayOneFrame(function()
-                        if not safeRef:valid() then
+                        if safeRef and not safeRef:valid() then
                             logger:warn("Skipping view painting because reference is invalid")
                             return
                         end
+                        local ref = safeRef and safeRef:getObject()
                         Painting:new{
-                            reference = safeRef:getObject()
+                            reference = ref,
+                            item = e.item,
+                            itemData = e.itemData,
                         }:paintingMenu()
                     end)
                 end,
@@ -145,15 +144,17 @@ function FrameActivator.activate(e)
                 text = "Take Frame",
                 callback = function()
                     timer.delayOneFrame(function()
-                        if not safeRef:valid() then
+                        if safeRef and not safeRef:valid() then
                             logger:warn("Skipping take frame because reference is invalid")
                             return
                         end
-                        local ref = safeRef:getObject()
+                        local ref = safeRef and safeRef:getObject()
 
                         logger:debug("Take Frame")
                         painting = Painting:new{
-                            reference = ref
+                            reference = ref,
+                            item = e.item,
+                            itemData = e.itemData,
                         }
                         painting:takeCanvas()
                         common.pickUp(ref)
@@ -170,4 +171,11 @@ function FrameActivator.activate(e)
     }
 end
 
-return FrameActivator
+Activator.registerActivator{
+    onActivate = activate,
+    isActivatorItem = function(e)
+        if not e.target then return false end
+        return config.frames[e.object.id:lower()] ~= nil
+    end,
+    blockStackActivate = true
+}

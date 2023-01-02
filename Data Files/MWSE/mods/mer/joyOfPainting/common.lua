@@ -45,4 +45,14 @@ function common.closeEnough(reference)
     return reference.position:distance(tes3.player.position) < tes3.getPlayerActivationDistance()
 end
 
+function common.logAssert(logger, condition, message)
+    if not condition then
+        logger:error(message)
+        assert(condition, message)
+    end
+end
+
+function common.isLuaFile(file) return file:sub(-4, -1) == ".lua" end
+function common.isInitFile(file) return file == "init.lua" end
+
 return common

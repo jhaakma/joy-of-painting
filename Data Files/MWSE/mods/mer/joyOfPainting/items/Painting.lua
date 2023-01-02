@@ -14,6 +14,7 @@ local logger = common.createLogger("Painting")
 
 ---@class JOP.Painting
 local Painting = {
+    classname = "Painting",
     ---@type string
     id = nil,
     ---@type tes3reference
@@ -36,6 +37,49 @@ Painting.canvasFields = {
     "location",
     "artStyle",
 }
+---@class JOP.Painting.params
+---@field reference tes3reference
+---@field item JOP.tes3itemChildren
+---@field itemData tes3itemData
+
+---@class JOP.Canvas
+---@field canvasId string The id of the canvas. Must be unique.
+---@field rotatedId string? The id of the canvas to use when rotated. If not provided, the canvas will not be rotatable.
+---@field textureWidth number The width of the texture to be used for the canvas.
+---@field textureHeight number The height of the texture to be used for the canvas.
+---@field frameSize string The size of the frame to use for the canvas. Must be one of "sqaure", "tall", or "wide"
+---@field valueModifier number The value modifier for the painting
+---@field canvasTexture string The texture to use for the canvas
+---@field meshOverride string? An optional mesh override for the canvas
+---@field requiresEasel boolean? Whether the canvas requires an easel to be painted on
+---@field animSpeed number The speed of the painting animation
+---@field animSound string The sound to play while painting
+
+---@param e JOP.Canvas
+function Painting.registerCanvas(e)
+    common.logAssert(logger, type(e.canvasId) == "string", "id must be a string")
+    common.logAssert(logger, type(e.textureHeight) == "number", "textureHeight must be a number")
+    common.logAssert(logger, type(e.textureHeight) == "number", "textureHeight must be a number")
+    common.logAssert(logger, type(e.frameSize) == "string", "frameSize must be a string")
+    common.logAssert(logger, type(e.valueModifier) == "number", "valueModifier must be a number")
+    common.logAssert(logger, type(e.canvasTexture) == "string", "canvasTexture must be a string")
+    common.logAssert(logger, type(e.animSpeed) == "number", "animSpeed must be a number")
+    common.logAssert(logger, type(e.animSound) == "string", "animSound must be a string")
+
+    logger:debug("Registering canvas %s with frameSize %s", e.canvasId, e.frameSize)
+    local id = e.canvasId:lower()
+    config.canvases[id] = table.copy(e, {})
+    if e.meshOverride then
+        local obj = tes3.getObject(id)
+        if not obj then
+            logger:error("Could not find object %s", id)
+            return
+        end
+        local originalMesh = "meshes\\" .. obj.mesh:lower()
+        logger:debug("Registering mesh override for %s: %s -> %s", id, originalMesh, e.meshOverride)
+        config.meshOverrides[originalMesh] = e.meshOverride:lower()
+    end
+end
 
 function Painting.getCanvasObject(dataHolder)
     --get canvas object from id
@@ -43,7 +87,6 @@ function Painting.getCanvasObject(dataHolder)
         return tes3.getObject(dataHolder.data.joyOfPainting.canvasId)
     end
 end
-
 
 function Painting.getPaintingOrCanvasName(dataHolder)
     local paintingData = dataHolder
@@ -56,12 +99,6 @@ function Painting.getPaintingOrCanvasName(dataHolder)
         return Painting.getCanvasObject(dataHolder).name
     end
 end
-
-
----@class JOP.Painting.params
----@field reference tes3reference
----@field item JOP.tes3itemChildren
----@field itemData tes3itemData
 
 ---@param e JOP.Painting.params
 ---@return JOP.Painting
@@ -192,6 +229,11 @@ function Painting:hasCanvasData()
     return self.data.canvasId ~= nil
 end
 
+function Painting:isCanvas()
+    return self:getCanvasConfig() ~= nil
+end
+
+---@return JOP.Canvas
 function Painting:getCanvasConfig()
     ---@type JOP.Canvas
     local canvasConfig = config.canvases[self.data.canvasId]
@@ -230,6 +272,56 @@ function Painting:doCanvasVisuals()
     end
 end
 
+function Painting:isRotatable()
+    local canvasConfig = self:getCanvasConfig()
+    return canvasConfig and canvasConfig.rotatedId ~= nil
+        and not self:hasPaintingData()
+end
+
+function Painting:getRotatedId()
+    local canvasConfig = self:getCanvasConfig()
+    return canvasConfig and canvasConfig.rotatedId
+end
+
+function Painting:rotate()
+    local rotatedId = self:getRotatedId()
+    if not rotatedId then
+        logger:error("Tried to rotate a canvas that has no rotated Id")
+    end
+    logger:debug("Rotating canvas from %s to %s", self.item.id, rotatedId)
+    if self.reference then
+        --delete current reference and replace with rotated version
+        local newRef = tes3.createReference{
+            object = rotatedId, ---@type any
+            position = self.reference.position,
+            orientation = self.reference.orientation,
+            cell = self.reference.cell,
+            scale = self.reference.scale,
+        }
+        self.reference:delete()
+
+    else
+        --Remove old item from inventory and add rotated version
+        tes3.addItem{
+            item = rotatedId,---@type any\
+            itemData = self.dataHolder,
+            count = 1,
+            reference = tes3.player,
+            playSound = false,
+        }
+        tes3.removeItem{
+            item = self.item.id,
+            itemData = self.dataHolder,
+            count = 1,
+            reference = tes3.player,
+            playSound = false,
+        }
+    end
+    tes3.playSound{
+        reference = self.reference,
+        sound = "Item Misc Up",
+    }
+end
 
 function Painting:resetPaintTime()
     local now = tes3.getSimulationTimestamp(false)

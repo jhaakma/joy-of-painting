@@ -5,5 +5,5 @@ local sketchbooks = {
     }
 }
 for _, sketchbook in ipairs(sketchbooks) do
-    interop.registerSketchbook(sketchbook)
+    interop.Sketchbook.registerSketchbook(sketchbook)
 end

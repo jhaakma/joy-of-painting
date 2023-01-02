@@ -16,7 +16,6 @@ local function manageSceneNodeCreated(e)
         painting:doVisuals()
     end
 end
-
 event.register("referenceSceneNodeCreated", manageSceneNodeCreated)
 
 --- @param e meshLoadEventData

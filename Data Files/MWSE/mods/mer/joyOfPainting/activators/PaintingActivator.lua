@@ -2,19 +2,10 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("PaintingActivator")
 local Painting = require("mer.joyOfPainting.items.Painting")
----@param e equipEventData
-local function onEquip(e)
-
-end
-event.register(tes3.event.equip, onEquip)
-
-
-local PaintingActivator = {
-    name = "PaintingActivator",
-}
+local Activator = require("mer.joyOfPainting.services.Activator")
 
 ---@param e equipEventData|activateEventData
-function PaintingActivator.activate(e)
+local function activate(e)
     local painting = Painting:new{
         reference = e.target,
         item = e.item,
@@ -28,6 +19,18 @@ function PaintingActivator.activate(e)
                 callback = function()
                     painting:paintingMenu()
                 end,
+                showRequirements = function()
+                    return painting:hasPaintingData()
+                end
+            },
+            {
+                text = "Rotate",
+                callback = function()
+                    painting:rotate()
+                end,
+                showRequirements = function()
+                    return painting:isRotatable()
+                end
             },
             {
                 text = "Pick Up",
@@ -81,4 +84,17 @@ function PaintingActivator.activate(e)
     }
 end
 
-return PaintingActivator
+Activator.registerActivator{
+    onActivate = activate,
+    isActivatorItem = function(e)
+        local painting = Painting:new{
+            reference = e.target,
+            item = e.item,
+            itemData = e.itemData,
+        }
+
+        return painting:isCanvas()
+            and ( painting:hasPaintingData()
+            or painting:isRotatable())
+    end
+}

@@ -1,9 +1,26 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("ArtStyle")
+local Palette = require("mer.joyOfPainting.items.Palette")
 
+---@class JOP.ArtStyle.control
+---@field id string The id of the control
+---@field uniform string the name of the external variable in the shader being manipulated
+---@field shader string The shader to use for this control
+---@field name string The name of the control (shown in menu)
+---@field sliderDefault number The default value for the slider
+---@field shaderMin number The minimum value for the shader variable
+---@field shaderMax number The maximum value for the shader variable
 
-local Paint = require("mer.joyOfPainting.items.Paint")
+---@class JOP.ArtStyle.data
+---@field name string The name of the art style
+---@field magickCommand function A function that returns a Magick command to execute
+---@field shaders string[] A list of shaders to apply to the painting
+---@field controls string[] A list of controls to use for this art style
+---@field valueModifier number The value modifier for the painting
+---@field animAlphaTexture string The texture used to control the alpha during painting animation
+---@field paintType string The type of palette to use for this art style
+---@field requiresEasel boolean? Whether the art style requires an easel to be painted on
 
 ---@class JOP.ArtStyle
 ---@field name string The name of the art style
@@ -15,8 +32,33 @@ local Paint = require("mer.joyOfPainting.items.Paint")
 ---@field requiresEasel boolean? Whether the art style requires an easel to be painted on
 ---@field paintType JOP.PaintType? The brush type to use for this art style
 ---@field brushType JOP.BrushType? The brush type to use for this art style
-local ArtStyle = {}
+local ArtStyle = {
+    classname = "ArtStyle"
+}
 ArtStyle.__index = ArtStyle
+
+---@param e JOP.ArtStyle.data
+function ArtStyle.registerArtStyle(e)
+    common.logAssert(logger, type(e.name) == "string", "name must be a string")
+    common.logAssert(logger, type(e.magickCommand) == "function", "magickCommand must be a function")
+    common.logAssert(logger, type(e.shaders) == "table", "shaders must be a table")
+    common.logAssert(logger, type(e.valueModifier) == "number", "valueModifier must be a number")
+    logger:debug("Registering art style %s", e.name)
+    config.artStyles[e.name] = e
+end
+
+---@param e JOP.ArtStyle.control
+function ArtStyle.registerControl(e)
+    common.logAssert(logger, type(e.id) == "string", "id must be a string")
+    common.logAssert(logger, type(e.shader) == "string", "shader must be a string")
+    common.logAssert(logger, type(e.name) == "string", "name must be a string")
+    common.logAssert(logger, type(e.sliderDefault) == "number", "sliderDefault must be a number")
+    common.logAssert(logger, type(e.shaderMin) == "number", "shaderMin must be a number")
+    common.logAssert(logger, type(e.shaderMax) == "number", "shaderMax must be a number")
+    logger:debug("Registering control %s", e.id)
+    config.controls[e.id] = table.copy(e, {})
+end
+
 
 ---@param data JOP.ArtStyle.data
 function ArtStyle:new(data)
@@ -67,7 +109,7 @@ function ArtStyle:playerHasBrush()
     --search area
     for _, cell in pairs(tes3.getActiveCells()) do
         for reference in cell:iterateReferences() do
-            if self:getPaints()[reference.object.id:lower()] and not common.isStack(reference) then
+            if self:getBrushes()[reference.object.id:lower()] and not common.isStack(reference) then
                 if reference.position:distance(tes3.player.position) < tes3.getPlayerActivationDistance() then
                     logger:debug("Found nearby brush reference: %s", reference.object.id)
                     return true
@@ -80,18 +122,18 @@ function ArtStyle:playerHasBrush()
 end
 
 function ArtStyle:isValidPaint(id)
-    local paintData = config.paintItems[id:lower()]
-    if paintData then
-        return paintData.paintTypes[self.paintType.id] ~= nil
+    local paletteItem = config.paletteItems[id:lower()]
+    if paletteItem then
+        return paletteItem.paintTypes[self.paintType.id] ~= nil
     end
 end
 
----@return table<string, JOP.Paint>
-function ArtStyle:getPaints()
+---@return table<string, JOP.Palette>
+function ArtStyle:getPalettes()
     local paints = {}
-    for paintId, paintData in pairs(config.paintItems) do
-        if self:isValidPaint(paintId) then
-            paints[paintId] = paintData
+    for paletteId, paletteItem in pairs(config.paletteItems) do
+        if self:isValidPaint(paletteId) then
+            paints[paletteId] = paletteItem
         end
     end
     return paints
@@ -100,15 +142,15 @@ end
 function ArtStyle:playerHasPaint()
     logger:debug("Checking playerHasPaint for %s", self.name)
     if not self.paintType then
-        logger:debug("No paint required for this art style")
+        logger:debug("No palette required for this art style")
         return true
     end
     --Search inventory
-    for paintId, paintData in pairs(self:getPaints()) do
-        logger:debug("Checking paint: %s", paintId)
-        local itemStack = tes3.player.object.inventory:findItemStack(paintId)
+    for paletteId, _ in pairs(self:getPalettes()) do
+        logger:debug("Checking palette: %s", paletteId)
+        local itemStack = tes3.player.object.inventory:findItemStack(paletteId)
         if itemStack then
-            logger:debug("Found paint: %s", paintId)
+            logger:debug("Found palette: %s", paletteId)
             --if no variables, then treat it as full
             if not itemStack.variables then
                 logger:debug("No variables, treating as full")
@@ -121,12 +163,13 @@ function ArtStyle:playerHasPaint()
             end
 
             for _, itemData in ipairs(itemStack.variables) do
-                local paint = Paint:new{
+                local palette = Palette:new{
                     item = itemStack.object,
                     itemData = itemData
                 }
-                if paint.data.uses > 0 then
-                    logger:debug("%d uses remaining", paint.data.uses)
+                local remaining = palette:getRemainingUses()
+                if remaining > 0 then
+                    logger:debug("%d uses remaining", remaining)
                     return true
                 end
             end
@@ -137,11 +180,11 @@ function ArtStyle:playerHasPaint()
         for reference in cell:iterateReferences() do
             if self:isValidPaint(reference.object.id) and not common.isStack(reference) then
                 if common.closeEnough(reference) then
-                    local paint = Paint:new({
+                    local palette = Palette:new({
                         reference = reference
                     })
-                    if paint.data.uses > 0 then
-                        logger:debug("Found nearby paint reference: %s", reference.object.id)
+                    if palette:getRemainingUses() > 0 then
+                        logger:debug("Found nearby palette reference: %s", reference.object.id)
                         return true
                     end
                 end
@@ -153,26 +196,26 @@ end
 
 
 function ArtStyle:usePaint()
-    logger:debug("Using up paint for %s", self.name)
-    ---@type JOP.Paint.params[]
+    logger:debug("Using up palette for %s", self.name)
+    ---@type JOP.Palette.params[]
     local usedStacks = {}
-    ---@type JOP.Paint.params[]
+    ---@type JOP.Palette.params[]
     local newStacks = {}
 
-    for paintId, paintData in pairs(self:getPaints()) do
-        local itemStack = tes3.player.object.inventory:findItemStack(paintId)
+    for paletteId, paletteItem in pairs(self:getPalettes()) do
+        local itemStack = tes3.player.object.inventory:findItemStack(paletteId)
         if itemStack then
             if itemStack.variables then
                 for _, itemData in ipairs(itemStack.variables) do
                     if itemData.data.joyOfPainting then
                         table.insert(usedStacks, {
-                            paintData = paintData,
+                            paletteItem = paletteItem,
                             item = itemStack.object,
                             itemData = itemData
                         })
                     else
                         table.insert(newStacks, {
-                            paintData = paintData,
+                            paletteItem = paletteItem,
                             item = itemStack.object,
                             itemData = itemData
                         })
@@ -180,7 +223,7 @@ function ArtStyle:usePaint()
                 end
             else
                 table.insert(newStacks, {
-                    paintData = paintData,
+                    paletteItem = paletteItem,
                     item = itemStack.object
                 })
             end
@@ -188,16 +231,16 @@ function ArtStyle:usePaint()
     end
     --prioritise used stacks
     for _, stackData in ipairs(usedStacks) do
-        local paint = Paint:new(stackData)
-        if paint:use() then
+        local palette = Palette:new(stackData)
+        if palette:use() then
             return
         end
     end
     --then new stacks
     for _, stackData in ipairs(newStacks) do
-        local paint = Paint:new(stackData)
+        local palette = Palette:new(stackData)
         logger:debug("new stack: %s", json.encode(stackData, {indent = true}))
-        if paint:use() then
+        if palette:use() then
             return
         end
     end
@@ -206,13 +249,13 @@ function ArtStyle:usePaint()
         for reference in cell:iterateReferences() do
             if self:isValidPaint(reference.object.id) and not common.isStack(reference) then
                 if common.closeEnough(reference) then
-                    logger:debug("Found nearby paint reference: %s", reference.object.id)
-                    local paint = Paint:new({
+                    logger:debug("Found nearby palette reference: %s", reference.object.id)
+                    local palette = Palette:new({
                         item = reference.object,
                         reference = reference
                     })
 
-                    if paint:use() then
+                    if palette:use() then
                         return
                     end
                 end
@@ -220,7 +263,7 @@ function ArtStyle:usePaint()
         end
     end
 
-    logger:warn("No paint found to use")
+    logger:warn("No palette found to use")
 end
 
 function ArtStyle:getButton(callback)

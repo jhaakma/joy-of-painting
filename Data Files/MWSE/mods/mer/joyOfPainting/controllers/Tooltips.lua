@@ -3,7 +3,7 @@ local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("Tooltips")
 local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local Painting = require("mer.joyOfPainting.items.Painting")
-local Paint = require("mer.joyOfPainting.items.Paint")
+local Palette = require("mer.joyOfPainting.items.Palette")
 local Sketchbook = require("mer.joyOfPainting.items.Sketchbook")
 
 
@@ -63,16 +63,16 @@ local function manageTooltips(e)
         doSketchbookTooltips(e, sketchbook)
     end
 
-    if Paint.isPaint(e.object.id) then
-        local paint = Paint:new{
+    if Palette.isPalette(e.object.id) then
+        local palette = Palette:new{
             reference = e.reference,
             item = e.object --[[@as JOP.tes3itemChildren]],
             itemData = e.itemData
         }
-        if paint then
+        if palette then
             local labelText = string.format("Uses: %s/%s",
-                paint:getRemainingUses(),
-                paint:getMaxUses()
+                palette:getRemainingUses(),
+                palette:getMaxUses()
             )
             UIHelper.addLabelToTooltip{
                 tooltip = e.tooltip,
