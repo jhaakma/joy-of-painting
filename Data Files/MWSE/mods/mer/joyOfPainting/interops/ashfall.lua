@@ -116,10 +116,28 @@ local recipes = {
                 end
             },
             {
+                text = "View Painting",
+                callback = function(e)
+                    timer.delayOneFrame(function()
+                        Painting:new{
+                            reference = e.reference,
+                            item = e.item,
+                            itemData = e.itemData,
+                        }:paintingMenu()
+                    end)
+                end,
+                showRequirements = hasPainting
+            },
+            {
                 text = "Rotate Canvas",
                 callback = function(e)
                     Easel:new(e.reference):rotateCanvas()
                 end,
+                showRequirements = function(e)
+                    return Painting:new{
+                        reference = e.reference ---@type any
+                    }:isRotatable()
+                end
             },
             {
                 text = "Attach Canvas",
