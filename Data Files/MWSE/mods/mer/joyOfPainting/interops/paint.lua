@@ -3,51 +3,39 @@ local interop = require("mer.joyOfPainting.interop")
 local paletteItems = {
     {
         id = "ashfall_ingred_coal_01",
-        paintTypes = {
-            charcoal = true,
-        },
+        paintType = "charcoal",
         breaks = true,
         fullByDefault = true,
         uses = 5,
     },
     {
         id = "t_ingmine_charcoal_01",
-        paintTypes = {
-            charcoal = true,
-        },
+        paintType = "charcoal",
         breaks = true,
         fullByDefault = true,
         uses = 5,
     },
     {
         id = "jop_coal_sticks_01",
-        paintTypes = {
-            charcoal = true,
-        },
+        paintType = "charcoal",
         breaks = true,
         fullByDefault = true,
         uses = 20,
     },
     {
         id = "misc_inkwell",
-        paintTypes = {
-            ink = true,
-        },
+        paintType = "ink",
         fullByDefault = true,
         uses = 20,
     },
     {
         id = "jop_water_palette_01",
-        paintTypes = {
-            watercolor = true,
-        },
+        paintType = "watercolor",
         uses = 15,
     },
     {
         id = "Jop_oil_palette_01",
-        paintTypes = {
-            oil = true,
-        },
+        paintType = "oil",
         uses = 10
     },
 }

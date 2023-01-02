@@ -2,14 +2,14 @@
 ---@field reference tes3reference?
 ---@field item tes3item?
 ---@field itemData tes3itemData?
----@field paletteItem JOP.Palette.PaletteItem
+---@field paletteItem JOP.PaletteItem
 
----@class JOP.Palette.PaletteItem
+---@class JOP.PaletteItem
 ---@field id string The id of the palette item. Must be a valid tes3item
 ---@field breaks boolean Whether the palette breaks when uses run out
 ---@field fullByDefault boolean Whether the palette is full by default
 ---@field uses number The number of uses for the palette
----@field paintTypes table<string, boolean> A list of paint types that this palette can be used withq
+---@field paintType string The paintType that this palette can be used with
 
 ---@class JOP.PaintType
 ---@field id string The id of the palette type
@@ -24,7 +24,7 @@ local NodeManager = require("mer.joyOfPainting.services.NodeManager")
 ---@class JOP.Palette
 local Palette = {
     classname = "Palette",
-    ---@type JOP.Palette.PaletteItem
+    ---@type JOP.PaletteItem
     paletteItem = nil,
     ---@type tes3reference
     reference = nil,
@@ -38,10 +38,10 @@ Palette.__index = Palette
 --[[
     Register a palette item
 ]]
----@param e JOP.Palette.PaletteItem
+---@param e JOP.PaletteItem
 function Palette.registerPaletteItem(e)
     common.logAssert(logger, type(e.id) == "string", "id must be a string")
-    common.logAssert(logger, type(e.paintTypes) == "table", "paintTypes must be a table")
+    common.logAssert(logger, type(e.paintType) == "string", "paintTypes must be a table")
     logger:debug("Registering palette item %s", e.id)
     e.id = e.id:lower()
     config.paletteItems[e.id] = table.copy(e, {})
@@ -57,7 +57,7 @@ end
 
 
 ---@param e JOP.Palette.params
----@return JOP.Palette
+---@return JOP.Palette|nil
 function Palette:new(e)
     assert(e.reference or e.item, "Palette requires either a reference or an item")
     local palette = setmetatable({}, self)
@@ -70,6 +70,10 @@ function Palette:new(e)
     end
 
     palette.paletteItem = config.paletteItems[palette.item.id:lower()]
+    if palette.paletteItem == nil then
+        logger:error("Palette item %s is not registered", palette.item.id)
+        return nil
+    end
     palette.dataHolder = (e.itemData ~= nil) and e.itemData or e.reference
     palette.data = setmetatable({}, {
         __index = function(_, k)
@@ -134,12 +138,64 @@ function Palette:use()
     return false
 end
 
-function Palette:doRefill()
-    logger:debug("Refilling paint for %s", self.item.id)
-    self.data.uses = self.paletteItem.uses
-    NodeManager.updateSwitch("paint_palette")
+function Palette:getRefills()
+    local paletteItem = config.paletteItems[self.item.id:lower()]
+    return config.refills[paletteItem.paintType]
+
 end
 
+function Palette:hasRefill(refill)
+    for _, refillId in ipairs(refill.requiredItems) do
+        local count = tes3.getItemCount{
+            reference = tes3.player,
+            item = refillId,
+        }
+        if count == 0 then
+            return false
+        end
+    end
+    return true
+end
+
+function Palette:playerHasRefills()
+    local refills = self:getRefills()
+    for _, refill in ipairs(refills) do
+        if self:hasRefill(refill) then
+            return true
+        end
+    end
+    return false
+end
+
+function Palette:doRefill()
+    logger:debug("Refilling paint for %s", self.item.id)
+    --Find refills in player inventory
+    local refills = self:getRefills()
+    local didRefill = false
+    for _, refill in ipairs(refills) do
+        if self:hasRefill(refill) then
+            for _, refillId in ipairs(refill.requiredItems) do
+                tes3.removeItem{
+                    reference = tes3.player,
+                    item = refillId,
+                    playSound = false,
+                }
+
+            end
+            didRefill = true
+        end
+    end
+    if not didRefill then
+        logger:warn("No refills found")
+        return false
+    end
+    self.data.uses = self.paletteItem.uses
+    NodeManager.updateSwitch("paint_palette")
+    tes3.messageBox("You refill the palette.")
+    tes3.playSound{ sound = "Item Misc Up" }
+end
+
+---@return number
 function Palette:getRemainingUses()
     if not self.data.uses then
         if self.paletteItem.fullByDefault then
@@ -151,10 +207,10 @@ function Palette:getRemainingUses()
     return self.data.uses
 end
 
+---@return number
 function Palette:getMaxUses()
     return self.paletteItem.uses
 end
-
 
 function Palette.isPalette(id)
     return config.paletteItems[id:lower()] ~= nil

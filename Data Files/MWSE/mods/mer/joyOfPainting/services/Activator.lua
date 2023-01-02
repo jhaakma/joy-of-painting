@@ -19,6 +19,8 @@ local Activator = {
 
 ---@param activator JoyOfPainting.Activator
 function Activator.registerActivator(activator)
+    common.logAssert(logger, type(activator.onActivate) == "function", "onActivate must be a function")
+    common.logAssert(logger, type(activator.isActivatorItem) == "function", "isActivatorItem must be a function")
     table.insert(Activator.activators, activator)
 end
 

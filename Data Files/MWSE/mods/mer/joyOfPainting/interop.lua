@@ -7,4 +7,5 @@ Interop.Frame = require("mer.joyOfPainting.items.Frame")
 Interop.Palette = require("mer.joyOfPainting.items.Palette")
 Interop.Painting = require("mer.joyOfPainting.items.Painting")
 Interop.Sketchbook = require("mer.joyOfPainting.items.Sketchbook")
+Interop.Refill = require("mer.joyOfPainting.items.Refill")
 return Interop

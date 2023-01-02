@@ -124,19 +124,19 @@ end
 function ArtStyle:isValidPaint(id)
     local paletteItem = config.paletteItems[id:lower()]
     if paletteItem then
-        return paletteItem.paintTypes[self.paintType.id] ~= nil
+        return paletteItem.paintType == self.paintType.id
     end
 end
 
----@return table<string, JOP.Palette>
+---@return table<string, JOP.PaletteItem>
 function ArtStyle:getPalettes()
-    local paints = {}
+    local palettes = {}
     for paletteId, paletteItem in pairs(config.paletteItems) do
         if self:isValidPaint(paletteId) then
-            paints[paletteId] = paletteItem
+            palettes[paletteId] = paletteItem
         end
     end
-    return paints
+    return palettes
 end
 
 function ArtStyle:playerHasPaint()
@@ -146,31 +146,33 @@ function ArtStyle:playerHasPaint()
         return true
     end
     --Search inventory
-    for paletteId, _ in pairs(self:getPalettes()) do
+    for paletteId, paletteItem in pairs(self:getPalettes()) do
         logger:debug("Checking palette: %s", paletteId)
         local itemStack = tes3.player.object.inventory:findItemStack(paletteId)
         if itemStack then
             logger:debug("Found palette: %s", paletteId)
-            --if no variables, then treat it as full
-            if not itemStack.variables then
-                logger:debug("No variables, treating as full")
-                return true
-            end
 
-            if itemStack.count > #itemStack.variables then
-                logger:debug("stack count greater than variabels, has at least one full")
-                return true
-            end
-
-            for _, itemData in ipairs(itemStack.variables) do
-                local palette = Palette:new{
-                    item = itemStack.object,
-                    itemData = itemData
-                }
-                local remaining = palette:getRemainingUses()
-                if remaining > 0 then
-                    logger:debug("%d uses remaining", remaining)
+            --if no variables, then treat it as full if fullByDefault
+            if paletteItem.fullByDefault then
+                if itemStack.count > #itemStack.variables then
+                    logger:debug("stack count greater than variabels, has at least one full")
                     return true
+                end
+            end
+
+            if itemStack.variables then
+                for _, itemData in ipairs(itemStack.variables) do
+                    local palette = Palette:new{
+                        item = itemStack.object,
+                        itemData = itemData
+                    }
+                    if palette then
+                        local remaining = palette:getRemainingUses()
+                        if remaining > 0 then
+                            logger:debug("%d uses remaining", remaining)
+                            return true
+                        end
+                    end
                 end
             end
         end

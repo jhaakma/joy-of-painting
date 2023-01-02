@@ -67,8 +67,10 @@ config.artStyles = {}
 config.controls = {}
 ---@type table<string, JOP.PaintType>
 config.paintTypes = {}
----@type table<string, JOP.Palette.PaletteItem>
+---@type table<string, JOP.PaletteItem>
 config.paletteItems = {}
+---@type table<string, JOP.Refill[]>
+config.refills = {}
 ---@type table<string, JOP.BrushType>
 config.brushTypes = {}
 ---@type table<string, JOP.Brush>
