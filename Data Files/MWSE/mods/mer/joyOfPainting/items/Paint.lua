@@ -33,7 +33,7 @@ function Paint:new(e)
         paint.item = e.reference.object --[[@as JOP.tes3itemChildren]]
     end
 
-    paint.paintData = config.paints[paint.item.id:lower()]
+    paint.paintData = config.paintItems[paint.item.id:lower()]
     paint.dataHolder = (e.itemData ~= nil) and e.itemData or e.reference
     paint.data = setmetatable({}, {
         __index = function(_, k)
@@ -109,7 +109,7 @@ function Paint:getMaxUses()
 end
 
 function Paint.isPaint(id)
-    return config.paints[id:lower()] ~= nil
+    return config.paintItems[id:lower()] ~= nil
 end
 
 return Paint

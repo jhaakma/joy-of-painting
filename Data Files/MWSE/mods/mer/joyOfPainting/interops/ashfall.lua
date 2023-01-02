@@ -225,7 +225,6 @@ local recipes = {
             { material = "wood", count = 1 },
             { material = "fibre", count = 1 },
         },
-        rotationAxis = 'y'
     },
 
     {

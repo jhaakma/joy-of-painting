@@ -67,11 +67,12 @@ config.artStyles = {}
 config.controls = {}
 ---@type table<string, JOP.PaintType>
 config.paintTypes = {}
-
---A table of item ids and the paint type they are associated with
-config.paints = {}
+---@type table<string, JOP.Paint.PaintData>
+config.paintItems = {}
 ---@type table<string, JOP.BrushType>
 config.brushTypes = {}
+---@type table<string, JOP.Brush>
+config.brushes = {}
 config.easelActiveToMiscMap = {}
 config.meshOverrides = {}
 config.sketchbooks = {}

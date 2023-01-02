@@ -50,3 +50,33 @@ Tips:
     ```
       jop.skills.painting.value = 60
     ```
+
+
+## Interop Relationships
+
+```mermaid
+graph TD
+    frame[Frame]
+    canvas[Canvas]
+    easel[Easel]
+    artStyle[Art Style]
+    brush[PaintBrush]
+    brushType[Brush Type]
+    paint[Paint]
+    paintType[Paint Type]
+    shader[Shader]
+    control[Shader Control]
+
+    easel --> |canattach| canvas
+    frame --> |canattach| canvas
+
+    shader --> |hasmany| control
+
+    artStyle --> |hasone| paintType
+    artStyle --> |hasmany| shader
+
+    brush --> |hasmany| brushType
+    paint --> |hasmany| paintType
+
+    paintType --> |hasone| brushType
+```

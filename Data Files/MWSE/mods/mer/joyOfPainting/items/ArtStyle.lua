@@ -28,6 +28,27 @@ function ArtStyle:new(data)
     return artStyle
 end
 
+function ArtStyle:isValidBrush(id)
+    local brushData = config.brushes[id:lower()]
+    if brushData then
+       return brushData.brushType == self.brushType.id:lower()
+    end
+end
+
+---@return table<string, JOP.Brush>
+function ArtStyle:getBrushes()
+    --iterate config.brushes and return those where this brush type is in its brushTypes list
+    local brushes = {}
+    for brushId, brushData in pairs(config.brushes) do
+        if self:isValidBrush(brushId) then
+            brushes[brushId] = brushData
+        end
+    end
+    return brushes
+end
+
+
+
 
 function ArtStyle:playerHasBrush()
     logger:debug("Checking for %s brush", self.name)
@@ -37,8 +58,8 @@ function ArtStyle:playerHasBrush()
         return true
     end
 
-    for _, brush in ipairs(self.brushType.brushes) do
-        if tes3.player.object.inventory:contains(brush) then
+    for _, brush in pairs(self:getBrushes()) do
+        if tes3.player.object.inventory:contains(brush.id) then
             logger:debug("Found brush: %s", brush)
             return true
         end
@@ -46,7 +67,7 @@ function ArtStyle:playerHasBrush()
     --search area
     for _, cell in pairs(tes3.getActiveCells()) do
         for reference in cell:iterateReferences() do
-            if config.paints[reference.object.id:lower()] and not common.isStack(reference) then
+            if self:getPaints()[reference.object.id:lower()] and not common.isStack(reference) then
                 if reference.position:distance(tes3.player.position) < tes3.getPlayerActivationDistance() then
                     logger:debug("Found nearby brush reference: %s", reference.object.id)
                     return true
@@ -58,14 +79,33 @@ function ArtStyle:playerHasBrush()
     return false
 end
 
+function ArtStyle:isValidPaint(id)
+    local paintData = config.paintItems[id:lower()]
+    if paintData then
+        return paintData.paintTypes[self.paintType.id] ~= nil
+    end
+end
+
+---@return table<string, JOP.Paint>
+function ArtStyle:getPaints()
+    local paints = {}
+    for paintId, paintData in pairs(config.paintItems) do
+        if self:isValidPaint(paintId) then
+            paints[paintId] = paintData
+        end
+    end
+    return paints
+end
+
 function ArtStyle:playerHasPaint()
-    logger:debug("Checking for %s paint", self.name)
+    logger:debug("Checking playerHasPaint for %s", self.name)
     if not self.paintType then
         logger:debug("No paint required for this art style")
         return true
     end
     --Search inventory
-    for paintId, paintData in pairs(self.paintType.paints) do
+    for paintId, paintData in pairs(self:getPaints()) do
+        logger:debug("Checking paint: %s", paintId)
         local itemStack = tes3.player.object.inventory:findItemStack(paintId)
         if itemStack then
             logger:debug("Found paint: %s", paintId)
@@ -111,10 +151,6 @@ function ArtStyle:playerHasPaint()
     return false
 end
 
-function ArtStyle:isValidPaint(id)
-    return self.paintType.paints[id:lower()] ~= nil
-end
-
 
 function ArtStyle:usePaint()
     logger:debug("Using up paint for %s", self.name)
@@ -122,7 +158,8 @@ function ArtStyle:usePaint()
     local usedStacks = {}
     ---@type JOP.Paint.params[]
     local newStacks = {}
-    for paintId, paintData in pairs(self.paintType.paints) do
+
+    for paintId, paintData in pairs(self:getPaints()) do
         local itemStack = tes3.player.object.inventory:findItemStack(paintId)
         if itemStack then
             if itemStack.variables then
@@ -171,7 +208,6 @@ function ArtStyle:usePaint()
                 if common.closeEnough(reference) then
                     logger:debug("Found nearby paint reference: %s", reference.object.id)
                     local paint = Paint:new({
-                        paintData = self.paintType.paints[reference.object.id],
                         item = reference.object,
                         reference = reference
                     })
