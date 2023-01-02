@@ -167,11 +167,7 @@ local recipes = {
         description = "A square canvas. Place on an easel to start painting.",
         category = "Painting",
         soundType = "fabric",
-        skillRequirements = {
-            {
-                skill = "Bushcrafting",
-                requirement = 20,}
-        },
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
         materials = {
             { material = "fibre", count = 20 },
             { material = "resin", count = 1 }
@@ -287,6 +283,7 @@ local materials = {
         name = "Paper",
         ids = {
             "sc_paper plain",
+            "jop_parchment_01",
             "jop_paper_01",
         }
     },
@@ -340,10 +337,36 @@ end
 
 ---@param e MenuActivatorRegisteredEvent
 local function registerAshfallRecipes(e)
-    local bushcraftingActivator = e.menuActivator
-    if bushcraftingActivator then
-        bushcraftingActivator:registerRecipes(recipes)
+    local activator = e.menuActivator
+    if activator then
+        activator:registerRecipes(recipes)
     end
 end
 event.register("Ashfall:ActivateBushcrafting:Registered", registerAshfallRecipes)
 
+local function registerTanningRackRecipes(e)
+    local activator = e.menuActivator
+    if activator then
+        activator:registerRecipes({
+            {
+                id = "jop_parchment_01",
+                description = "A blank parchment made from animal hide, used for sketching.",
+                materials = {
+                    { material = "hide", count = 1 },
+                },
+                category = "Painting",
+                soundType = "leather",
+                skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
+                toolRequirements = {
+                    {
+                        tool = "knife",
+                        equipped = true,
+                        conditionPerUse = 1
+                    }
+                },
+                rotationAxis = "y"
+            }
+        })
+    end
+end
+event.register("Ashfall:ActivateTanningRack:Registered", registerTanningRackRecipes)

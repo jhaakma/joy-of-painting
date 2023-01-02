@@ -48,6 +48,16 @@ local canvases = {
         canvasTexture = "Data Files\\Textures\\tx_paper_plain_01.dds",
         animSpeed = 2.0,
         animSound = "jop_scribble_01"
+    },
+    {
+        canvasId = "jop_parchment_01",
+        textureWidth = 512,
+        textureHeight = 512,
+        frameSize = "paper_portrait",
+        valueModifier = 1.1,
+        canvasTexture = "Data Files\\textures\\jop\\parchment.dds",
+        animSound = "jop_scribble_01",
+        animSpeed = 2.0,
     }
 }
 

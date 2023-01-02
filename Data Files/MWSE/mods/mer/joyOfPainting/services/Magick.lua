@@ -46,7 +46,7 @@ end
 function Magick:compositeClone(overlay, width, height)
     local resizeText = (width and height) and string.format('-resize "%sx%s!" ', width, height) or ""
     self.command = string.format(
-        '%s ( "%s" %s) +swap -composite ',
+        '%s ( "%s" %s) +swap -compose atop -composite ',
         self.command,
         overlay,
         resizeText)
