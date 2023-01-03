@@ -169,7 +169,8 @@ local recipes = {
         soundType = "fabric",
         skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
         materials = {
-            { material = "fibre", count = 20 },
+            { material = "fabric", count = 2 },
+            { material = "wood", count = 4 },
             { material = "resin", count = 1 }
         },
         rotationAxis = 'y'
@@ -181,7 +182,8 @@ local recipes = {
         soundType = "fabric",
         skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
         materials = {
-            { material = "fibre", count = 20 },
+            { material = "fabric", count = 2 },
+            { material = "wood", count = 4 },
             { material = "resin", count = 1 }
         },
         rotationAxis = 'y'

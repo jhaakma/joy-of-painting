@@ -82,7 +82,7 @@ config.paperMolds = {
     jop_paper_mold = {
         hoursToDry = 4,
         paperId = "sc_paper plain",
-        paperPerPulp = 10,
+        paperPerPulp = 5,
     }
 }
 config.paperPulps = {
