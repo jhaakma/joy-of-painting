@@ -8,6 +8,15 @@ local refills = {
             "jop_dye_red",
             "jop_dye_yellow",
         }
+    },
+    {
+        --Red, blue and yellow dye
+        paintType = "oil",
+        requiredItems = {
+            "jop_dye_blue",
+            "jop_dye_red",
+            "jop_dye_yellow",
+        }
     }
 }
 for _, refill in ipairs(refills) do
