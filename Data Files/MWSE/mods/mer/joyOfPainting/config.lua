@@ -78,6 +78,16 @@ config.brushes = {}
 config.easelActiveToMiscMap = {}
 config.meshOverrides = {}
 config.sketchbooks = {}
+config.paperMolds = {
+    jop_paper_mold = {
+        hoursToDry = 4,
+        paperId = "sc_paper plain",
+        paperPerPulp = 10,
+    }
+}
+config.paperPulps = {
+    jop_paper_pulp = true
+}
 config.shaders = {
     watercolor = "jop_watercolor",
     oil = "jop_oil",

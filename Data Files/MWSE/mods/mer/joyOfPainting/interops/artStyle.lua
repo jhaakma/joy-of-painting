@@ -109,7 +109,7 @@ local artStyles = {
                 :paint(detailLevel)
                 --:charcoal(tes3.player.data.charcoal or 1)
                 :sketch()
-                :brightnessContrast(-80, 90)
+                :brightnessContrast(-70, 80)
                 :removeWhite(90)
                 :resizeHard(savedWidth, savedHeight)
                 :gravity("center")

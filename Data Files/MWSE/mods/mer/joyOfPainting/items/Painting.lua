@@ -292,7 +292,7 @@ function Painting:rotate()
     if self.reference then
         --delete current reference and replace with rotated version
         local newRef = tes3.createReference{
-            object = rotatedId, ---@type any
+            object = rotatedId, --[[@as JOP.tes3itemChildren]]
             position = self.reference.position,
             orientation = self.reference.orientation,
             cell = self.reference.cell,
@@ -303,7 +303,7 @@ function Painting:rotate()
     else
         --Remove old item from inventory and add rotated version
         tes3.addItem{
-            item = rotatedId,---@type any\
+            item = rotatedId, --[[@as JOP.tes3itemChildren]]
             itemData = self.dataHolder,
             count = 1,
             reference = tes3.player,

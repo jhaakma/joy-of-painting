@@ -275,6 +275,70 @@ local recipes = {
         craftCallback = Dye.craftCallback
     },
 
+
+    {
+        id = "jop_paper_pulp",
+        description = "A pile of paper pulp. Use with a paper mold to craft sheets of paper.",
+        category = "Painting",
+        soundType = "fabric",
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
+        materials = {
+            { material = "fibre", count = 4 },
+        },
+        customRequirements = {
+            {
+                getLabel = function() return "Water: 10 units" end,
+                check = function()
+                    ---@param stack tes3itemStack
+                    for _, stack in pairs(tes3.player.object.inventory) do
+                        if stack.variables then
+                            for _, itemData in ipairs(stack.variables) do
+                                local liquidContainer = ashfall.LiquidContainer.createFromInventory(stack.object, itemData)
+                                local hasEnoughWater = liquidContainer ~= nil
+                                    and liquidContainer:hasWater()
+                                    and liquidContainer:isWater()
+                                    and liquidContainer.waterAmount >= 10
+                                if hasEnoughWater then
+                                    return true
+                                end
+                            end
+                        end
+                    end
+                    return false
+                end
+            },
+        },
+        craftCallback = function(e)
+            ---@param stack tes3itemStack
+            for _, stack in pairs(tes3.player.object.inventory) do
+                if stack.variables then
+                    for _, itemData in ipairs(stack.variables) do
+                        local liquidContainer = ashfall.LiquidContainer.createFromInventory(stack.object, itemData)
+                        local hasEnoughWater = liquidContainer ~= nil
+                            and liquidContainer:hasWater()
+                            and liquidContainer:isWater()
+                            and liquidContainer.waterAmount >= 10
+                        if liquidContainer ~= nil and hasEnoughWater then
+                            liquidContainer:reduce(10)
+                            return
+                        end
+                    end
+                end
+            end
+        end
+    },
+
+    {
+        id = "jop_paper_mold",
+        description = "A mold for crafting sheets of paper.",
+        category = "Painting",
+        soundType = "fabric",
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
+        materials = {
+            { material = "wood", count = 2 },
+            { material = "fibre", count = 1 },
+        },
+    }
 }
 
 local materials = {
@@ -350,7 +414,7 @@ local function registerTanningRackRecipes(e)
         activator:registerRecipes({
             {
                 id = "jop_parchment_01",
-                description = "A blank parchment made from animal hide, used for sketching.",
+                description = "Blank parchment made from animal hide, used for sketching.",
                 materials = {
                     { material = "hide", count = 1 },
                 },
@@ -364,7 +428,8 @@ local function registerTanningRackRecipes(e)
                         conditionPerUse = 1
                     }
                 },
-                rotationAxis = "y"
+                rotationAxis = "y",
+                resultAmount = 4,
             }
         })
     end

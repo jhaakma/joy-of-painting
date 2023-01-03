@@ -59,7 +59,7 @@ end
 ---@param e JOP.Palette.params
 ---@return JOP.Palette|nil
 function Palette:new(e)
-    assert(e.reference or e.item, "Palette requires either a reference or an item")
+    common.logAssert(logger, e.reference or e.item, "Palette requires either a reference or an item")
     local palette = setmetatable({}, self)
 
     palette.reference = e.reference
@@ -71,7 +71,7 @@ function Palette:new(e)
 
     palette.paletteItem = config.paletteItems[palette.item.id:lower()]
     if palette.paletteItem == nil then
-        logger:error("Palette item %s is not registered", palette.item.id)
+        logger:debug("%s is not a palette", palette.item.id)
         return nil
     end
     palette.dataHolder = (e.itemData ~= nil) and e.itemData or e.reference

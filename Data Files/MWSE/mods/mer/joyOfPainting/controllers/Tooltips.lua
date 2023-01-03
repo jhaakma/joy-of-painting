@@ -5,7 +5,7 @@ local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local Painting = require("mer.joyOfPainting.items.Painting")
 local Palette = require("mer.joyOfPainting.items.Palette")
 local Sketchbook = require("mer.joyOfPainting.items.Sketchbook")
-
+local PaperMold = require("mer.joyOfPainting.items.PaperMold")
 
 local function doPaintingTooltips(e, painting)
     local labelText
@@ -82,6 +82,26 @@ local function manageTooltips(e)
         end
     end
 
+    local paperMold = PaperMold:new{
+        reference = e.reference,
+        item = e.object --[[@as JOP.tes3itemChildren]],
+        itemData = e.itemData
+    }
+    if paperMold then
+        local text
+        if paperMold:hasPulp() then
+            text = "Pulp Drying"
+        elseif paperMold:hasPaper() then
+            text = "Paper Ready"
+        end
+        if text then
+            UIHelper.addLabelToTooltip{
+                tooltip = e.tooltip,
+                labelText = text,
+                color = tes3ui.getPalette("normal_color")
+            }
+        end
+    end
 end
 event.register(tes3.event.uiObjectTooltip, manageTooltips)
 

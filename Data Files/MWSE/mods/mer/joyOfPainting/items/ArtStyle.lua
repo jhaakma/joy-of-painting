@@ -151,10 +151,10 @@ function ArtStyle:playerHasPaint()
         local itemStack = tes3.player.object.inventory:findItemStack(paletteId)
         if itemStack then
             logger:debug("Found palette: %s", paletteId)
-
             --if no variables, then treat it as full if fullByDefault
             if paletteItem.fullByDefault then
-                if itemStack.count > #itemStack.variables then
+                local numVariables = itemStack.variables and #itemStack.variables or 0
+                if itemStack.count > numVariables then
                     logger:debug("stack count greater than variabels, has at least one full")
                     return true
                 end
@@ -185,7 +185,7 @@ function ArtStyle:playerHasPaint()
                     local palette = Palette:new({
                         reference = reference
                     })
-                    if palette:getRemainingUses() > 0 then
+                    if palette and palette:getRemainingUses() > 0 then
                         logger:debug("Found nearby palette reference: %s", reference.object.id)
                         return true
                     end
@@ -234,7 +234,7 @@ function ArtStyle:usePaint()
     --prioritise used stacks
     for _, stackData in ipairs(usedStacks) do
         local palette = Palette:new(stackData)
-        if palette:use() then
+        if palette and palette:use() then
             return
         end
     end
@@ -242,7 +242,7 @@ function ArtStyle:usePaint()
     for _, stackData in ipairs(newStacks) do
         local palette = Palette:new(stackData)
         logger:debug("new stack: %s", json.encode(stackData, {indent = true}))
-        if palette:use() then
+        if palette and palette:use() then
             return
         end
     end
@@ -257,7 +257,7 @@ function ArtStyle:usePaint()
                         reference = reference
                     })
 
-                    if palette:use() then
+                    if palette and palette:use() then
                         return
                     end
                 end

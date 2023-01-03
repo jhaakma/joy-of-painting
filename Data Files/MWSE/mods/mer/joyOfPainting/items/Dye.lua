@@ -6,7 +6,6 @@ local Dye = {}
 Dye.customRequirements = {
     {
         getLabel = function() return "Water: 10 units" end,
-        description = "What does this even do?",
         check = function()
             ---@param stack tes3itemStack
             for _, stack in pairs(tes3.player.object.inventory) do
@@ -44,7 +43,6 @@ Dye.customRequirements = {
 }
 
 Dye.craftCallback = function(e)
-
     ---@param stack tes3itemStack
     for _, stack in pairs(tes3.player.object.inventory) do
         if stack.variables then
