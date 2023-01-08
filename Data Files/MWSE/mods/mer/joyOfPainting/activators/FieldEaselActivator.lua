@@ -29,7 +29,6 @@ Activator.registerActivator{
             return false
         end
         if not config.easels[e.object.id:lower()] then
-            logger:error("Not an easel")
             return false
         end
         logger:debug("Is an easel")
@@ -92,7 +91,6 @@ Activator.registerActivator{
             return false
         end
         if not config.miscEasels[e.object.id:lower()] then
-            logger:error("Not an easel")
             return false
         end
         logger:debug("Is a misc easel")
@@ -100,15 +98,3 @@ Activator.registerActivator{
     end,
     blockStackActivate = true
 }
-
--- event.register("itemDropped", function(e)
---     if config.miscEasels[e.reference.object.id:lower()] then
---         logger:debug("Dropped misc easel, setting animation to packed")
---         tes3.playAnimation{
---             reference = e.reference,
---             group = Easel.animationGroups.packed,
---             startFlag = tes3.animationStartFlag.immediate,
---             loopCount = 0
---         }
---     end
--- end)

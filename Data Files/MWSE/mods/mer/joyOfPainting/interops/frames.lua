@@ -36,6 +36,10 @@ local frames = {
         id = "jop_frame_t_01",
         frameSize = "tall"
     },
+    {
+        id = "jop_frame_sq_02",
+        frameSize = "square"
+    },
 }
 event.register(tes3.event.initialized, function()
     for _, frameSize in ipairs(frameSizes) do

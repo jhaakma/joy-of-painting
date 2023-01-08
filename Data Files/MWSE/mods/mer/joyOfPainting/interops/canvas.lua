@@ -13,7 +13,7 @@ local canvases = {
         requiresEasel = true,
         animSpeed = 6.5,
         animSound = "jop_brush_stroke_01",
-        clampOffset = -5.5,
+        clampOffset = 4,
     },
     {
         canvasId = "jop_canvas_tall_01",
