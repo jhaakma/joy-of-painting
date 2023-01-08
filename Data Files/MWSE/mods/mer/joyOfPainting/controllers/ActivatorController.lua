@@ -10,13 +10,13 @@ local function onActivate(e)
         if Activator.doBlockActivate(e) then return end
         if activator.blockStackActivate and common.isStack(e.target) then
             logger:debug("%s is stack, skip", e.target.object.id)
-            return
-        end
-        if activator.isActivatorItem(e) then
+        elseif activator.isActivatorItem(e) then
+            logger:debug("%s is activator item, activating", e.target.object.id)
             activator.onActivate(e)
             return true
         end
     end
+    logger:debug("No activators found for %s", e.target.object.id)
 end
 event.register("activate", onActivate)
 

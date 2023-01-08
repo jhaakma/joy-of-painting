@@ -4,8 +4,8 @@ local logger = common.createLogger("Easel")
 local NodeManager = require("mer.joyOfPainting.services.NodeManager")
 local Painting = require("mer.joyOfPainting.items.Painting")
 local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
-local SkillService = require("mer.joyOfPainting.services.SkillService")
-local PaintService = require("mer.joyOfPainting.services.PaintService")
+local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
+
 
 ---@class JOP.CanvasData
 ---@field canvasId string|nil The id of the original canvas object
@@ -26,15 +26,52 @@ local Easel = {
     ---@type table
     data = nil,
     ---@type JOP.Painting
-    painting = nil
+    painting = nil,
+    ---@type boolean
+    doesPack = nil,
+    ---@type string
+    miscItem = nil,
 }
 Easel.__index = Easel
+
+Easel.animationGroups = {
+    packed = {
+        group = tes3.animationGroup.idle5,
+    },
+    unpacking = {
+        group = tes3.animationGroup.idle2,
+        duration = 1.6,
+    },
+    unpacked = {
+        group = tes3.animationGroup.idle3,
+    },
+    opening = {
+        group = tes3.animationGroup.idle4,
+        duration = 1.3,
+    },
+    open = {
+        group = tes3.animationGroup.idle,
+    },
+    closing = {
+        group = tes3.animationGroup.idle6,
+        duration = 1.3,
+    },
+    packing = {
+        group = tes3.animationGroup.idle7,
+        duration = 1.6,
+    },
+    openPacking = {
+        group = tes3.animationGroup.idle8,
+        duration = 2.9,
+    },
+}
 
 ---@param reference tes3reference
 ---@return JOP.Easel|nil
 function Easel:new(reference)
     if not self.isEasel(reference) then return nil end
-    local easel = setmetatable({}, self)
+    local config = self.getEaselConfig(reference.object.id)
+    local easel = setmetatable(table.copy(config), self)
     easel.name = reference.object.name or "Easel"
     easel.reference = reference
     easel.data = setmetatable({}, {
@@ -63,6 +100,7 @@ function Easel:attachCanvasFromInventory(item, itemData)
     end
     if item then
         self.painting:attachCanvas(item, itemData)
+        self:setClamp()
         --Remove the canvas from the player's inventory
         logger:debug("Removing canvas %s from inventory", item.id)
         tes3.removeItem{
@@ -76,6 +114,7 @@ function Easel:attachCanvasFromInventory(item, itemData)
         logger:debug("No canvas selected")
     end
 end
+
 
 --[[
     Opens the inventory select menu to select a canvas to attach to the easel
@@ -173,15 +212,12 @@ function Easel:rotateCanvas()
             self.reference.id, self.data.canvasId)
     end
     self.data.canvasId = rotatedId
+    self:setClamp()
     self.painting:doVisuals()
     tes3.playSound{
         reference = self.reference,
         sound = "Item Misc Up",
     }
-end
-
-function Easel:pickUp()
-    logger:debug("TODO: Pick up easel")
 end
 
 ---@return boolean
@@ -202,21 +238,133 @@ end
 
 ---@return boolean
 function Easel:canPickUp()
-    return self.data.carryableId ~= nil
-        and not self:hasCanvas()
+    return not self:hasCanvas()
 end
 
+function Easel:isUnpacked()
+    if self.doesPack ~= true then
+        return true
+    end
+    return self.data.unpacked
+end
 
+function Easel:open()
+    if not self.doesPack then
+        logger:error("Tried to close an easel that doesn't pack")
+        return
+    end
+    logger:debug("Opening")
+    common.playActivatorAnimation{
+        reference = self.reference,
+        group = self.animationGroups.opening,
+        sound = "Wooden Door Open 1",
+        duration = 1.3,
+        callback = function()
+            self.data.unpacked = true
+        end
+    }
+end
+
+function Easel:close()
+    if not self.doesPack then
+        logger:error("Tried to close an easel that doesn't pack")
+        return
+    end
+    logger:debug("Closing")
+
+    common.playActivatorAnimation{
+        reference = self.reference,
+        group = self.animationGroups.closing,
+        sound = "Wooden Door Open 1",
+        duration = 1.4,
+        callback = function()
+            --set data.unpacked to false
+            self.data.unpacked = false
+        end
+    }
+end
+
+function Easel:pickUp()
+    if not self:canPickUp() then
+        logger:warn("Tried to pick up an easel that can't be picked up")
+        return
+    end
+    if not self.miscItem then
+        logger:error("Tried to pick up an easel that doesn't pack")
+        return
+    end
+    logger:debug("Picking up")
+
+    common.playActivatorAnimation{
+        reference = self.reference,
+        group = self.data.unpacked and self.animationGroups.openPacking or self.animationGroups.packing,
+        duration = self.data.unpacked and 3.6 or 1.4,
+        sound = "Wooden Door Open 1",
+        callback = function()
+            logger:debug("Adding %s to inventory and deleting easel", self.miscItem)
+            tes3.addItem{
+                reference = tes3.player,
+                item = self.miscItem,
+                count = 1,
+            }
+            local isEquipped = tes3.getEquippedItem{
+                actor = tes3.player,
+                objectType = tes3.objectType.clothing,
+                slot = 11
+            }
+            if not isEquipped then
+                logger:debug("Equipping %s", self.miscItem)
+                tes3.player.mobile:equip{
+                    item = self.miscItem
+                }
+            end
+            self.reference:delete()
+        end
+    }
+end
+
+function Easel:setClamp()
+    local clampNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.EASEL_CLAMP)
+    if not clampNode then return end
+    local canvasConfig = config.canvases[self.data.canvasId]
+    local offset = 0
+    if canvasConfig and canvasConfig.clampOffset then
+        offset = canvasConfig.clampOffset
+    end
+    logger:debug("Setting clamp height to %s", offset)
+    local clampNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.EASEL_CLAMP)
+    clampNode.translation.y = - offset
+    clampNode:update()
+end
+
+function Easel:takeCanvas()
+    self.painting:takeCanvas()
+    self:setClamp()
+end
 
 
 ----------------------------------------
 -- Static Functions --------------------
 ----------------------------------------
 
+function Easel.registerEasel(e)
+    common.logAssert(logger, type(e.id) == "string", "Easel id must be a string")
+    logger:debug("Registering easel %s", e.id)
+    config.easels[e.id:lower()] = e
+    if e.miscItem then
+        config.miscEasels[e.miscItem:lower()] = e
+    end
+end
+
+---@param reference tes3reference
 function Easel.isEasel(reference)
     return reference
-        and reference.sceneNode
-        and reference.sceneNode:getObjectByName("ATTACH_CANVAS")
+        and reference.object
+        and Easel.getEaselConfig(reference.object.id) ~= nil
+end
+
+function Easel.getEaselConfig(easelId)
+    return config.easels[easelId:lower()]
 end
 
 ---Check the player's inventory for canvas items
@@ -241,5 +389,160 @@ function Easel.playerHasCanvas()
     end
     return false
 end
+
+
+function Easel.getActivationButtons()
+    local buttons =  {
+        {
+            text = "Open",
+            callback = function(e)
+                local easel = Easel:new(e.reference)
+                return easel and easel:open()
+            end,
+            showRequirements = function(e)
+                local easel = Easel:new(e.reference)
+                return easel and easel.doesPack == true and not easel:isUnpacked()
+            end
+        },
+        {
+            text = "Paint",
+            callback = function(e)
+                local buttons = {}
+                for _, artStyleData in pairs(config.artStyles) do
+                    local artStyle = ArtStyle:new(artStyleData)
+                    table.insert(buttons, artStyle:getButton(function()
+                        Easel:new(e.reference):paint(artStyle.name)
+                    end))
+                end
+                tes3ui.showMessageMenu{
+                    text = "Select Art Style",
+                    buttons = buttons,
+                    cancels = true
+                }
+            end,
+            enableRequirements = function(e)
+                local easel = Easel:new(e.reference)
+                return easel and easel:hasCanvas() and not easel:hasPainting()
+            end,
+            showRequirements = function(e)
+                local easel = Easel:new(e.reference)
+                return easel and easel:isUnpacked()
+            end,
+            tooltipDisabled = function(e)
+                local easel = Easel:new(e.reference)
+                local text = ""
+                if not easel then
+                    text = "This is not an easel."
+                elseif  not easel:hasCanvas() then
+                    text = "Attach a canvas to the easel first."
+                elseif easel:hasPainting() then
+                    text = "The easel already has a painting."
+                end
+                return {
+                    text = text
+                }
+            end
+        },
+        {
+            text = "View Painting",
+            callback = function(e)
+                timer.delayOneFrame(function()
+                    Painting:new{
+                        reference = e.reference,
+                        item = e.item,
+                        itemData = e.itemData,
+                    }:paintingMenu()
+                end)
+            end,
+            showRequirements = function(e)
+                local easel = Easel:new(e.reference)
+                return easel and easel:hasPainting()
+            end,
+        },
+        {
+            text = "Rotate Canvas",
+            callback = function(e)
+                Easel:new(e.reference):rotateCanvas()
+            end,
+            showRequirements = function(e)
+                local painting = Painting:new{
+                    reference = e.reference ---@type any
+                }
+                return painting:isRotatable()
+            end,
+        },
+        {
+            text = "Attach Canvas",
+            callback = function(e)
+                Easel:new(e.reference):openAttachCanvasMenu()
+            end,
+            showRequirements = function(e)
+                local easel = Easel:new(e.reference)
+                return easel and easel:canAttachCanvas() and easel:isUnpacked()
+            end
+        },
+        {
+            text = "Take Canvas",
+            callback = function(e)
+                Easel:new(e.reference):takeCanvas()
+
+            end,
+            showRequirements =  function(e)
+                local easel = Easel:new(e.reference)
+                return easel and easel:hasCanvas() and not easel:hasPainting()
+            end,
+        },
+        {
+            text = "Take Painting",
+            callback = function(e)
+                Easel:new(e.reference):takeCanvas()
+            end,
+            showRequirements = function(e)
+                local easel = Easel:new(e.reference)
+                return easel and easel:hasPainting()
+            end,
+        },
+        {
+            text = "Position",
+            callback = function(e)
+                common.positioner(e.reference)
+            end,
+            showRequirements = function(e)
+                local easel = Easel:new(e.reference)
+                return easel and easel.doesPack
+            end
+        },
+        {
+            text = "Close Lid",
+            callback = function(e)
+                local easel = Easel:new(e.reference)
+                if not easel then return end
+                easel:close()
+            end,
+            showRequirements = function(e)
+                local easel = Easel:new(e.reference)
+                return easel and easel.doesPack and easel:isUnpacked()
+                    and not easel:hasCanvas()
+            end
+        },
+        {
+            text = "Pick Up",
+            callback = function(e)
+                local easel = Easel:new(e.reference)
+                if not easel then return end
+                if easel:hasCanvas() then
+                    easel:takeCanvas()
+                end
+                easel:pickUp()
+            end,
+            showRequirements = function(e)
+                local easel = Easel:new(e.reference)
+                return easel and easel.doesPack == true
+            end
+        }
+    }
+    return buttons
+end
+
 
 return Easel

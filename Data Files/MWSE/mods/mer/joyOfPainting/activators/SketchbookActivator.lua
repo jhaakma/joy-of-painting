@@ -24,7 +24,11 @@ end
 Activator.registerActivator{
     onActivate = activate,
     isActivatorItem = function(e)
-       return config.sketchbooks[e.object.id:lower()] ~= nil
+        if tes3ui.menuMode() then
+            logger:debug("Menu mode, skip")
+            return false
+        end
+        return config.sketchbooks[e.object.id:lower()] ~= nil
     end,
     blockStackActivate = true
 }

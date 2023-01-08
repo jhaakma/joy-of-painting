@@ -87,12 +87,15 @@ end
 Activator.registerActivator{
     onActivate = activate,
     isActivatorItem = function(e)
+        if tes3ui.menuMode() then
+            logger:debug("Menu mode, skip")
+            return false
+        end
         local painting = Painting:new{
             reference = e.target,
             item = e.item,
             itemData = e.itemData,
         }
-
         return painting:isCanvas()
             and ( painting:hasPaintingData()
             or painting:isRotatable())

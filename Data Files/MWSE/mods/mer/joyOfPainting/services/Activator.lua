@@ -26,10 +26,6 @@ end
 
 ---@param e activateEventData
 function Activator.doBlockActivate(e)
-    if tes3ui.menuMode() then
-        logger:debug("Menu mode, skip")
-        return true
-    end
     if common.isShiftDown() then return true end
     if e.activator ~= tes3.player then
         logger:debug("Not player, skip")

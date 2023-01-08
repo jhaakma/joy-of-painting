@@ -105,7 +105,7 @@ function PhotoMenu:capture()
         end)
         :registerStep("enableControls", function()
             logger:debug("Enabling controls")
-            self:enablePlayerControls()
+            common.enablePlayerControls()
         end)
         :registerStep("progressSkill", function()
             SkillService.progressSkillFromPainting()
@@ -496,7 +496,7 @@ end
 
 function PhotoMenu:open()
     logger:debug("Opening Photo Menu")
-    self:disablePlayerControls()
+    common.disablePlayerControls()
     self:initMGESettings()
     self:createMenu()
     self:setAspectRatio()
@@ -517,7 +517,7 @@ function PhotoMenu:close()
     logger:debug("Closing Photo Menu")
     self:hideMenu()
     timer.delayOneFrame(function()
-        self:enablePlayerControls()
+        common.enablePlayerControls()
         self:finishMenu()
     end)
 end
@@ -529,15 +529,6 @@ function PhotoMenu:finishMenu()
     self:disableShaders()
 end
 
-function PhotoMenu:disablePlayerControls()
-    logger:debug("Disabling player controls")
-    --disable everything except vanity
-    tes3.setPlayerControlState{ enabled = false}
-end
 
-function PhotoMenu:enablePlayerControls()
-    logger:debug("Enabling player controls")
-    tes3.setPlayerControlState{ enabled = true}
-end
 
 return PhotoMenu

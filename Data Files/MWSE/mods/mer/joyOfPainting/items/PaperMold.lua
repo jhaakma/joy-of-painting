@@ -27,22 +27,24 @@ function PaperMold.registerPaperPulp(e)
     config.paperPulps[e.id] = table.copy(e, {})
 end
 
+function PaperMold.isPaperMold(object)
+    return config.paperMolds[object.id:lower()] ~= nil
+end
+
 ---@return JOP.PaperMold|nil
 function PaperMold:new(e)
     common.logAssert(logger, e.reference or e.item, "PaperMold requires either a reference or an item")
+    local item = e.item or e.reference.object
+    if not PaperMold.isPaperMold(item) then
+        logger:trace("%s is not a paper mold", item.id)
+        return nil
+    end
+
     local paperMold = setmetatable({}, self)
 
     paperMold.reference = e.reference
-    paperMold.item = e.item
+    paperMold.item = item
     paperMold.itemData = e.itemData
-    if e.reference and not e.item then
-        paperMold.item = e.reference.object --[[@as JOP.tes3itemChildren]]
-    end
-
-    if config.paperMolds[paperMold.item.id:lower()] == nil then
-        logger:debug("%s is not a paper mold", paperMold.item.id)
-        return nil
-    end
 
     paperMold.dataHolder = (e.itemData ~= nil) and e.itemData or e.reference
     paperMold.data = setmetatable({}, {

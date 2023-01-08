@@ -54,6 +54,7 @@ Painting.canvasFields = {
 ---@field requiresEasel boolean? Whether the canvas requires an easel to be painted on
 ---@field animSpeed number The speed of the painting animation
 ---@field animSound string The sound to play while painting
+---@field clampOffset number The amount to raise the easel clamp
 
 ---@param e JOP.Canvas
 function Painting.registerCanvas(e)
@@ -104,7 +105,7 @@ end
 ---@return JOP.Painting
 function Painting:new(e)
     local painting = setmetatable({}, self)
-    assert(e.reference ~= nil or e.item ~= nil,
+    common.logAssert(logger, e.reference ~= nil or e.item ~= nil,
         "Painting:new() requires either a reference or an item")
     painting.reference = e.reference
     painting.item = e.item or e.reference.object
@@ -325,7 +326,7 @@ end
 
 function Painting:resetPaintTime()
     local now = tes3.getSimulationTimestamp(false)
-    local root = self.reference.sceneNode
+    local root = self.reference.sceneNode:getObjectByName("SWITCH_PAINT")
     for node in table.traverse{root} do
         if node.controller then
             node.controller.phase = -now + config.ANIM_OFFSET

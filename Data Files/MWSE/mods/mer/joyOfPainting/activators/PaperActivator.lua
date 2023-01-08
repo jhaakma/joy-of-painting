@@ -112,6 +112,10 @@ end
 Activator.registerActivator{
     onActivate = activate,
     isActivatorItem = function(e)
+        if tes3ui.menuMode() then
+            logger:debug("Menu mode, skip")
+            return false
+        end
         --For now, only activate paper when its in the world
         if not e.target then return false end
         local painting = Painting:new{

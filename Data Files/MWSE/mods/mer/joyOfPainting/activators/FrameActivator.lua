@@ -18,10 +18,15 @@ local function activate(e)
 
     local safeRef
     if e.target then
+        if tes3ui.menuMode() then
+            --block picking up from menu to avoid painting in frame in inventory
+            return
+        end
         safeRef = tes3.makeSafeObjectHandle(painting.reference)
         if safeRef == nil then
             logger:warn("Failed to make safe handle for %s", painting.reference.object.id)
         end
+
     end
     tes3ui.showMessageMenu{
         message = "Frame Menu",
@@ -138,6 +143,17 @@ local function activate(e)
                 end,
                 showRequirements = function()
                     return isPainted
+                end,
+            },
+            {
+                text = "Position",
+                callback = function()
+                    if safeRef and not safeRef:valid() then
+                        logger:warn("Skipping view painting because reference is invalid")
+                        return
+                    end
+                    local ref = safeRef and safeRef:getObject()
+                    common.positioner(ref)
                 end,
             },
             {

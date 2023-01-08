@@ -12,7 +12,8 @@ local canvases = {
         canvasTexture = "Data Files\\Textures\\jop\\ab_painting_canvas_01.dds",
         requiresEasel = true,
         animSpeed = 6.5,
-        animSound = "jop_brush_stroke_01"
+        animSound = "jop_brush_stroke_01",
+        clampOffset = -5.5,
     },
     {
         canvasId = "jop_canvas_tall_01",
@@ -24,7 +25,8 @@ local canvases = {
         canvasTexture = "Data Files\\Textures\\jop\\ab_painting_canvas_01.dds",
         requiresEasel = true,
         animSpeed = 6.5,
-        animSound = "jop_brush_stroke_01"
+        animSound = "jop_brush_stroke_01",
+        clampOffset = 25,
     },
     {
         canvasId = "jop_canvas_wide_01",
@@ -36,7 +38,8 @@ local canvases = {
         canvasTexture = "Data Files\\Textures\\jop\\ab_painting_canvas_01.dds",
         requiresEasel = true,
         animSpeed = 6.5,
-        animSound = "jop_brush_stroke_01"
+        animSound = "jop_brush_stroke_01",
+        clampOffset = -5.5,
     },
     {
         canvasId = "sc_paper plain",

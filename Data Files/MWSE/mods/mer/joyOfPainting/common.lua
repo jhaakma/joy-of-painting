@@ -1,7 +1,9 @@
 local common = {}
 
 local config = require("mer.joyOfPainting.config")
+
 local MWSELogger = require("logging.logger")
+local CraftingFramework = require("CraftingFramework")
 
 ---@type table<string, MWSELogger>
 common.loggers = {}
@@ -14,6 +16,8 @@ function common.createLogger(serviceName)
     common.loggers[serviceName] = logger
     return logger
 end
+
+local logger = common.createLogger("common")
 
 ---@param reference tes3reference
 ---@return boolean
@@ -52,7 +56,88 @@ function common.logAssert(logger, condition, message)
     end
 end
 
+
+function common.disablePlayerControls()
+    logger:debug("Disabling player controls")
+    --disable everything except vanity
+    tes3.setPlayerControlState{ enabled = false}
+end
+
+function common.enablePlayerControls()
+    logger:debug("Enabling player controls")
+    tes3.setPlayerControlState{ enabled = true}
+end
+
 function common.isLuaFile(file) return file:sub(-4, -1) == ".lua" end
 function common.isInitFile(file) return file == "init.lua" end
+
+
+local function blockActivate()
+    if not tes3.player.tempData.jopBlockActivate then
+        event.unregister("activate", blockActivate, { priority = 5})
+        return
+    end
+    return true
+end
+
+function common.blockActivate()
+    tes3.player.tempData.jopBlockActivate = true
+    event.register("activate", blockActivate, { priority = 5})
+end
+
+function common.unblockActivate()
+    tes3.player.tempData.jopBlockActivate = nil
+    event.unregister("activate", blockActivate, { priority = 5})
+end
+
+---@class JOP.playAnimation.params
+---@field reference tes3reference
+---@field group table
+---@field sound string
+---@field duration number
+---@field callback function
+
+---@param e JOP.playAnimation.params
+function common.playActivatorAnimation(e)
+    --play animation
+    tes3.playAnimation{
+        reference = e.reference,
+        group = e.group.group,
+        startFlag = tes3.animationStartFlag.immediate,
+        loopCount = 0,
+    }
+    if e.sound then
+        tes3.playSound{
+            reference = e.reference,
+            sound = e.sound,
+        }
+    end
+    if e.group.duration then
+        common.blockActivate()
+        timer.start{
+            duration = e.group.duration,
+            type = timer.simulate,
+            callback = function()
+                common.unblockActivate()
+                if e.callback then
+                    e.callback()
+                end
+            end
+        }
+    end
+end
+
+function common.positioner(reference)
+    timer.delayOneFrame(function()
+        if not CraftingFramework.interop.activatePositioner then
+            tes3.messageBox{
+                message = "Please update Crafting Framework to use this feature.",
+                buttons = {"OK"}
+            }
+            return
+        end
+        CraftingFramework.interop.activatePositioner(reference)
+    end)
+end
 
 return common

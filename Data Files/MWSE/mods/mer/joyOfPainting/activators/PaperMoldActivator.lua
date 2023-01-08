@@ -67,6 +67,10 @@ end
 Activator.registerActivator{
     onActivate = activate,
     isActivatorItem = function(e)
+        if tes3ui.menuMode() then
+            logger:debug("Menu mode, skip")
+            return false
+        end
         --Only use when in world
         if not e.target then return end
         return PaperMold:new{

@@ -76,91 +76,14 @@ local recipes = {
         destroyCallback = function(_recipe, e)
             local reference = e.reference
             local easel = Easel:new(reference)
-            if easel and easel.painting and easel.data.canvasId then
+            if easel and easel:hasCanvas() then
                 easel.painting:takeCanvas{blockSound = true}
             end
         end,
         category = "Painting",
         soundType = "wood",
         maxSteepness = 0.1,
-        additionalMenuOptions = {
-            {
-                text = "Paint",
-                callback = function(e)
-                    local buttons = {}
-                    for _, artStyleData in pairs(config.artStyles) do
-                        local artStyle = ArtStyle:new(artStyleData)
-                        table.insert(buttons, artStyle:getButton(function()
-                            Easel:new(e.reference):paint(artStyle.name)
-                        end))
-                    end
-                    tes3ui.showMessageMenu{
-                        text = "Select Art Style",
-                        buttons = buttons,
-                        cancels = true
-                    }
-                end,
-                enableRequirements = function(e)
-                    return hasCanvas(e) and not hasPainting(e)
-                end,
-                tooltipDisabled = function(e)
-                    if hasCanvas(e) and not hasPainting(e) then
-                        return {
-                            text = "Attach a canvas to the easel first."
-                        }
-                    else
-                        return {
-                            text = "You must scrape off the current painting first."
-                        }
-                    end
-                end
-            },
-            {
-                text = "View Painting",
-                callback = function(e)
-                    timer.delayOneFrame(function()
-                        Painting:new{
-                            reference = e.reference,
-                            item = e.item,
-                            itemData = e.itemData,
-                        }:paintingMenu()
-                    end)
-                end,
-                showRequirements = hasPainting
-            },
-            {
-                text = "Rotate Canvas",
-                callback = function(e)
-                    Easel:new(e.reference):rotateCanvas()
-                end,
-                showRequirements = function(e)
-                    return Painting:new{
-                        reference = e.reference ---@type any
-                    }:isRotatable()
-                end
-            },
-            {
-                text = "Attach Canvas",
-                callback = function(e)
-                    Easel:new(e.reference):openAttachCanvasMenu()
-                end,
-                showRequirements = canAttachCanvas,
-            },
-            {
-                text = "Take Canvas",
-                callback = function(e)
-                    Easel:new(e.reference).painting:takeCanvas()
-                end,
-                showRequirements = hasEmptyCanvas,
-            },
-            {
-                text = "Take Painting",
-                callback = function(e)
-                    Easel:new(e.reference).painting:takeCanvas()
-                end,
-                showRequirements = hasPainting,
-            }
-        }
+        additionalMenuOptions = Easel.getActivationButtons(),
     },
     {
         id = "jop_canvas_square_01",

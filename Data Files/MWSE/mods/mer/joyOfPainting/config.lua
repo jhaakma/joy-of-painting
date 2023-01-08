@@ -58,10 +58,14 @@ do
 end
 
 --Registered objects
+---@type table<string, JOP.BackPack.Config>
+config.backpacks = {}
+---@type JOP.Canvas[]
 config.canvases = {}
 config.frameSizes = {}
 config.frames = {}
 config.easels = {}
+config.miscEasels = {}
 ---@type table<string, JOP.ArtStyle.data>
 config.artStyles = {}
 config.controls = {}

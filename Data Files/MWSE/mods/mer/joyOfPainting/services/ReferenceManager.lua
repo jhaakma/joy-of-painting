@@ -1,3 +1,5 @@
+local common = require("mer.joyOfPainting.common")
+local logger = common.createLogger("ReferenceManager")
 local ReferenceManager = {
     new = function(self, o)
         o = o or {}   -- create object if user does not provide one
@@ -73,6 +75,10 @@ function ReferenceManager.registerReference(reference)
 end
 
 function ReferenceManager.iterateReferences(refType, callback)
+    if not ReferenceManager.controllers[refType] then
+        logger:warn("No reference controller for %s", refType)
+        return
+    end
     for ref, _ in pairs(ReferenceManager.controllers[refType].references) do
         --check requirements in case it's no longer valid
         if ReferenceManager.controllers[refType]:requirements(ref) then

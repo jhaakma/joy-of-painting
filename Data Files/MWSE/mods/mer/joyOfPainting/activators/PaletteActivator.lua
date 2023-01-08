@@ -65,6 +65,10 @@ end
 Activator.registerActivator{
     onActivate = activate,
     isActivatorItem = function(e)
+        if tes3ui.menuMode() then
+            logger:debug("Menu mode, skip")
+            return false
+        end
         local palette = Palette:new{
             reference = e.target,
             item = e.item,

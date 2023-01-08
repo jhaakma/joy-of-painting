@@ -19,9 +19,12 @@ NodeManager.nodes = {
     PAINT_TEX_NODE = "CANVAS_PAINT",
     --Easel nodes
     ATTACH_CANVAS = "ATTACH_CANVAS",
+    EASEL_CLAMP = "EASEL_CLAMP",
 
     --Frame
     ATTACH_FRAME = "ATTACH_FRAME",
+
+
 }
 
 ---@param node niNode
