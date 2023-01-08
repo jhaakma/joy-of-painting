@@ -3,7 +3,7 @@ This mod allows you to create paintings which can be sold or displayed in frames
 
 ## Requirements ##
 
-## Download
+### Download Joy of Painting
 
 See the release history here: https://github.com/jhaakma/joy-of-painting/releases
 
