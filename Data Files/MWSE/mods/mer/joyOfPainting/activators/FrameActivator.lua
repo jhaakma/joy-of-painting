@@ -177,13 +177,8 @@ local function activate(e)
                     end)
                 end,
             },
-            {
-                text = "Cancel",
-                callback = function()
-                    logger:debug("Cancel")
-                end,
-            },
         },
+        cancels = true
     }
 end
 
