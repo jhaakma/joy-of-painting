@@ -3,6 +3,12 @@ This mod allows you to create paintings which can be sold or displayed in frames
 
 ## Requirements ##
 
+### Download Joy of Painting
+
+See the release history here: https://github.com/jhaakma/joy-of-painting/releases
+
+Or download the latest version directly using this link https://github.com/jhaakma/joy-of-painting/releases/latest/download/JoyOfPainting.7z
+
 ### Morrowind Install Location
 Morrowind **must be installed outside of `Program Files/`**. Windows locks down permissions on software installed in that folder and this causes issues with a number of mods and mod organisers, so it's good practice to avoid installing Morrowind there anyway, but for Joy of Painting this is an absolute must. Joy of Painting reads, edits and writes image files in your `Data Files/Textures` folder and can not do so if Morrowind is installed in `Program Files/`.
 
