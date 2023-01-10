@@ -201,10 +201,7 @@ function Painting:paintingMenu()
         local paintingData = self.data
         local paintingTexture = paintingData.paintingTexture
         local tooltipText = string.format("Location: %s.", paintingData.location)
-        local paintingName = self.item.name
-        if paintingData.paintingName then
-            paintingName = config.artStyles[paintingData.artStyle].name .. paintingData.paintingName
-        end
+        local paintingName = paintingData.paintingName and paintingData.paintingName or self.item.name
 
         local tooltipHeader = paintingName
         logger:debug("Painting Name: %s", paintingName)
