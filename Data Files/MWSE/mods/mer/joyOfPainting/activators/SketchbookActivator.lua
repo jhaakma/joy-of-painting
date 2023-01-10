@@ -24,7 +24,7 @@ end
 Activator.registerActivator{
     onActivate = activate,
     isActivatorItem = function(e)
-        if tes3ui.menuMode() then
+        if e.target and tes3ui.menuMode() then
             logger:debug("Menu mode, skip")
             return false
         end
