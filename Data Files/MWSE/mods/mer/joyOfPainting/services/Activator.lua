@@ -14,6 +14,7 @@ local Activator = {
 
 ---@class JoyOfPainting.Activator
 ---@field onActivate function
+---@field onPickup function
 ---@field isActivatorItem function
 ---@field blockStackActivate boolean
 
@@ -26,7 +27,6 @@ end
 
 ---@param e activateEventData
 function Activator.doBlockActivate(e)
-    if common.isShiftDown() then return true end
     if e.activator ~= tes3.player then
         logger:debug("Not player, skip")
         return true

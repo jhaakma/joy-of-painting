@@ -5,15 +5,27 @@ local Activator = require("mer.joyOfPainting.services.Activator")
 ---@param e activateEventData
 local function onActivate(e)
     e.object = e.target.object
-    e.dataHlder = e.target
+    e.dataHolder = e.target
+
+    if e.activator ~= tes3.player then
+        return
+    end
+
     for _, activator in pairs(Activator.activators) do
-        if Activator.doBlockActivate(e) then return end
-        if activator.blockStackActivate and common.isStack(e.target) then
-            logger:debug("%s is stack, skip", e.target.object.id)
-        elseif activator.isActivatorItem(e) then
-            logger:debug("%s is activator item, activating", e.target.object.id)
-            activator.onActivate(e)
-            return true
+        if activator.isActivatorItem(e) then
+            if common.isShiftDown() then
+                if activator.onPickup then
+                    activator.onPickup(e)
+                end
+                return
+            elseif activator.blockStackActivate and common.isStack(e.target) then
+                logger:debug("%s is stack, skip", e.target.object.id)
+                return
+            else
+                logger:debug("%s is activator item, activating", e.target.object.id)
+                activator.onActivate(e)
+                return true
+            end
         end
     end
     logger:debug("No activators found for %s", e.target.object.id)

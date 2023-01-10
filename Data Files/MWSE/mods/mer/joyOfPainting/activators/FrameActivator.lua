@@ -184,6 +184,15 @@ end
 
 Activator.registerActivator{
     onActivate = activate,
+    onPickup = function(e)
+        if not e.target then return end
+        local painting = Painting:new{
+            reference = e.target,
+            item = e.item,
+            itemData = e.itemData,
+        }
+        painting:takeCanvas()
+    end,
     isActivatorItem = function(e)
         if not e.target then return false end
         return config.frames[e.object.id:lower()] ~= nil
