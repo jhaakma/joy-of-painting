@@ -58,20 +58,25 @@ function ReferenceManager.invalidate(e)
     end
 end
 
-
 function ReferenceManager.registerReferenceController(e)
     assert(e.id, "No id provided")
     assert(e.requirements, "No reference requirements provieded")
-    ReferenceManager.controllers[e.id] =  ReferenceManager:new{ requirements = e.requirements }
+    ReferenceManager.controllers[e.id] =  ReferenceManager:new{
+        requirements =  e.requirements,
+        onActive = e.onActive
+    }
     return ReferenceManager.controllers[e.id]
 end
 
 function ReferenceManager.registerReference(reference)
+    local controllersAddedTo = {}
     for _, controller in pairs(ReferenceManager.controllers) do
         if controller:requirements(reference) then
             controller:addReference(reference)
+            table.insert(controllersAddedTo, controller)
         end
     end
+    return controllersAddedTo
 end
 
 function ReferenceManager.iterateReferences(refType, callback)

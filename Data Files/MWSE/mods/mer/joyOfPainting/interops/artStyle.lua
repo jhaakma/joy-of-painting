@@ -184,8 +184,8 @@ local artStyles = {
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
                 config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
-                10, 2
-            ), 10, 2)
+                10, 3
+            ), 10, 3)
             logger:debug("Watercolor Painting detail level is %d", detailLevel)
             return function(next)
                 image.magick:new("createPainting")
@@ -194,9 +194,12 @@ local artStyles = {
                 :param(image.screenshotPath)
                 :trim()
                 --:autoGamma()
+                :brightnessContrast(-20, 20)
                 :blur(detailLevel)
                 :paint(detailLevel)
                 :resizeHard(savedWidth, savedHeight)
+                :gravity("center")
+                :compositeClone(image.canvasConfig.canvasTexture, savedWidth, savedHeight)
                 :repage()
                 :param(image.savedPaintingPath)
                 :execute(next)

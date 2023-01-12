@@ -90,42 +90,6 @@ function common.unblockActivate()
     event.unregister("activate", blockActivate, { priority = 5})
 end
 
----@class JOP.playAnimation.params
----@field reference tes3reference
----@field group table
----@field sound string
----@field duration number
----@field callback function
-
----@param e JOP.playAnimation.params
-function common.playActivatorAnimation(e)
-    --play animation
-    tes3.playAnimation{
-        reference = e.reference,
-        group = e.group.group,
-        startFlag = tes3.animationStartFlag.immediate,
-        loopCount = 0,
-    }
-    if e.sound then
-        tes3.playSound{
-            reference = e.reference,
-            sound = e.sound,
-        }
-    end
-    if e.group.duration then
-        common.blockActivate()
-        timer.start{
-            duration = e.group.duration,
-            type = timer.simulate,
-            callback = function()
-                common.unblockActivate()
-                if e.callback then
-                    e.callback()
-                end
-            end
-        }
-    end
-end
 
 function common.positioner(reference)
     timer.delayOneFrame(function()

@@ -151,11 +151,23 @@ function Magick:removeWhite_1(fuzz)
 end
 
 function Magick:removeWhite_2(_)
-    self.command = string.format('%s -alpha copy -channel A -negate +channel ', self.command)
+    self.command = string.format('%s -alpha copy -channel alpha -negate +channel -fx "#000" ',
+        self.command)
     return self
 end
 
+function Magick:removeWhite_3()
+    self.command = string.format('%s -negate -alpha copy -channel rgb -fx "0" ',
+        self.command)
+    return self
+end
 
+function Magick:transparent(percent)
+    local level = (100 - percent) / 100
+    self.command = string.format("%s -channel A -evaluate multiply %s -negate +channel ",
+        self.command, level)
+    return self
+end
 
 ---@return JOP.Magick
 --Adds a transparent border around the image.

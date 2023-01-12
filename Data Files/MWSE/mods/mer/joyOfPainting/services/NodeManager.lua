@@ -44,8 +44,9 @@ end
 function NodeManager.cloneTextureProperty(node)
     local prop = node:detachProperty(ni.propertyType.texturing)
     assert(prop ~= nil, "No material property found on node")
-    local clonedProp = prop:clone() --[[@as niTexturingProperty]]
+    local clonedProp = prop:clone() --[[@as any]]
     node:attachProperty(clonedProp)
+    return clonedProp
 end
 
 ---@param sceneNode niNode
@@ -89,7 +90,11 @@ function NodeManager.registerSwitch(e)
 
     ReferenceManager.registerReferenceController{
         id = e.id,
-        requirements = e.requirements
+        requirements = e.requirements,
+        onActive = function(reference)
+            logger:debug("Updating switches for %s", reference.id)
+            NodeManager.updateSwitch(reference)
+        end
     }
 
     logger:debug("Registering switch %s", e.switchName)

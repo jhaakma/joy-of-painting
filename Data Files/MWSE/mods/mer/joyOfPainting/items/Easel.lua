@@ -5,7 +5,7 @@ local NodeManager = require("mer.joyOfPainting.services.NodeManager")
 local Painting = require("mer.joyOfPainting.items.Painting")
 local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
 local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
-
+local Activator = require("mer.joyOfPainting.services.Activator")
 
 ---@class JOP.CanvasData
 ---@field canvasId string|nil The id of the original canvas object
@@ -36,7 +36,7 @@ Easel.__index = Easel
 
 Easel.animationGroups = {
     packed = {
-        group = tes3.animationGroup.idle5,
+        group = tes3.animationGroup.idle,
     },
     unpacking = {
         group = tes3.animationGroup.idle2,
@@ -50,7 +50,7 @@ Easel.animationGroups = {
         duration = 1.3,
     },
     open = {
-        group = tes3.animationGroup.idle,
+        group = tes3.animationGroup.idle5,
     },
     closing = {
         group = tes3.animationGroup.idle6,
@@ -241,11 +241,11 @@ function Easel:canPickUp()
     return not self:hasCanvas()
 end
 
-function Easel:isUnpacked()
+function Easel:isOpen()
     if self.doesPack ~= true then
         return true
     end
-    return self.data.unpacked
+    return self.data.opened == true
 end
 
 function Easel:open()
@@ -254,14 +254,13 @@ function Easel:open()
         return
     end
     logger:debug("Opening")
-    common.playActivatorAnimation{
+    self.data.opened = true
+    Activator.playActivatorAnimation{
         reference = self.reference,
         group = self.animationGroups.opening,
+        nextAnimation = self.animationGroups.open.group,
         sound = "Wooden Door Open 1",
         duration = 1.3,
-        callback = function()
-            self.data.unpacked = true
-        end
     }
 end
 
@@ -271,16 +270,13 @@ function Easel:close()
         return
     end
     logger:debug("Closing")
-
-    common.playActivatorAnimation{
+    self.data.opened = false
+    Activator.playActivatorAnimation{
         reference = self.reference,
         group = self.animationGroups.closing,
+        nextAnimation = self.animationGroups.unpacked.group,
         sound = "Wooden Door Open 1",
         duration = 1.4,
-        callback = function()
-            --set data.unpacked to false
-            self.data.unpacked = false
-        end
     }
 end
 
@@ -295,10 +291,11 @@ function Easel:pickUp()
     end
     logger:debug("Picking up")
 
-    common.playActivatorAnimation{
+    Activator.playActivatorAnimation{
         reference = self.reference,
-        group = self.data.unpacked and self.animationGroups.openPacking or self.animationGroups.packing,
-        duration = self.data.unpacked and 3.6 or 1.4,
+        group = self.data.opened and self.animationGroups.openPacking or self.animationGroups.packing,
+        nextAnimation = self.animationGroups.unpacked.group,
+        duration = self.data.opened and 3.6 or 1.4,
         sound = "Wooden Door Open 1",
         callback = function()
             logger:debug("Adding %s to inventory and deleting easel", self.miscItem)
@@ -335,6 +332,15 @@ function Easel:setClamp()
     local clampNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.EASEL_CLAMP)
     clampNode.translation.y = - offset
     clampNode:update()
+end
+
+function Easel:getCurrentAnimation()
+    if not self.doesPack then return nil end
+    if self.data.opened then
+        return self.animationGroups.open.group
+    else
+        return self.animationGroups.unpacked.group
+    end
 end
 
 function Easel:takeCanvas()
@@ -401,7 +407,7 @@ function Easel.getActivationButtons()
             end,
             showRequirements = function(e)
                 local easel = Easel:new(e.reference)
-                return easel and easel.doesPack == true and not easel:isUnpacked()
+                return easel and easel.doesPack == true and not easel:isOpen()
             end
         },
         {
@@ -426,7 +432,7 @@ function Easel.getActivationButtons()
             end,
             showRequirements = function(e)
                 local easel = Easel:new(e.reference)
-                return easel and easel:isUnpacked()
+                return easel and easel:isOpen()
             end,
             tooltipDisabled = function(e)
                 local easel = Easel:new(e.reference)
@@ -478,7 +484,7 @@ function Easel.getActivationButtons()
             end,
             showRequirements = function(e)
                 local easel = Easel:new(e.reference)
-                return easel and easel:canAttachCanvas() and easel:isUnpacked()
+                return easel and easel:canAttachCanvas() and easel:isOpen()
             end
         },
         {
@@ -521,7 +527,7 @@ function Easel.getActivationButtons()
             end,
             showRequirements = function(e)
                 local easel = Easel:new(e.reference)
-                return easel and easel.doesPack and easel:isUnpacked()
+                return easel and easel.doesPack and easel:isOpen()
                     and not easel:hasCanvas()
             end
         },

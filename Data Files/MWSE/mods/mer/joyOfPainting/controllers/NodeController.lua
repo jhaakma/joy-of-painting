@@ -12,6 +12,4 @@ local function manageSceneNodeCreated(e)
     end
 end
 
-event.register("referenceSceneNodeCreated", manageSceneNodeCreated)
-
-event.register("objectInvalidated", ReferenceManager.invalidate)
+--event.register("referenceSceneNodeCreated", manageSceneNodeCreated)

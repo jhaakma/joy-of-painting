@@ -1,6 +1,7 @@
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("ActivatorController")
 local Activator = require("mer.joyOfPainting.services.Activator")
+local ReferenceManager = require("mer.joyOfPainting.services.ReferenceManager")
 
 ---@param e activateEventData
 local function onActivate(e)
@@ -44,3 +45,39 @@ local function onEquip(e)
     end
 end
 event.register("equip", onEquip)
+
+ReferenceManager.registerReferenceController{
+    id = "AnimationActivators",
+    requirements = function(_, reference)
+        for _, activator in pairs(Activator.activators) do
+            if activator.getAnimationGroup ~= nil and activator.isActivatorItem{ target = reference } then
+                return true
+            end
+        end
+        return false
+    end
+}
+
+local function setAnimationStates(e)
+    logger:debug("Setting animation states")
+    ReferenceManager.iterateReferences("AnimationActivators", function(reference)
+        logger:debug("Reference: %s", reference.object.id)
+        for _, activator in pairs(Activator.activators) do
+            if activator.getAnimationGroup ~= nil and activator.isActivatorItem{ target = reference } then
+                logger:debug("is activator: %s", activator.id)
+                local animationState = activator.getAnimationGroup(reference)
+                if animationState then
+                    logger:debug("Setting animation %s for %s", animationState, reference.object.id)
+                    tes3.playAnimation{
+                        reference = reference,
+                        group = animationState,
+                        startFlag = tes3.animationStartFlag.immediate,
+                        loopCount = 0,
+                    }
+                    return
+                end
+            end
+        end
+    end)
+end
+event.register("loaded", setAnimationStates)

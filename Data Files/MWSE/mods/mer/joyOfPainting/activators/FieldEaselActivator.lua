@@ -4,7 +4,6 @@ local logger = common.createLogger("FieldEaselActivator")
 local Easel = require("mer.joyOfPainting.items.Easel")
 local Activator = require("mer.joyOfPainting.services.Activator")
 
-
 local function activateEasel(e)
     logger:debug("Activating Easel")
     local easel = Easel:new(e.target)
@@ -23,18 +22,18 @@ local function activateEasel(e)
 end
 
 Activator.registerActivator{
+    id = "mer_joyOfPainting_fieldEasel",
     onActivate = activateEasel,
     isActivatorItem = function(e)
-        if not e.target then
-            return false
-        end
-        if not config.easels[e.object.id:lower()] then
-            return false
-        end
-        logger:debug("Is an easel")
-        return true
+        return Easel:new(e.target) ~= nil
     end,
-    blockStackActivate = true
+    blockStackActivate = true,
+    getAnimationGroup = function(reference)
+        local easel = Easel:new(reference)
+        if easel then
+            return easel:getCurrentAnimation()
+        end
+    end
 }
 
 ---@param e activateEventData
@@ -56,9 +55,10 @@ local function activateMiscEasel(e)
                             cell = e.target.cell
                         }
                         logger:debug("Unpacking easel")
-                        common.playActivatorAnimation{
+                        Activator.playActivatorAnimation{
                             reference = activatorEasel,
                             group = Easel.animationGroups.unpacking,
+                            nextAnimation = Easel.animationGroups.unpacked.group,
                             sound = "Wooden Door Open 1",
                             duration = 1.4
                         }
