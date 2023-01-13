@@ -7,10 +7,10 @@ local rcmeButtons = {
         menu = "JOP_SketchbookMenu",
         button = "JOP_SketchbookMenu_ExitButton"
     },
-    {
-        menu = "TJOP.PhotoMenu",
-        button = "JOP.CloseButton"
-    },
+    -- {
+    --     menu = "TJOP.PhotoMenu",
+    --     button = "JOP.CloseButton"
+    -- },
     {
         menu = "JOP.NamePaintingMenu",
         button = "JOP.CloseButton"
