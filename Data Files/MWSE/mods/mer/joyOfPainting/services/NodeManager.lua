@@ -91,9 +91,9 @@ function NodeManager.registerSwitch(e)
     ReferenceManager.registerReferenceController{
         id = e.id,
         requirements = e.requirements,
-        onActive = function(reference)
+        onActive = function(_, reference)
             logger:debug("Updating switches for %s", reference.id)
-            NodeManager.updateSwitch(reference)
+            NodeManager.processSwitch(e, reference)
         end
     }
 

@@ -35,5 +35,6 @@ local switches = {
 }
 
 for _, switch in ipairs(switches) do
+    logger:debug("Registering switch %s", switch.id)
     NodeManager.registerSwitch(switch)
 end
