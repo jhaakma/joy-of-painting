@@ -111,7 +111,7 @@ local persistentDefault = {
 local mcmDefault = {
     enabled = true,
     logLevel = "DEBUG", --TODO: Change to INFO before full release
-    savedPaintingIndex = 1,
+    savedPaintingIndexes = {},
     maxSavedPaintings = 20,
     savedPaintingSize = 1080,
 }

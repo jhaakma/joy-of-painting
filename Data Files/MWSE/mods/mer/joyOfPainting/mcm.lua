@@ -61,7 +61,7 @@ local function registerMCM()
 
     page:createSlider{
         label = "Max Saved Paintings",
-        description = "Set the maximum number of full-resolution paintings saved to `Data Files/Textures/jop/saved/`. Once the maximum is reached, the oldest painting will be deleted to make room for the new one.",
+        description = "Set the maximum number of full-resolution paintings of each art style saved to `Data Files/Textures/jop/saved/`. Once the maximum is reached, the oldest painting will be deleted to make room for the new one.",
         min = 1,
         max = 100,
         step = 1,

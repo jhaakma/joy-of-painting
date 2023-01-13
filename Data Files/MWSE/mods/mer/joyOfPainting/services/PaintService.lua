@@ -34,9 +34,37 @@ function PaintService.getSavedPaintingDimensions(image)
     return width, height
 end
 
-function PaintService.getSavedPaintingPath()
-    local currentPaintingIndex = config.mcm.savedPaintingIndex
-    return "textures\\jop\\saved\\" .. currentPaintingIndex .. ".png"
+function PaintService.getSavedPaintingIndex(artStyle)
+    local index = config.mcm.savedPaintingIndexes[artStyle.name]
+    if not index then
+        index = 1
+        config.mcm.savedPaintingIndexes[artStyle.name] = index
+        config:save()
+    end
+    return index
+end
+
+function PaintService.incrementSavedPaintingIndex(artStyle)
+    local index = PaintService.getSavedPaintingIndex(artStyle)
+    local nextIndex = index + 1
+    if index >= config.mcm.maxSavedPaintings then
+        nextIndex = 1
+    end
+    config.mcm.savedPaintingIndexes[artStyle.name] = nextIndex
+    config:save()
+    return nextIndex
+end
+
+---@param artStyle JOP.ArtStyle
+---@return string # The path (relative to Data Files) of the full resolution saved painting
+function PaintService.getSavedPaintingPath(artStyle)
+    local index = PaintService.getSavedPaintingIndex(artStyle)
+    if not index then
+        index = 1
+        config.mcm.savedPaintingIndexes[artStyle.name] = index
+    end
+    return string.format("textures\\jop\\saved\\%s\\%s.dds",
+        artStyle.name, index)
 end
 
 

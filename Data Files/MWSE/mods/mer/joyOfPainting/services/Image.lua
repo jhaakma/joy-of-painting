@@ -80,18 +80,6 @@ function Image:takeScreenshot(callback)
     }
 end
 
-function Image:incrementSavedPaintingIndex(callback)
-    local currentPaintingIndex = config.mcm.savedPaintingIndex
-    local nextPaintingIndex = currentPaintingIndex + 1
-    if nextPaintingIndex >= config.mcm.maxSavedPaintings then
-        nextPaintingIndex = 1
-    end
-    config.mcm.savedPaintingIndex = nextPaintingIndex
-    config.save()
-    logger:debug("Incremented saved painting index to %s", nextPaintingIndex)
-    if callback then callback() end
-end
-
 function Image:createPaintingTexture(callback)
     --[[
         - find the savedPaintingPath image

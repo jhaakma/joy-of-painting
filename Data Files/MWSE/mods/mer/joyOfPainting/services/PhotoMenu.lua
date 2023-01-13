@@ -65,7 +65,7 @@ function PhotoMenu:capture()
     logger:debug("Painting name: %s", paintingTexture)
 
     local imageData = {
-        savedPaintingPath = "Data Files\\" .. PaintService.getSavedPaintingPath(),
+        savedPaintingPath = "Data Files\\" .. PaintService.getSavedPaintingPath(self.artStyle),
         paintingPath = "Data Files\\" .. PaintService.getPaintingTexturePath(paintingTexture),
         canvasConfig = self.canvasConfig,
         iconSize = 32,
@@ -82,6 +82,10 @@ function PhotoMenu:capture()
                     paintingTexture = paintingTexture,
                 })
             end
+        end)
+        :registerStep("incrementSavedPaintingIndex", function()
+            logger:debug("Incrementing saved painting index")
+            PaintService.incrementSavedPaintingIndex(self.artStyle)
         end)
         :registerStep("usePaint", function()
             logger:debug("Using paint")
