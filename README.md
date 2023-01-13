@@ -3,38 +3,41 @@ This mod allows you to create paintings which can be sold or displayed in frames
 
 ## Requirements ##
 
-### Download Joy of Painting
-
-See the release history here: https://github.com/jhaakma/joy-of-painting/releases
-
-Or download the latest version directly using this link https://github.com/jhaakma/joy-of-painting/releases/latest/download/JoyOfPainting.7z
-
 ### Morrowind Install Location
 Morrowind **must be installed outside of `Program Files/`**. Windows locks down permissions on software installed in that folder and this causes issues with a number of mods and mod organisers, so it's good practice to avoid installing Morrowind there anyway, but for Joy of Painting this is an absolute must. Joy of Painting reads, edits and writes image files in your `Data Files/Textures` folder and can not do so if Morrowind is installed in `Program Files/`.
+
+### Joy of Painting
+See the release history here: https://github.com/jhaakma/joy-of-painting/releases
+
+- Download the latest version directly using this link https://github.com/jhaakma/joy-of-painting/releases/latest/download/JoyOfPainting.7z
 
 ### ImageMagick
 ImageMagick is an image editing tool, and it must be installed on your machine so it can be used by this mod.
 
-An installer is included with this mod in the `Data Files\JoyOfPaintingResources` folder, or you can download it here: https://imagemagick.org/archive/binaries/ImageMagick-7.1.0-55-Q16-HDRI-x64-dll.exe
+- Download from here: https://imagemagick.org/archive/binaries/ImageMagick-7.1.0-55-Q16-HDRI-x64-dll.exe
 
 ### MGE XE v0.15.0 or later
 Requires MGE XE v0.15 or later in order to capture the screenshots used for paintings.
+
+- MGE XE can be found here: https://www.nexusmods.com/morrowind/mods/41102
 
 ### Morrowind Script Extender
 Ensure the latest MWSE is installed by running the `MWSE-Update.exe` file which comes with MGE XE, found in your `Morrowind` directory.
 
 ### Skills Module
 Skills module is required for the painting/artistry skill.
-Skills Module can be found here: https://www.nexusmods.com/morrowind/mods/46034
+
+- Skills Module can be found here: https://www.nexusmods.com/morrowind/mods/46034
 
 ### The Crafting Framework
 The Crafting Framework is required in order to craft art supplies.
-The Crafting Framework can be found here: https://www.nexusmods.com/morrowind/mods/51009
+
+- The Crafting Framework can be found here: https://www.nexusmods.com/morrowind/mods/51009
 
 ### Ashfall (ALPHA release only)
 This dependency is only required during the alpha release, as currently the only way to get canvases and easels is to bushcraft them.
-Ashfall can be found here: https://www.nexusmods.com/morrowind/mods/49057
 
+- Ashfall can be found here: https://www.nexusmods.com/morrowind/mods/49057
 
 ## How to Play
 
