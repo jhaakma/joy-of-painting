@@ -20,3 +20,5 @@ logger:debug("Initialising Interops")
 initAll("interops")
 logger:debug("Initialising activators")
 initAll("activators")
+
+logger:info("Initialized %s", common.getVersion())

@@ -511,7 +511,9 @@ function Easel.getActivationButtons()
         {
             text = "Position",
             callback = function(e)
-                common.positioner(e.reference)
+                common.positioner{
+                    reference = e.reference,
+                }
             end,
             showRequirements = function(e)
                 local easel = Easel:new(e.reference)

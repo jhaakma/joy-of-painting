@@ -153,7 +153,12 @@ local function activate(e)
                         return
                     end
                     local ref = safeRef and safeRef:getObject()
-                    common.positioner(ref)
+                    common.positioner{
+                        reference = ref,
+                        pinToWall = true,
+                        placementSetting = "free",
+                        blockToggle = true
+                    }
                 end,
             },
             {

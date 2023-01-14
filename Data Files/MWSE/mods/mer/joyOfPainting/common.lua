@@ -16,8 +16,17 @@ function common.createLogger(serviceName)
     common.loggers[serviceName] = logger
     return logger
 end
-
 local logger = common.createLogger("common")
+
+function common.getVersion()
+    local versionFile = io.open("Data Files/MWSE/mods/mer/skoomaesthesia/version.txt", "r")
+    if not versionFile then return end
+    local version = ""
+    for line in versionFile:lines() do -- Loops over all the lines in an open text file
+        version = line
+    end
+    return version
+end
 
 ---@param reference tes3reference
 ---@return boolean
@@ -56,7 +65,6 @@ function common.logAssert(logger, condition, message)
     end
 end
 
-
 function common.disablePlayerControls()
     logger:debug("Disabling player controls")
     --disable everything except vanity
@@ -90,8 +98,12 @@ function common.unblockActivate()
     event.unregister("activate", blockActivate, { priority = 5})
 end
 
+---@class JOP.common.positioner.params
+---@field reference tes3reference
+---@field pinToWall boolean
 
-function common.positioner(reference)
+---@param e JOP.common.positioner.params
+function common.positioner(e)
     timer.delayOneFrame(function()
         if not CraftingFramework.interop.activatePositioner then
             tes3.messageBox{
@@ -100,7 +112,7 @@ function common.positioner(reference)
             }
             return
         end
-        CraftingFramework.interop.activatePositioner(reference)
+        CraftingFramework.interop.activatePositioner(e)
     end)
 end
 
