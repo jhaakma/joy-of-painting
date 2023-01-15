@@ -19,11 +19,13 @@ end
 local logger = common.createLogger("common")
 
 function common.getVersion()
-    local versionFile = io.open("Data Files/MWSE/mods/mer/skoomaesthesia/version.txt", "r")
-    if not versionFile then return end
     local version = ""
-    for line in versionFile:lines() do -- Loops over all the lines in an open text file
-        version = line
+    local versionFile = io.open("Data Files/MWSE/mods/mer/joyOfPainting/version.txt", "r")
+    if versionFile then
+        for line in versionFile:lines() do -- Loops over all the lines in an open text file
+            version = line
+            break
+        end
     end
     return version
 end

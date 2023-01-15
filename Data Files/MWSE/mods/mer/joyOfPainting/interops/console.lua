@@ -7,7 +7,7 @@ event.register("UIEXP:sandboxConsole", function(e)
         local cell = tes3.getCell({ id = cellName })
         if cell.isInterior then
             tes3.positionCell({
-                cell = tes3.getCell({ id = cellName }),
+                cell = cell,
                 position = {x = 0, y = 0, z = 0},
                 reference = tes3.player
             })
