@@ -8,6 +8,19 @@ config.modDescription = [[
     create your own paintings and sell them or hang them on a wall.
 ]]
 config.configPath = "joyOfPainting"
+config.dependencies = {
+    {
+        name = "Skills Module",
+        luaFile = "OtherSkills.skillModule",
+        url = "https://www.nexusmods.com/morrowind/mods/46034?tab=files"
+    },
+    {
+        name = "The Crafting Framework",
+        versionFile = "CraftingFramework/version.txt",
+        version = ">=v1.0.25",
+        url = "https://www.nexusmods.com/morrowind/mods/51009?tab=files"
+    },
+}
 config.ANIM_OFFSET = 2.0
 config.skills = {
     painting = {
@@ -92,6 +105,30 @@ config.paperMolds = {
 config.paperPulps = {
     jop_paper_pulp = true
 }
+config.tapestries = {
+    furn_com_tapestry_01 = true,
+    furn_com_tapestry_02 = true,
+    furn_com_tapestry_03 = true,
+    furn_com_tapestry_04 = true,
+    furn_com_tapestry_05 = true,
+    furn_de_tapestry_01 = true,
+    furn_de_tapestry_02 = true,
+    furn_de_tapestry_03 = true,
+    furn_de_tapestry_04 = true,
+    furn_de_tapestry_05 = true,
+    furn_de_tapestry_06 = true,
+    furn_de_tapestry_07 = true,
+    furn_de_tapestry_08 = true,
+    furn_de_tapestry_09 = true,
+    furn_de_tapestry_10 = true,
+    furn_de_tapestry_11 = true,
+    furn_de_tapestry_12 = true,
+    furn_de_tapestry_13 = true,
+    furn_de_tapestry_m_01 = true,
+    furn_s_tapestry = true,
+    furn_s_tapestry02 = true,
+    furn_s_tapestry03 = true,
+}
 config.shaders = {
     watercolor = "jop_watercolor",
     oil = "jop_oil",
@@ -114,6 +151,7 @@ local mcmDefault = {
     savedPaintingIndexes = {},
     maxSavedPaintings = 20,
     savedPaintingSize = 1080,
+    enableTapestryRemoval = true,
 }
 --MCM Config (stored as JSON)
 config.mcm = mwse.loadConfig(config.configPath, mcmDefault)

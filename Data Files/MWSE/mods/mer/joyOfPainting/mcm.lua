@@ -76,6 +76,12 @@ local function registerMCM()
         numbersOnly = true,
     }
 
+    page:createYesNoButton{
+        label = "Enable Tapestry Removal",
+        description = "When enabled, you can activate a tapestry to remove it to make room for a painting.",
+        variable = mwse.mcm.createTableVariable{ id = "enableTapestryRemoval", table = config.mcm },
+    }
+
     page:createDropdown{
         label = "Log Level",
         description = "Set the logging level for all JoyOfPainting Loggers.",
