@@ -1,33 +1,7 @@
 local ashfall = include("mer.ashfall.interop")
 if not ashfall then return end
-
-local common = require("mer.joyOfPainting.common")
-local config = require("mer.joyOfPainting.config")
-local logger = common.createLogger("AshfallInterop")
 local Easel = require("mer.joyOfPainting.items.Easel")
-local Painting = require("mer.joyOfPainting.items.Painting")
 local Dye = require("mer.joyOfPainting.items.Dye")
-local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
-local UIHelper = require("mer.joyOfPainting.services.UIHelper")
-
-local function hasCanvas(e)
-    return Easel:new(e.reference):hasCanvas()
-end
-
-local function hasPainting(e)
-    return Easel:new(e.reference):hasPainting()
-end
-
-local function hasEmptyCanvas(e)
-    local easel = Easel:new(e.reference)
-    return easel and easel:hasCanvas() and not easel:hasPainting()
-end
-
-local function canAttachCanvas(e)
-    return Easel:new(e.reference):canAttachCanvas()
-end
-
-
 local recipes = {
     {
         id = "jop_frame_sq_01",

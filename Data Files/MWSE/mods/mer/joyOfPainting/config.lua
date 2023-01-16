@@ -105,38 +105,18 @@ config.paperMolds = {
 config.paperPulps = {
     jop_paper_pulp = true
 }
-config.tapestries = {
-    furn_com_tapestry_01 = true,
-    furn_com_tapestry_02 = true,
-    furn_com_tapestry_03 = true,
-    furn_com_tapestry_04 = true,
-    furn_com_tapestry_05 = true,
-    furn_de_tapestry_01 = true,
-    furn_de_tapestry_02 = true,
-    furn_de_tapestry_03 = true,
-    furn_de_tapestry_04 = true,
-    furn_de_tapestry_05 = true,
-    furn_de_tapestry_06 = true,
-    furn_de_tapestry_07 = true,
-    furn_de_tapestry_08 = true,
-    furn_de_tapestry_09 = true,
-    furn_de_tapestry_10 = true,
-    furn_de_tapestry_11 = true,
-    furn_de_tapestry_12 = true,
-    furn_de_tapestry_13 = true,
-    furn_de_tapestry_m_01 = true,
-    furn_s_tapestry = true,
-    furn_s_tapestry02 = true,
-    furn_s_tapestry03 = true,
-}
+---@type table<string, JOP.Tapestry.data>
+config.tapestries = {}
 config.shaders = {
-    watercolor = "jop_watercolor",
-    oil = "jop_oil",
-    vignette = "jop_vignette",
-    adjuster = "jop_adjuster",
-    window = "jop_window",
-    greyscale = "jop_greyscale",
-    sketch = "jop_sketch",
+    -- adjuster = "jop_adjuster",
+    -- charcoal = "jop_charcoal",
+    -- greyscale = "jop_greyscale",
+    -- ink = "jop_ink",
+    -- oil = "jop_oil",
+    -- sketch = "jop_sketch",
+    -- vignette = "jop_vignette",
+    -- watercolor = "jop_watercolor",
+    -- window = "jop_window",
 }
 
 local persistentDefault = {

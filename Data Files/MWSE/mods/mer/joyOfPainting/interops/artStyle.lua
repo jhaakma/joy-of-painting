@@ -6,13 +6,15 @@ local SkillService = require("mer.joyOfPainting.services.SkillService")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
 
 local shaders = {
-    oil = "jop_oil",
-    watercolor = "jop_watercolor",
-    ink = "jop_ink",
-    adjuster = "jop_adjuster",
-    charcoal = "jop_charcoal",
-    greyscale = "jop_greyscale",
-    vignette = "jop_vignette",
+    { id = "adjuster", shaderId = "jop_adjuster" },
+    { id = "charcoal", shaderId = "jop_charcoal" },
+    { id = "greyscale", shaderId = "jop_greyscale" },
+    { id = "ink", shaderId = "jop_ink" },
+    { id = "oil", shaderId = "jop_oil" },
+    { id = "sketch", shaderId = "jop_sketch" },
+    { id = "vignette", shaderId = "jop_vignette" },
+    { id = "watercolor", shaderId = "jop_watercolor" },
+    { id = "window", shaderId = "jop_window" },
 }
 
 local controls = {
@@ -121,9 +123,9 @@ local artStyles = {
             end
         end,
         shaders = {
-            shaders.charcoal,
-            shaders.greyscale,
-            shaders.adjuster,
+            "charcoal",
+            "greyscale",
+            "adjuster",
         },
         controls = {
             "brightness",
@@ -165,8 +167,8 @@ local artStyles = {
             end
         end,
         shaders = {
-            shaders.ink,
-            shaders.adjuster,
+            "ink",
+            "adjuster",
         },
         controls = {
             "brightness",
@@ -206,8 +208,8 @@ local artStyles = {
             end
         end,
         shaders = {
-            shaders.watercolor,
-            shaders.adjuster,
+            "watercolor",
+            "adjuster",
         },
         controls = {
             "brightness",
@@ -249,8 +251,8 @@ local artStyles = {
             end
         end,
         shaders = {
-            shaders.oil,
-            shaders.adjuster,
+            "oil",
+            "adjuster",
         },
         controls = {
             "brightness",
@@ -264,10 +266,14 @@ local artStyles = {
 }
 
 event.register(tes3.event.initialized, function()
+    for _, shader in ipairs(shaders) do
+        interop.ArtStyle.registerShader(shader)
+    end
     for _, control in ipairs(controls) do
         interop.ArtStyle.registerControl(control)
     end
     for _, artStyle in ipairs(artStyles) do
         interop.ArtStyle.registerArtStyle(artStyle)
     end
+    event.trigger("JoyOfPainting:ArtStylesR")
 end)

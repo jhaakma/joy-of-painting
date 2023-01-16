@@ -3,6 +3,10 @@ local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("ArtStyle")
 local Palette = require("mer.joyOfPainting.items.Palette")
 
+---@class JOP.ArtStyle.shader
+---@field id string The id of the shader
+---@field shaderId string The id of the shader file
+
 ---@class JOP.ArtStyle.control
 ---@field id string The id of the control
 ---@field uniform string the name of the external variable in the shader being manipulated
@@ -59,10 +63,23 @@ function ArtStyle.registerControl(e)
     config.controls[e.id] = table.copy(e, {})
 end
 
+---@param e JOP.ArtStyle.shader
+function ArtStyle.registerShader(e)
+    common.logAssert(logger, type(e.id) == "string", "id must be a string")
+    common.logAssert(logger, type(e.shaderId) == "string", "shaderId must be a string")
+    logger:debug("Registering shader %s", e.id)
+    config.shaders[e.id] = e.shaderId
+end
 
 ---@param data JOP.ArtStyle.data
 function ArtStyle:new(data)
     local artStyle = setmetatable(table.copy(data), self)
+    local shaders = data.shaders
+    artStyle.shaders = {}
+    for _, shader in ipairs(shaders) do
+        common.logAssert(logger, config.shaders[shader], string.format("Shader %s not found", shader))
+        table.insert(artStyle.shaders, config.shaders[shader])
+    end
     artStyle.paintType = config.paintTypes[data.paintType]
     if artStyle.paintType.brushType then
         artStyle.brushType = config.brushTypes[artStyle.paintType.brushType]
@@ -88,9 +105,6 @@ function ArtStyle:getBrushes()
     end
     return brushes
 end
-
-
-
 
 function ArtStyle:playerHasBrush()
     logger:debug("Checking for %s brush", self.name)

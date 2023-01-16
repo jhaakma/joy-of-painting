@@ -4,7 +4,7 @@
 ]]
 
 local ImageBuilder = require("mer.joyOfPainting.services.ImageBuilder")
-local Shader = require("mer.joyOfPainting.services.Shader")
+local ShaderService = require("mer.joyOfPainting.services.ShaderService")
 local config = require("mer.joyOfPainting.config")
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("PhotoMenu")
@@ -13,9 +13,7 @@ local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local SkillService = require("mer.joyOfPainting.services.SkillService")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
 local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
-local alwaysOnShaders = {
-    config.shaders.window,
-}
+local alwaysOnShaders
 
 ---@class JOP.PhotoMenu
 local PhotoMenu = {
@@ -37,6 +35,9 @@ local function getpaintingTexture()
 end
 
 function PhotoMenu:new(data)
+    alwaysOnShaders = {
+        config.shaders.window,
+    }
     logger:debug("Creating new PhotoMenu")
     local o = setmetatable(data, self)
     self.__index = self
@@ -201,61 +202,10 @@ function PhotoMenu:createZoomSlider(parent)
     end
 end
 
-local lightingModeCycle = {
-    [mge.lightingMode.perPixel] = mge.lightingMode.vertex,
-    [mge.lightingMode.vertex] = mge.lightingMode.perPixel,
-}
-local lightingModeText = {
-    [mge.lightingMode.perPixel] = "Per Pixel",
-    [mge.lightingMode.vertex] = "Vertex",
-}
-
-function PhotoMenu:createLightingModeButton(parent)
-    logger:debug("Creating lighting mode button")
-    config.persistent.lightingMode = mge.getLightingMode()
-    local button = parent:createButton {
-        id = "JOP.LightingModeButton",
-        text = "Lighting Mode: " .. lightingModeText[config.persistent.lightingMode]
-    }
-    button:register("mouseClick", function(e)
-        config.persistent.lightingMode = lightingModeCycle[config.persistent.lightingMode]
-        mge.setLightingMode(config.persistent.lightingMode)
-        button.text = "Lighting Mode: " .. lightingModeText[config.persistent.lightingMode]
-    end)
-end
-
-function PhotoMenu:setVignette()
-    local vignetteShader = config.shaders.vignette
-    if self.vignette then
-        Shader.enable(vignetteShader)
-        table.insert(self.shaders, vignetteShader)
-    else
-        Shader.disable(vignetteShader)
-        local vignetteIndex = table.find(self.shaders, vignetteShader)
-        if vignetteIndex then
-            table.remove(self.shaders, vignetteIndex)
-        end
-    end
-end
-
-function PhotoMenu:createVignetteToggleButton(parent)
-    logger:debug("Creating Vignette button")
-    local button = parent:createButton {
-        id = "JOP.VignetteButton",
-        text = "Vignette: " .. (self.vignette and "On" or "Off")
-    }
-
-    button:register("mouseClick", function(e)
-        self.vignette = not self.vignette
-        self:setVignette()
-        button.text = "Vignette: " .. (self.vignette and "On" or "Off")
-    end)
-end
-
 function PhotoMenu:setShaderValue(control)
     local shaderValue = math.remap(config.persistent[control.id], 0, 100, control.shaderMin, control.shaderMax)
     logger:debug("Setting %s to %s", control.id, shaderValue)
-    Shader.setUniform(control.shader, control.uniform, shaderValue)
+    ShaderService.setUniform(control.shader, control.uniform, shaderValue)
 end
 
 ---@param parent any
@@ -316,7 +266,7 @@ end
 
 function PhotoMenu:resetControls()
     logger:debug("Resetting controls")
-    for shader in ipairs(self.shaders) do
+    for _, shader in ipairs(self.shaders) do
         logger:debug("- shader %s", shader)
     end
 
@@ -324,9 +274,9 @@ function PhotoMenu:resetControls()
     for _, control in pairs(config.controls) do
         logger:debug("Control %s for shader %s", control.id, control.shader )
         if table.find(self.shaders, control.shader)then
-            logger:debug("Shader is active, Resetting %s", control.id)
+            logger:debug("ShaderService is active, Resetting %s", control.id)
             config.persistent[control.id] = control.sliderDefault
-            Shader.setUniform(
+            ShaderService.setUniform(
                 control.shader,
                 control.uniform,
                 math.remap(control.sliderDefault, 0, 100, control.shaderMin, control.shaderMax)
@@ -372,7 +322,7 @@ function PhotoMenu:setAspectRatio()
         logger:error("Frame Size '%s' is not registered.", self.canvasConfig.frameSize)
         return
     end
-    Shader.setUniform(
+    ShaderService.setUniform(
         config.shaders.window,
         "aspectRatio",
         frameSize.aspectRatio
@@ -409,7 +359,7 @@ function PhotoMenu:enableShaders()
     logger:debug("Enabling shaders")
     for _, shaderId in ipairs(self.shaders) do
         logger:debug("- shader: %s", shaderId)
-        Shader.enable(shaderId)
+        ShaderService.enable(shaderId)
     end
 end
 
@@ -417,7 +367,7 @@ function PhotoMenu:disableShaders()
     logger:debug("Disabling shaders")
     for _, shaderId in ipairs(self.shaders) do
         logger:debug("- shader: %s", shaderId)
-        Shader.disable(shaderId)
+        ShaderService.disable(shaderId)
     end
 end
 
