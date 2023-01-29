@@ -1,5 +1,7 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
+local metadata = config.metadata
+local logger = common.createLogger("MCM")
 
 local LINKS_LIST = {
     {
@@ -14,10 +16,10 @@ local LINKS_LIST = {
     --     text = "Nexus",
     --     url = "https://www.nexusmods.com/morrowind/mods/51366"
     -- },
-    -- {
-    --     text = "Buy me a coffee",
-    --     url = "https://ko-fi.com/merlord"
-    -- },
+    {
+        text = "Buy me a coffee",
+        url = "https://ko-fi.com/merlord"
+    },
 }
 local CREDITS_LIST = {
     {
@@ -27,8 +29,8 @@ local CREDITS_LIST = {
 }
 
 local function addSideBar(component)
-    component.sidebar:createCategory(config.modName)
-    component.sidebar:createInfo{ text = config.modDescription }
+    component.sidebar:createCategory(metadata.package.name)
+    component.sidebar:createInfo{ text = metadata.package.description}
 
     local linksCategory = component.sidebar:createCategory("Links")
     for _, link in ipairs(LINKS_LIST) do
@@ -41,8 +43,11 @@ local function addSideBar(component)
 end
 
 local function registerMCM()
-    local template = mwse.mcm.createTemplate{ name = config.modName }
-    template:saveOnClose(config.configPath, config.mcm)
+    local template = mwse.mcm.createTemplate{ name = metadata.package.name }
+    template.onClose = function()
+        config.save()
+        event.trigger("JoyOfPainting:UpdateMerchants")
+    end
     template:register()
 
     local page = template:createSideBarPage{ label = "Settings"}
@@ -54,7 +59,12 @@ local function registerMCM()
         variable = mwse.mcm.createTableVariable{ id = "enabled", table = config.mcm },
         callback = function(self)
             if self.variable.value == true then
-                event.trigger("ItemBrowser:RegisterMenus")
+                logger:info("Enabling mod")
+                event.trigger("JoyOfPainting:EnableMod")
+                event.trigger("JoyOfPainting:UpdateMerchants")
+            else
+                logger:info("Disabling mod")
+                event.trigger("JoyOfPainting:DisableMod")
             end
         end
     }
@@ -100,5 +110,37 @@ local function registerMCM()
         end
     }
 
+
+    local merchantPage = template:createExclusionsPage{
+        label = "Paint Supplies Merchants",
+        description = "Select which merchants sell paint supplies.",
+        leftListLabel = "Paint Supplies Merchants",
+        rightListLabel = "Excluded Merchants",
+        filters = {
+            {
+                label = "",
+                callback = function()
+                    local npcs = {}
+                    for obj in tes3.iterateObjects(tes3.objectType.npc) do
+                        ---@cast obj tes3npc
+                        if obj.class and obj.class.bartersMiscItems then
+                            local id = (obj.baseObject or obj).id:lower()
+                            npcs[id] = true
+                        end
+                    end
+                    local npcsList = {}
+                    for npc, _ in pairs(npcs) do
+                        table.insert(npcsList, npc)
+                    end
+                    table.sort(npcsList)
+                    return npcsList
+                end
+            }
+        },
+        variable = mwse.mcm.createTableVariable{
+            id = "paintSuppliesMerchants",
+            table = config.mcm,
+        },
+    }
 end
 event.register("modConfigReady", registerMCM)

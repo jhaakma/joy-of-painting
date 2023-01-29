@@ -25,9 +25,11 @@ local brushTypes = {
         name = "Paintbrush",
     }
 }
-for _, brush in ipairs(brushTypes) do
-    interop.Brush.registerBrushType(brush)
-end
-for _, brush in ipairs(brushes) do
-    interop.Brush.registerBrush(brush)
-end
+event.register(tes3.event.initialized, function()
+    for _, brush in ipairs(brushTypes) do
+        interop.Brush.registerBrushType(brush)
+    end
+    for _, brush in ipairs(brushes) do
+        interop.Brush.registerBrush(brush)
+    end
+end)

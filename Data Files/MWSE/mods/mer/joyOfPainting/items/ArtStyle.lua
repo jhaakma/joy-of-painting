@@ -43,30 +43,30 @@ ArtStyle.__index = ArtStyle
 
 ---@param e JOP.ArtStyle.data
 function ArtStyle.registerArtStyle(e)
-    common.logAssert(logger, type(e.name) == "string", "name must be a string")
-    common.logAssert(logger, type(e.magickCommand) == "function", "magickCommand must be a function")
-    common.logAssert(logger, type(e.shaders) == "table", "shaders must be a table")
-    common.logAssert(logger, type(e.valueModifier) == "number", "valueModifier must be a number")
+    logger:assert(type(e.name) == "string", "name must be a string")
+    logger:assert(type(e.magickCommand) == "function", "magickCommand must be a function")
+    logger:assert(type(e.shaders) == "table", "shaders must be a table")
+    logger:assert(type(e.valueModifier) == "number", "valueModifier must be a number")
     logger:debug("Registering art style %s", e.name)
     config.artStyles[e.name] = e
 end
 
 ---@param e JOP.ArtStyle.control
 function ArtStyle.registerControl(e)
-    common.logAssert(logger, type(e.id) == "string", "id must be a string")
-    common.logAssert(logger, type(e.shader) == "string", "shader must be a string")
-    common.logAssert(logger, type(e.name) == "string", "name must be a string")
-    common.logAssert(logger, type(e.sliderDefault) == "number", "sliderDefault must be a number")
-    common.logAssert(logger, type(e.shaderMin) == "number", "shaderMin must be a number")
-    common.logAssert(logger, type(e.shaderMax) == "number", "shaderMax must be a number")
+    logger:assert(type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.shader) == "string", "shader must be a string")
+    logger:assert(type(e.name) == "string", "name must be a string")
+    logger:assert(type(e.sliderDefault) == "number", "sliderDefault must be a number")
+    logger:assert(type(e.shaderMin) == "number", "shaderMin must be a number")
+    logger:assert(type(e.shaderMax) == "number", "shaderMax must be a number")
     logger:debug("Registering control %s", e.id)
     config.controls[e.id] = table.copy(e, {})
 end
 
 ---@param e JOP.ArtStyle.shader
 function ArtStyle.registerShader(e)
-    common.logAssert(logger, type(e.id) == "string", "id must be a string")
-    common.logAssert(logger, type(e.shaderId) == "string", "shaderId must be a string")
+    logger:assert(type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.shaderId) == "string", "shaderId must be a string")
     logger:debug("Registering shader %s", e.id)
     config.shaders[e.id] = e.shaderId
 end
@@ -77,7 +77,7 @@ function ArtStyle:new(data)
     local shaders = data.shaders
     artStyle.shaders = {}
     for _, shader in ipairs(shaders) do
-        common.logAssert(logger, config.shaders[shader], string.format("Shader %s not found", shader))
+        logger:assert(config.shaders[shader], string.format("Shader %s not found", shader))
         table.insert(artStyle.shaders, config.shaders[shader])
     end
     artStyle.paintType = config.paintTypes[data.paintType]
@@ -255,7 +255,6 @@ function ArtStyle:usePaint()
     --then new stacks
     for _, stackData in ipairs(newStacks) do
         local palette = Palette:new(stackData)
-        logger:debug("new stack: %s", json.encode(stackData, {indent = true}))
         if palette and palette:use() then
             return
         end

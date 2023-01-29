@@ -24,8 +24,8 @@ local controls = {
         shader = "jop_adjuster",
         name = "Brightness",
         sliderDefault = 50,
-        shaderMin = -0.5,
-        shaderMax = 0.5,
+        shaderMin = -0.25,
+        shaderMax = 0.25,
     },
     {
         id = "contrast",
@@ -33,8 +33,8 @@ local controls = {
         shader = "jop_adjuster",
         name = "Contrast",
         sliderDefault = 50,
-        shaderMin = 0,
-        shaderMax = 2,
+        shaderMin = 0.5,
+        shaderMax = 1.5,
     },
     {
         id = "saturation",
@@ -42,8 +42,8 @@ local controls = {
         shader = "jop_adjuster",
         name = "Saturation",
         sliderDefault = 50,
-        shaderMin = 0,
-        shaderMax = 2,
+        shaderMin = 0.5,
+        shaderMax = 1.5,
     },
 
     {
@@ -214,7 +214,7 @@ local artStyles = {
         controls = {
             "brightness",
             "contrast",
-            "saturation",
+            --"saturation",
         },
         valueModifier = 4,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
@@ -264,9 +264,8 @@ local artStyles = {
         requiresEasel = true,
     },
 }
-
 event.register(tes3.event.initialized, function()
-    for _, shader in ipairs(shaders) do
+for _, shader in ipairs(shaders) do
         interop.ArtStyle.registerShader(shader)
     end
     for _, control in ipairs(controls) do
@@ -275,5 +274,5 @@ event.register(tes3.event.initialized, function()
     for _, artStyle in ipairs(artStyles) do
         interop.ArtStyle.registerArtStyle(artStyle)
     end
-    event.trigger("JoyOfPainting:ArtStylesR")
+    event.trigger("JoyOfPainting:ArtStyles")
 end)

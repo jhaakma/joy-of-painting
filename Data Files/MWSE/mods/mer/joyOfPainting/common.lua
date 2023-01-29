@@ -19,15 +19,7 @@ end
 local logger = common.createLogger("common")
 
 function common.getVersion()
-    local version = ""
-    local versionFile = io.open("Data Files/MWSE/mods/mer/joyOfPainting/version.txt", "r")
-    if versionFile then
-        for line in versionFile:lines() do -- Loops over all the lines in an open text file
-            version = line
-            break
-        end
-    end
-    return version
+    return config.metadata.version
 end
 
 ---@param reference tes3reference
@@ -58,13 +50,6 @@ end
 
 function common.closeEnough(reference)
     return reference.position:distance(tes3.player.position) < tes3.getPlayerActivationDistance()
-end
-
-function common.logAssert(logger, condition, message)
-    if not condition then
-        logger:error(message)
-        assert(condition, message)
-    end
 end
 
 function common.disablePlayerControls()
@@ -100,11 +85,7 @@ function common.unblockActivate()
     event.unregister("activate", blockActivate, { priority = 5})
 end
 
----@class JOP.common.positioner.params
----@field reference tes3reference
----@field pinToWall boolean
-
----@param e JOP.common.positioner.params
+---@param e CraftingFramework.interop.activatePositionerParams
 function common.positioner(e)
     timer.delayOneFrame(function()
         if not CraftingFramework.interop.activatePositioner then

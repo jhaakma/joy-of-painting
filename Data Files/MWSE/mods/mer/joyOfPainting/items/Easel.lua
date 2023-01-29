@@ -171,6 +171,7 @@ function Easel:paint(artStyle)
                 artStyle = config.artStyles[artStyle],
                 captureCallback = function(e)
                     --set paintingTexture before creating object
+                    self.data.subjects = e.subjects
                     self.data.paintingTexture = e.paintingTexture
                     self.data.location = tes3.player.cell.displayName
                     self.painting:doPaintAnim()
@@ -354,7 +355,7 @@ end
 ----------------------------------------
 
 function Easel.registerEasel(e)
-    common.logAssert(logger, type(e.id) == "string", "Easel id must be a string")
+    logger:assert(type(e.id) == "string", "Easel id must be a string")
     logger:debug("Registering easel %s", e.id)
     config.easels[e.id:lower()] = e
     if e.miscItem then

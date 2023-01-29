@@ -24,18 +24,19 @@ Sketchbook.__index = Sketchbook
 ---@field data table joyOfPainting data
 
 
----@class JOP.Sketchbook.params
+---@class JOP.Sketchbook.data
 ---@field reference tes3reference?
 ---@field item JOP.tes3itemChildren
 ---@field itemData tes3itemData?
 
+---@param e JOP.Sketchbook.data
 function Sketchbook.registerSketchbook(e)
-    common.logAssert(logger, type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.id) == "string", "id must be a string")
     e.id = e.id:lower()
     config.sketchbooks[e.id] = table.copy(e, {})
 end
 
----@param e JOP.Sketchbook.params
+---@param e JOP.Sketchbook.data
 function Sketchbook:new(e)
     assert(e.reference or e.item, "Sketchbook requires either a reference or an item")
     local sketchbook = setmetatable({}, self)

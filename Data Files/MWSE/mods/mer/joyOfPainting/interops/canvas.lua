@@ -70,4 +70,3 @@ event.register(tes3.event.initialized, function()
         interop.Painting.registerCanvas(canvas)
     end
 end)
-

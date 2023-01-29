@@ -63,7 +63,7 @@ function PaintService.getSavedPaintingPath(artStyle)
         index = 1
         config.mcm.savedPaintingIndexes[artStyle.name] = index
     end
-    return string.format("textures\\jop\\saved\\%s\\%s.dds",
+    return string.format("textures\\jop\\saved\\%s\\%s.png",
         artStyle.name, index)
 end
 

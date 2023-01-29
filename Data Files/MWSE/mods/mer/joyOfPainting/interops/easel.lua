@@ -10,7 +10,8 @@ local easel = {
         miscItem = "jop_easel_pack"
     },
 }
-
-for _, data in ipairs(easel) do
-    interop.Easel.registerEasel(data)
-end
+event.register(tes3.event.initialized, function()
+    for _, data in ipairs(easel) do
+        interop.Easel.registerEasel(data)
+    end
+end)

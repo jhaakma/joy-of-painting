@@ -79,8 +79,8 @@ NodeManager.switches = {}
 
 ---@param e JOP.Switch
 function NodeManager.registerSwitch(e)
-    common.logAssert(type(e.switchName) == "string", "switchName must be a string")
-    common.logAssert(type(e.getActiveNode) == "function", "getActiveNode must be a function")
+    logger:assert(type(e.switchName) == "string", "switchName must be a string")
+    logger:assert(type(e.getActiveNode) == "function", "getActiveNode must be a function")
     e.requirements = function(_, reference)
         local hasSceneNode = reference and reference.sceneNode
         local hasSwitch = hasSceneNode and reference.sceneNode:getObjectByName(e.switchName) ~= nil

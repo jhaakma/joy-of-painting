@@ -13,6 +13,8 @@ local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local SkillService = require("mer.joyOfPainting.services.SkillService")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
 local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
+local OcclusionTester = require("mer.joyOfPainting.services.OcclusionTester")
+local SubjectService = require("mer.joyOfPainting.services.SubjectService")
 local alwaysOnShaders
 
 ---@class JOP.PhotoMenu
@@ -57,11 +59,7 @@ function PhotoMenu:new(data)
     return o
 end
 
---[[
-    Captures the current scene and saves it to a painting
-]]
-function PhotoMenu:capture()
-    logger:debug("Capturing image")
+function PhotoMenu:getImageBuilder()
     local paintingTexture = getpaintingTexture()
     logger:debug("Painting name: %s", paintingTexture)
 
@@ -75,12 +73,21 @@ function PhotoMenu:capture()
         framedIconPath = config.locations.paintingIconsDir .. "f_" .. paintingTexture,
         framePath = config.locations.frameIconsDir .. "frame_square.dds",
     }
+
     local builder = ImageBuilder:new(imageData)
-        :registerStep("doCaptureCallback", function(next)
+
+        :registerStep("calculateSubjectResults", function(next)
+            local tester = OcclusionTester.new()
+            local subjectService = SubjectService.new{ occlusionTester = tester}
+            local subjects = subjectService:getSubjects()
+            self.subjects = subjects
+        end)
+        :registerStep("doCaptureCallback", function()
             if self.captureCallback then
                 logger:debug("Calling capture callback")
                 self.captureCallback({
                     paintingTexture = paintingTexture,
+                    subjects = self.subjects,
                 })
             end
         end)
@@ -140,8 +147,19 @@ function PhotoMenu:capture()
             end
         end)
         :registerArtStyle(self.artStyle)
+    return builder
+end
+
+--[[
+    Captures the current scene and saves it to a painting
+]]
+function PhotoMenu:capture()
+    logger:debug("Capturing image")
+
+    local builder = self:getImageBuilder()
 
     builder:start()
+        :calculateSubjectResults()
         :takeScreenshot()
         [self.artStyle.name](builder)
         :incrementSavedPaintingIndex()

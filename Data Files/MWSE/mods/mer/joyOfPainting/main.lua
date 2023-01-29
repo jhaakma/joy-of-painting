@@ -3,7 +3,6 @@ local logger = common.createLogger("main")
 
 require("mer.joyOfPainting.mcm")
 
-
 local function initAll(path)
     path = "Data Files/MWSE/mods/mer/joyOfPainting/" .. path .. "/"
     for file in lfs.dir(path) do
@@ -18,7 +17,8 @@ logger:debug("Initialising Controllers")
 initAll("controllers")
 logger:debug("Initialising Interops")
 initAll("interops")
-logger:debug("Initialising activators")
-initAll("activators")
-
-logger:info("Initialized %s", common.getVersion())
+event.register(tes3.event.initialized, function()
+    logger:debug("Initialising activators")
+    initAll("activators")
+    logger:info("Initialized %s", common.getVersion())
+end, { priority = 200 })

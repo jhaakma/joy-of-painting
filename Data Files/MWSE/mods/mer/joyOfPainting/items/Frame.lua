@@ -10,9 +10,9 @@ local Frame = {
     Register a frame size, which allows canvases to have the right frame
 ]]
 function Frame.registerFrameSize(e)
-    common.logAssert(logger, type(e.id) == "string", "id must be a string")
-    common.logAssert(logger, type(e.width) == "number", "width must be a number")
-    common.logAssert(logger, type(e.height) == "number", "aspectRatio.height must be a number")
+    logger:assert(type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.width) == "number", "width must be a number")
+    logger:assert(type(e.height) == "number", "aspectRatio.height must be a number")
     logger:debug("Registering frame size %s", e.id)
     e.id = e.id:lower()
     config.frameSizes[e.id] = table.copy(e, {
@@ -22,8 +22,8 @@ function Frame.registerFrameSize(e)
 end
 
 function Frame.registerFrame(e)
-    common.logAssert(logger, type(e.id) == "string", "id must be a string")
-    common.logAssert(logger, type(e.frameSize) == "string", "frameSize must be a string")
+    logger:assert(type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.frameSize) == "string", "frameSize must be a string")
     logger:debug("Registering frame %s", e.id)
     e.id = e.id:lower()
     config.frames[e.id] = table.copy(e, {})

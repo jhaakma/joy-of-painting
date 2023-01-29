@@ -27,18 +27,12 @@ local function activate(e)
             {
                 text = "Refill",
                 callback = function()
-                    palette:doRefill()
+                    palette:openRefillMenu()
                 end,
                 enableRequirements = function()
-                    return palette:playerHasRefills()
-                        and (palette:getRemainingUses() < palette:getMaxUses())
+                    return (palette:getRemainingUses() < palette:getMaxUses())
                 end,
                 tooltipDisabled = function()
-                    if not palette:playerHasRefills() then
-                        local paintType = config.paintTypes[palette.paletteItem.paintType]
-                        local paintName = paintType.name
-                        return { text = string.format("You don't have the required %s.", paintName) }
-                    end
                     if not (palette:getRemainingUses() < palette:getMaxUses()) then
                         return { text = "This palette is already full." }
                     end
@@ -59,7 +53,6 @@ local function activate(e)
         },
         cancels = true
     }
-
 end
 
 Activator.registerActivator{
@@ -74,6 +67,6 @@ Activator.registerActivator{
             item = e.item,
             itemData = e.itemData,
         }
-        return palette and (palette:getRefills() ~= nil)
+        return palette and palette:hasRefillRecipes()
     end
 }

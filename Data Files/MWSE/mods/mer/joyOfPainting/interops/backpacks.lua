@@ -11,7 +11,7 @@ local backpacks = {
     }
 }
 
-event.register("initialized", function()
+event.register(tes3.event.initialized, function()
     for _, backpack in ipairs(backpacks) do
         BackpackService.registerBackpack(backpack)
     end

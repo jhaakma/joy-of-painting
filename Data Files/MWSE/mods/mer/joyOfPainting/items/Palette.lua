@@ -6,21 +6,25 @@
 
 ---@class JOP.PaletteItem
 ---@field id string The id of the palette item. Must be a valid tes3item
+---@field meshOverride string The mesh to use for this palette item
 ---@field breaks boolean Whether the palette breaks when uses run out
 ---@field fullByDefault boolean Whether the palette is full by default
 ---@field uses number The number of uses for the palette
 ---@field paintType string The paintType that this palette can be used with
 
+
 ---@class JOP.PaintType
 ---@field id string The id of the palette type
 ---@field name string The name of the palette type
 ---@field brushType string? The brush type to use for this palette. If not specified, this palette does not need a brush to use.
+---@field refillMenu craftingFrameworkMenuActivator
 
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("Palette")
 local NodeManager = require("mer.joyOfPainting.services.NodeManager")
-
+local CraftingFramework = require("CraftingFramework")
+local meshService = require("mer.joyOfPainting.services.MeshService")
 ---@class JOP.Palette
 local Palette = {
     classname = "Palette",
@@ -40,26 +44,29 @@ Palette.__index = Palette
 ]]
 ---@param e JOP.PaletteItem
 function Palette.registerPaletteItem(e)
-    common.logAssert(logger, type(e.id) == "string", "id must be a string")
-    common.logAssert(logger, type(e.paintType) == "string", "paintTypes must be a table")
+    logger:assert(type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.paintType) == "string", "paintTypes must be a table")
     logger:debug("Registering palette item %s", e.id)
     e.id = e.id:lower()
     config.paletteItems[e.id] = table.copy(e, {})
+    if e.meshOverride then
+        meshService.registerOverride(e.id, e.meshOverride)
+    end
 end
 
 ---@param e JOP.PaintType
 function Palette.registerPaintType(e)
-    common.logAssert(logger, type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.name) == "string", "name must be a string")
     logger:debug("Registering palette type %s", e.id)
     e.id = e.id:lower()
     config.paintTypes[e.id] = table.copy(e, {})
 end
 
-
 ---@param e JOP.Palette.params
 ---@return JOP.Palette|nil
 function Palette:new(e)
-    common.logAssert(logger, e.reference or e.item, "Palette requires either a reference or an item")
+    logger:assert((e.reference or e.item) ~= nil, "Palette requires either a reference or an item")
     local palette = setmetatable({}, self)
 
     palette.reference = e.reference
@@ -138,61 +145,73 @@ function Palette:use()
     return false
 end
 
-function Palette:getRefills()
-    local paletteItem = config.paletteItems[self.item.id:lower()]
-    return config.refills[paletteItem.paintType]
 
+---@return JOP.PaintType
+function Palette:getPaintType()
+    return config.paintTypes[self.paletteItem.paintType]
 end
 
-function Palette:hasRefill(refill)
-    for _, refillId in ipairs(refill.requiredItems) do
-        local count = tes3.getItemCount{
-            reference = tes3.player,
-            item = refillId,
-        }
-        if count == 0 then
-            return false
-        end
-    end
-    return true
+function Palette:initRefillMenuActivator()
+    local paintType = self:getPaintType()
+
+    config.paintTypes[paintType.id].refillMenu = CraftingFramework.MenuActivator:new{
+        id = "JOP_RefillPaint_" .. paintType.id,
+        name = string.format("Refill %s", paintType.name),
+        type = "event",
+        defaultFilter = "all",
+        defaultShowCategories = false,
+        closeCallback = function() end,
+        craftButtonText = "Refill",
+        showCollapseCategoriesButton = false,
+        showCategoriesButton = false,
+        showFilterButton = false,
+        showSortButton = false,
+    }
 end
 
-function Palette:playerHasRefills()
-    local refills = self:getRefills()
-    for _, refill in ipairs(refills) do
-        if self:hasRefill(refill) then
-            return true
-        end
+function Palette:updateRecipes()
+    local paintType = self:getPaintType()
+    if not paintType.refillMenu then
+        self:initRefillMenuActivator()
     end
-    return false
+
+    ---@type craftingFrameworkRecipeData[]
+    local recipes = {}
+    for _, refill in pairs(config.refills[paintType.id]) do
+        logger:debug("Adding %s to refill recipes", refill.recipe.id)
+        table.insert(recipes, refill.recipe)
+    end
+    paintType.refillMenu:registerRecipes(recipes)
+end
+
+function Palette.getPaletteToRefill()
+    return tes3.player.tempData.jop_paletteToRefill
+end
+
+function Palette:setPaletteToRefill()
+    tes3.player.tempData.jop_paletteToRefill = self
+end
+
+function Palette:openRefillMenu()
+    local paintType = self:getPaintType()
+    self:updateRecipes()
+    self:setPaletteToRefill()
+    paintType.refillMenu:openMenu()
 end
 
 function Palette:doRefill()
-    logger:debug("Refilling paint for %s", self.item.id)
-    --Find refills in player inventory
-    local refills = self:getRefills()
-    local didRefill = false
-    for _, refill in ipairs(refills) do
-        if self:hasRefill(refill) then
-            for _, refillId in ipairs(refill.requiredItems) do
-                tes3.removeItem{
-                    reference = tes3.player,
-                    item = refillId,
-                    playSound = false,
-                }
-
-            end
-            didRefill = true
-        end
-    end
-    if not didRefill then
-        logger:warn("No refills found")
-        return false
-    end
     self.data.uses = self.paletteItem.uses
     NodeManager.updateSwitch("paint_palette")
-    tes3.messageBox("You refill the palette.")
-    tes3.playSound{ sound = "Item Misc Up" }
+end
+
+function Palette:getRefills()
+    local paintType = self:getPaintType()
+    return config.refills[paintType.id]
+end
+
+function Palette:hasRefillRecipes()
+    local refills = self:getRefills()
+    return refills ~= nil and #refills > 0
 end
 
 ---@return number

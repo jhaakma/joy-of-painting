@@ -23,7 +23,8 @@ local tapestries = {
     { id = "furn_s_tapestry02" },
     { id = "furn_s_tapestry03" },
 }
-
-for _, tapestry in ipairs(tapestries) do
-    Tapestry.registerTapestry(tapestry)
-end
+event.register(tes3.event.initialized, function()
+    for _, tapestry in ipairs(tapestries) do
+        Tapestry.registerTapestry(tapestry)
+    end
+end)

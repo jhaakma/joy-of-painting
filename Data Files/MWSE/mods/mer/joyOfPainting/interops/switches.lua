@@ -33,8 +33,9 @@ local switches = {
         end,
     }
 }
-
-for _, switch in ipairs(switches) do
-    logger:debug("Registering switch %s", switch.id)
-    NodeManager.registerSwitch(switch)
-end
+event.register(tes3.event.initialized, function()
+    for _, switch in ipairs(switches) do
+        logger:debug("Registering switch %s", switch.id)
+        NodeManager.registerSwitch(switch)
+    end
+end)

@@ -8,7 +8,7 @@ local Tapestry = {}
 
 ---@param e JOP.Tapestry.data
 function Tapestry.registerTapestry(e)
-    common.logAssert(logger, type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.id) == "string", "id must be a string")
     config.tapestries[e.id:lower()] = e
 end
 

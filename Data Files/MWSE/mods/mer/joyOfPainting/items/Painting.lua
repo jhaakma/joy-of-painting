@@ -6,6 +6,7 @@ local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("Painting")
+local meshService = require("mer.joyOfPainting.services.MeshService")
 --[[
     Painting class for managing any item that has a painting
 ]]
@@ -58,27 +59,20 @@ Painting.canvasFields = {
 
 ---@param e JOP.Canvas
 function Painting.registerCanvas(e)
-    common.logAssert(logger, type(e.canvasId) == "string", "id must be a string")
-    common.logAssert(logger, type(e.textureHeight) == "number", "textureHeight must be a number")
-    common.logAssert(logger, type(e.textureHeight) == "number", "textureHeight must be a number")
-    common.logAssert(logger, type(e.frameSize) == "string", "frameSize must be a string")
-    common.logAssert(logger, type(e.valueModifier) == "number", "valueModifier must be a number")
-    common.logAssert(logger, type(e.canvasTexture) == "string", "canvasTexture must be a string")
-    common.logAssert(logger, type(e.animSpeed) == "number", "animSpeed must be a number")
-    common.logAssert(logger, type(e.animSound) == "string", "animSound must be a string")
+    logger:assert(type(e.canvasId) == "string", "id must be a string")
+    logger:assert(type(e.textureHeight) == "number", "textureHeight must be a number")
+    logger:assert(type(e.textureHeight) == "number", "textureHeight must be a number")
+    logger:assert(type(e.frameSize) == "string", "frameSize must be a string")
+    logger:assert(type(e.valueModifier) == "number", "valueModifier must be a number")
+    logger:assert(type(e.canvasTexture) == "string", "canvasTexture must be a string")
+    logger:assert(type(e.animSpeed) == "number", "animSpeed must be a number")
+    logger:assert(type(e.animSound) == "string", "animSound must be a string")
 
     logger:debug("Registering canvas %s with frameSize %s", e.canvasId, e.frameSize)
     local id = e.canvasId:lower()
     config.canvases[id] = table.copy(e, {})
     if e.meshOverride then
-        local obj = tes3.getObject(id)
-        if not obj then
-            logger:error("Could not find object %s", id)
-            return
-        end
-        local originalMesh = "meshes\\" .. obj.mesh:lower()
-        logger:debug("Registering mesh override for %s: %s -> %s", id, originalMesh, e.meshOverride)
-        config.meshOverrides[originalMesh] = e.meshOverride:lower()
+        meshService.registerOverride(id, e.meshOverride)
     end
 end
 
@@ -105,7 +99,7 @@ end
 ---@return JOP.Painting
 function Painting:new(e)
     local painting = setmetatable({}, self)
-    common.logAssert(logger, e.reference ~= nil or e.item ~= nil,
+    logger:assert(e.reference ~= nil or e.item ~= nil,
         "Painting:new() requires either a reference or an item")
     painting.reference = e.reference
     painting.item = e.item or e.reference.object

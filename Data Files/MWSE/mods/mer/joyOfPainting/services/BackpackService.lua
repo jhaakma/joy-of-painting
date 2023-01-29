@@ -18,7 +18,7 @@ local BackpackService = {
 }
 
 function BackpackService.registerBackpack(e)
-    common.logAssert(logger, type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.id) == "string", "id must be a string")
     logger:debug("registering backpack %s", e.id)
     local obj = tes3.getObject(e.id)
     if not obj then

@@ -1,15 +1,20 @@
+float2 rcpres;
+
+#define width rcpres.x
+#define height rcpres.y
 #define LineThickness 0.0003
 #define SensitivityUpper 10
 #define SensitivityLower 10
-#define Saturation 2.0
-
+#define Saturation 1.5
 
 texture lastshader;
 texture depthframe;
-float2 rcpres;
+texture lastpass;
+texture tex1 < string src="jop/wclut.tga"; >;
+
 sampler s0 = sampler_state { texture=<lastshader>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
-#define width rcpres.x
-#define height rcpres.y
+sampler s1 = sampler_state { texture=<lastpass>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
+sampler SamplerLUT = sampler_state { texture = <tex1>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
 
 #define PI acos(-1)
 
@@ -123,7 +128,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
 	val = 1 - pow(1 - val, SensitivityLower);
         c0 = float4(val, val, val, val);
 
-// colour
+
 	c1 = tex2D(s0,tex);
 
 	float3 hsl = RGBToHSL(c1.xyz);
@@ -133,8 +138,27 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
 	return c1 * c0;
 }
 
+float3 ClutFunc( float3 colorIN, sampler2D LutSampler )
+{
+    float2 CLut_pSize = float2(0.00390625, 0.0625);// 1 / float2(256, 16);
+    float4 CLut_UV;
+    colorIN    = saturate(colorIN) * 15.0;
+    CLut_UV.w  = floor(colorIN.b);
+    CLut_UV.xy = (colorIN.rg + 0.5) * CLut_pSize;
+    CLut_UV.x += CLut_UV.w * CLut_pSize.y;
+    CLut_UV.z  = CLut_UV.x + CLut_pSize.y;
+    return lerp( tex2Dlod(LutSampler, CLut_UV.xyzz).rgb, tex2Dlod(LutSampler, CLut_UV.zyzz).rgb, colorIN.b - CLut_UV.w);
+}
+
+float4 lut(in float2 tex:TEXCOORD0): COLOR0
+{
+	float4 scene = tex2D(s1,tex);
+	scene.rgb =  ClutFunc(scene.rgb, SamplerLUT);
+	return scene;
+}
 
 technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; >
 {
-    pass { PixelShader = compile ps_3_0 main(); }
+    pass p0 { PixelShader = compile ps_3_0 main(); }
+    pass p1 { PixelShader = compile ps_3_0 lut(); }
 }

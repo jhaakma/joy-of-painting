@@ -3,6 +3,12 @@ local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("PaperMold")
 local NodeManager = require("mer.joyOfPainting.services.NodeManager")
 
+---@class JOP.PaperMold.data
+---@field id string The id of the paper mold
+---@field hoursToDry number The number of hours it takes for the paper to dry
+---@field paperId string The id of the paper that is created
+---@field paperPerPulp number The number of papers that can be created from one pulp
+
 ---@class JOP.PaperMold
 local PaperMold = {
     data = nil,
@@ -13,15 +19,16 @@ local PaperMold = {
 }
 PaperMold.__index = PaperMold
 
+---@param e JOP.PaperMold.data
 function PaperMold.registerPaperMold(e)
-    common.logAssert(logger, type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.id) == "string", "id must be a string")
     logger:debug("Registering paper mold %s", e.id)
     e.id = e.id:lower()
     config.paperMolds[e.id] = table.copy(e, {})
 end
 
 function PaperMold.registerPaperPulp(e)
-    common.logAssert(logger, type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.id) == "string", "id must be a string")
     logger:debug("Registering paper pulp %s", e.id)
     e.id = e.id:lower()
     config.paperPulps[e.id] = table.copy(e, {})
@@ -33,7 +40,7 @@ end
 
 ---@return JOP.PaperMold|nil
 function PaperMold:new(e)
-    common.logAssert(logger, e.reference or e.item, "PaperMold requires either a reference or an item")
+    logger:assert(e.reference or e.item, "PaperMold requires either a reference or an item")
     local item = e.item or e.reference.object
     if not PaperMold.isPaperMold(item) then
         logger:trace("%s is not a paper mold", item.id)

@@ -24,6 +24,7 @@ local paletteItems = {
     },
     {
         id = "misc_inkwell",
+        meshOverride = "meshes\\jop\\inkwell.nif",
         paintType = "ink",
         fullByDefault = true,
         uses = 20,
@@ -62,10 +63,11 @@ local paintTypes = {
         brushType = "brush",
     }
 }
-
-for _, item in ipairs(paletteItems) do
-    interop.Palette.registerPaletteItem(item)
-end
-for _, paintType in ipairs(paintTypes) do
-    interop.Palette.registerPaintType(paintType)
-end
+event.register(tes3.event.initialized, function()
+    for _, item in ipairs(paletteItems) do
+        interop.Palette.registerPaletteItem(item)
+    end
+    for _, paintType in ipairs(paintTypes) do
+        interop.Palette.registerPaintType(paintType)
+    end
+end)

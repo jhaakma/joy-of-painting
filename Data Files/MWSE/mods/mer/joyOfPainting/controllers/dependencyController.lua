@@ -1,13 +1,14 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
-local DependencyManager = require("mer.joyOfPainting.services.DependencyManager")
-local dependencyManager = DependencyManager.new{
-    modName = config.modName,
-    dependencies = config.dependencies,
-    logger = common.createLogger("DependencyManager"),
-}
-local function onLoaded()
-    dependencyManager:checkDependencies()
-end
+local logger = common.createLogger("DependencyManager")
+local DependencyManager = require("Metadata.DependencyManager")
 
-event.register("loaded", onLoaded)
+-- if config.metadata.dependencies then
+--     local dependencyManager = DependencyManager.new{
+--         luaMod = "mer.joyOfPainting",
+--         logger = logger,
+--     }
+--     event.register(tes3.event.initialized, function()
+--         dependencyManager:checkDependencies()
+--     end)
+-- end

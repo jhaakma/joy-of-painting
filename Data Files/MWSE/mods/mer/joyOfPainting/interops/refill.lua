@@ -1,24 +1,47 @@
 local interop = require("mer.joyOfPainting.interop")
+local Dye = require("mer.joyOfPainting.items.Dye")
+local Palette = require("mer.joyOfPainting.items.Palette")
+---@type JOP.Refill[]
 local refills = {
     {
         --Red, blue and yellow dye
         paintType = "watercolor",
-        requiredItems = {
-            "jop_dye_blue",
-            "jop_dye_red",
-            "jop_dye_yellow",
-        }
-    },
-    {
-        --Red, blue and yellow dye
-        paintType = "oil",
-        requiredItems = {
-            "jop_dye_blue",
-            "jop_dye_red",
-            "jop_dye_yellow",
+        recipe = {
+            name = "Plant Pigments",
+            id = "jop_watercolor_refill",
+            description = "Refill the palette using red, blue and yellow dye from gathered flowers and plants",
+            materials = {
+                {
+                    material = "red_pigment",
+                    quantity = 1,
+                },
+                {
+                    material = "blue_pigment",
+                    quantity = 1,
+                },
+                {
+                    material = "yellow_pigment",
+                    quantity = 1,
+                },
+            },
+            knownByDefault = true,
+            customRequirements = Dye.customRequirements,
+            noResult = true,
+            craftCallback = function()
+                mwse.log("Refill callback")
+                Dye.craftCallback()
+                local paletteToRefill = Palette.getPaletteToRefill()
+                if paletteToRefill then
+                    paletteToRefill:doRefill()
+                else
+                    mwse.log("no palette to refill")
+                end
+            end,
         }
     }
 }
-for _, refill in ipairs(refills) do
-    interop.Refill.registerRefill(refill)
-end
+event.register(tes3.event.initialized, function()
+    for _, refill in ipairs(refills) do
+        interop.Refill.registerRefill(refill)
+    end
+end)

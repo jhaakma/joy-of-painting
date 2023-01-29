@@ -42,7 +42,7 @@ Dye.customRequirements = {
 
 }
 
-Dye.craftCallback = function(e)
+Dye.craftCallback = function(_craftable)
     ---@param stack tes3itemStack
     for _, stack in pairs(tes3.player.object.inventory) do
         if stack.variables then

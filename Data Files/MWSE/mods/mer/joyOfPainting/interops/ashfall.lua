@@ -292,11 +292,12 @@ local materials = {
         },
     }
 }
-
-local CraftingFramework = include("CraftingFramework")
-if CraftingFramework then
-    CraftingFramework.Material:registerMaterials(materials)
-end
+event.register(tes3.event.initialized, function()
+    local CraftingFramework = include("CraftingFramework")
+    if CraftingFramework then
+        CraftingFramework.Material:registerMaterials(materials)
+    end
+end)
 
 ---@param e MenuActivatorRegisteredEvent
 local function registerAshfallRecipes(e)

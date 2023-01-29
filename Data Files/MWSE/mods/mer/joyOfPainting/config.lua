@@ -1,26 +1,14 @@
 
 local config = {}
 
---Static Config (stored right here)
-config.modName = "The Joy of Painting Morrowind"
-config.modDescription = [[
-    The Joy of Painting Morrowind adds a new Painting skill which allows you to
-    create your own paintings and sell them or hang them on a wall.
-]]
+--TODO: replace with Metadata API once available
+---@type table<string, any>
+---@diagnostic disable-next-line: assign-type-mismatch
+config.metadata = toml.loadFile("Data Files\\TheJoyOfPainting-metadata.toml")
+if not config.metadata then
+    error("Failed to load metadata.toml")
+end
 config.configPath = "joyOfPainting"
-config.dependencies = {
-    {
-        name = "Skills Module",
-        luaFile = "OtherSkills.skillModule",
-        url = "https://www.nexusmods.com/morrowind/mods/46034?tab=files"
-    },
-    {
-        name = "The Crafting Framework",
-        versionFile = "CraftingFramework/version.txt",
-        version = ">=v1.0.25",
-        url = "https://www.nexusmods.com/morrowind/mods/51009?tab=files"
-    },
-}
 config.ANIM_OFFSET = 2.0
 config.skills = {
     painting = {
@@ -33,7 +21,21 @@ config.skills = {
         attribute = tes3.attribute.personality,
     }
 }
-
+config.merchantPaintingSupplies = {
+    jop_sketchbook_01 = 5,
+    jop_frame_sq_02 = 10,
+    jop_frame_w_02 = 10,
+    jop_frame_t_02 = 10,
+    jop_parchment_01 = 50,
+    jop_easel_pack = 1,
+    jop_brush_01 = 3,
+    jop_canvas_square_01 = 10,
+    jop_canvas_wide_01 = 10,
+    jop_oil_palette_01 = 1,
+    jop_water_palette_01 = 1,
+    jop_coal_sticks_01 = 10,
+    misc_inkwell = 10,
+}
 config.BASE_PRICE = 2
 config.MAX_RANDOM_PRICE_EFFECT = 1.5
 --Configs for how much the painting skill affects the quality of the painting
@@ -55,6 +57,10 @@ config.skillProgress = {
     BASE_PROGRESS_PAINTING = 30,
     NEW_REGION_MULTI = 3.0,
     MAX_RANDOM = 10.0
+}
+config.subject = {
+    MINIMUM_PRESENCE = 0.01,
+    MINIMUM_VISIBILITY = 0.1,
 }
 
 --File locations
@@ -94,30 +100,17 @@ config.brushTypes = {}
 config.brushes = {}
 config.easelActiveToMiscMap = {}
 config.meshOverrides = {}
+---@type table<string, JOP.Sketchbook.data>
 config.sketchbooks = {}
-config.paperMolds = {
-    jop_paper_mold = {
-        hoursToDry = 4,
-        paperId = "sc_paper plain",
-        paperPerPulp = 5,
-    }
-}
-config.paperPulps = {
-    jop_paper_pulp = true
-}
+---@type table<string, JOP.PaperMold.data>
+config.paperMolds = {}
+config.paperPulps = {}
 ---@type table<string, JOP.Tapestry.data>
 config.tapestries = {}
-config.shaders = {
-    -- adjuster = "jop_adjuster",
-    -- charcoal = "jop_charcoal",
-    -- greyscale = "jop_greyscale",
-    -- ink = "jop_ink",
-    -- oil = "jop_oil",
-    -- sketch = "jop_sketch",
-    -- vignette = "jop_vignette",
-    -- watercolor = "jop_watercolor",
-    -- window = "jop_window",
-}
+---@type table<string, string>
+config.shaders = {}
+---@type table<string, JOP.Subject>
+config.subjects = {}
 
 local persistentDefault = {
     zoom = 100,
@@ -132,6 +125,28 @@ local mcmDefault = {
     maxSavedPaintings = 20,
     savedPaintingSize = 1080,
     enableTapestryRemoval = true,
+    paintSuppliesMerchants = {
+        ["arrille"] = true,--seyda neen trader - high elf - 800
+        ["ra'virr"] = true,--balmora trader - khajiit - 600 gold
+        ["mebestian ence"] = true,--pelagiad trader - Breton - 449 gold
+        ["alveno andules"] = true,--vivec pawnbroker - Dark Elf - 200
+        ["goldyn belaram"] = true,--suran pawnbroker - Dark Elf - 450
+        ["irgola"] = true,--caldera pawnbroker - Redguard - 500
+        ["clagius clanler"] = true,--balmora outfitter - Imperial - 800
+        ["fadase selvayn"] = true,--tel branora trader - Dark Elf - 500
+        ["tiras sadus"] = true,--ald'ruhn trader - Dark Elf - 799
+        ["heifnir"] = true,--dagon fel trader - Nord - 700
+        ["ancola"] = true,--sadrith mora trader - Redguard - 800
+        ["ababael timsar-dadisun"] = true,--super pro ashlander merchant - Dark Elf - what 9000
+        ["shulki ashunbabi"] = true,--Gnisis trader - Dark Elf - 400
+        ["perien aurelie"] = true, --hla-oad pawnbroker - Breton - 150
+        ["thongar"] = true,--Khuul trader/fake inkeeper - Nord - 1200
+        ["vasesius viciulus"] = true,--Molag mar trader - Imperial - 1000
+        ["baissa"] = true,--Vivec foreign quarter trader - Khajiit - 100
+        ["sedam omalen"] = true,--Ald Velothi's only trader - Dark Elf 400
+        ["ferele athram"] = true, --Tel Aruhn trader
+        ["urfing"] = true --Moonmoth Legion Fort trader - Nord 400
+    }
 }
 --MCM Config (stored as JSON)
 config.mcm = mwse.loadConfig(config.configPath, mcmDefault)
