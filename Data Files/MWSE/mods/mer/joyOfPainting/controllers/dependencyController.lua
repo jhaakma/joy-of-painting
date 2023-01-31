@@ -1,7 +1,7 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("DependencyManager")
-local DependencyManager = require("Metadata.DependencyManager")
+--local DependencyManager = require("Metadata.DependencyManager")
 
 -- if config.metadata.dependencies then
 --     local dependencyManager = DependencyManager.new{

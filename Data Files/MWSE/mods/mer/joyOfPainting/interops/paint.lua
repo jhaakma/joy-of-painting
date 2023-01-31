@@ -39,6 +39,11 @@ local paletteItems = {
         paintType = "oil",
         uses = 10
     },
+    {
+        id = "T_Com_Paint_Palette_01",
+        paintType = "oil",
+        uses = 10
+    }
 }
 
 local paintTypes = {

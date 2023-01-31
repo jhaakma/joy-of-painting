@@ -12,7 +12,39 @@ local brushes = {
     {
         id = "jop_brush_01",
         brushType = "brush",
-    }
+    },
+    {
+        id = "t_com_paintbrush_01",
+        brushType = "brush",
+    },
+    {
+        id = "t_com_paintbrush_02",
+        brushType = "brush",
+    },
+    {
+        id = "t_com_paintbrush_03",
+        brushType = "brush",
+    },
+    {
+        id = "t_com_paintbrush_04",
+        brushType = "brush",
+    },
+    {
+        id = "t_com_paintbrush_04r",
+        brushType = "brush",
+    },
+    {
+        id = "t_com_paintbrush_04g",
+        brushType = "brush",
+    },
+    {
+        id = "t_com_paintbrush_04b",
+        brushType = "brush",
+    },
+    {
+        id = "t_com_paintbrush_04y",
+        brushType = "brush",
+    },
 }
 
 local brushTypes = {

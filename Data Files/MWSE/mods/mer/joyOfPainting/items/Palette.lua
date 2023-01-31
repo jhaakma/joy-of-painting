@@ -145,7 +145,6 @@ function Palette:use()
     return false
 end
 
-
 ---@return JOP.PaintType
 function Palette:getPaintType()
     return config.paintTypes[self.paletteItem.paintType]

@@ -134,47 +134,6 @@ local recipes = {
         },
         rotationAxis = 'x'
     },
-
-    {
-        id = "jop_dye_blue",
-        description = "Blue dye for refilling a watercolor palette.",
-        category = "Painting",
-        soundType = "carve",
-        skillRequirements = {ashfall.bushcrafting.survivalTiers.apprentice},
-        customRequirements = Dye.customRequirements,
-        materials = {
-            { material = "blue_pigment", count = 1 },
-        },
-        craftCallback = Dye.craftCallback
-    },
-
-    {
-        id = "jop_dye_red",
-        description = "Red dye for refilling a watercolor palette.",
-        category = "Painting",
-        soundType = "carve",
-        skillRequirements = {ashfall.bushcrafting.survivalTiers.apprentice},
-        customRequirements = Dye.customRequirements,
-        materials = {
-            { material = "red_pigment", count = 1 },
-        },
-        craftCallback = Dye.craftCallback
-    },
-
-    {
-        id = "jop_dye_yellow",
-        description = "Yellow dye for refilling a watercolor palette.",
-        category = "Painting",
-        soundType = "carve",
-        skillRequirements = {ashfall.bushcrafting.survivalTiers.apprentice},
-        customRequirements = Dye.customRequirements,
-        materials = {
-            { material = "yellow_pigment", count = 1 },
-        },
-        craftCallback = Dye.craftCallback
-    },
-
-
     {
         id = "jop_paper_pulp",
         description = "A pile of paper pulp. Use with a paper mold to craft sheets of paper.",
@@ -250,47 +209,6 @@ local materials = {
             "jop_paper_01",
         }
     },
-    {
-        id = "red_pigment",
-        name = "Red Pigment",
-        ids = {
-            "ingred_fire_petal_01",
-            "ingred_heather_01",
-            "ingred_holly_01",
-            "ingred_red_lichen_01",
-            "ab_ingflor_bloodgrass_01",
-            "ab_ingflor_bloodgrass_02",
-            "mr_berries",
-            "ingred_comberry_01",
-            "Ingred_timsa-come-by_01",
-            "Ingred_noble_sedge_01",
-        },
-    },
-    {
-        id = "blue_pigment",
-        name = "Blue Pigment",
-        ids = {
-            "ingred_bc_coda_flower",
-            "ingred_belladonna_01",
-            "ingred_stoneflower_petals_01",
-            "t_ingflor_lavender_01",
-            "ab_ingflor_bluekanet_01",
-            "ingred_wolfsbane_01",
-            "Ingred_meadow_rye_01",
-        },
-    },
-    {
-        id = "yellow_pigment",
-        name = "Yellow Pigment",
-        ids = {
-            "ingred_bittergreen_petals_01",
-            "ingred_gold_kanet_01",
-            "ingred_golden_sedge_01",
-            "ingred_timsa-come-by_01",
-            "ingred_wickwheat_01",
-            "ingred_willow_anther_01",
-        },
-    }
 }
 event.register(tes3.event.initialized, function()
     local CraftingFramework = include("CraftingFramework")
