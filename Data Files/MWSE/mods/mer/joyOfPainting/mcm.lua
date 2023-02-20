@@ -124,7 +124,7 @@ local function registerMCM()
                     for obj in tes3.iterateObjects(tes3.objectType.npc) do
                         ---@cast obj tes3npc
                         if obj.class and obj.class.bartersMiscItems then
-                            local id = (obj.baseObject or obj).id:lower()
+                            local id = obj.id:lower()
                             npcs[id] = true
                         end
                     end

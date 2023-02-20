@@ -8,12 +8,12 @@
 
 ---@class MerchantManager.new.params
 ---@field modName string name of the mod registering the merchant manager, used as a unique identifier
----@field logger MWSELogger logger to use for logging
+---@field logger mwseLogger logger to use for logging
 ---@field containers MerchantManager.ContainerData[] list of containers to register
 
 ---@class MerchantManager
 ---@field modName string name of the mod registering the merchant manager, used as a unique identifier
----@field logger MWSELogger MWSELogger to use for logging
+---@field logger mwseLogger MWSELogger to use for logging
 ---@field registeredContainers table<string, MerchantManager.ContainerData>
 --- A class for managing custom inventories for merchants.
 local MerchantManager = {

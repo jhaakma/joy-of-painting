@@ -4,7 +4,7 @@ local config = {}
 --TODO: replace with Metadata API once available
 ---@type table<string, any>
 ---@diagnostic disable-next-line: assign-type-mismatch
-config.metadata = toml.loadFile("Data Files\\TheJoyOfPainting-metadata.toml")
+config.metadata = toml.loadFile("Data Files\\mer.joyOfPainting-metadata.toml")
 if not config.metadata then
     error("Failed to load metadata.toml")
 end

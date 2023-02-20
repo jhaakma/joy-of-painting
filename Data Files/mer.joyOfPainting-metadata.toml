@@ -1,0 +1,35 @@
+[package]
+name = "Joy Of Painting"
+description = "The Joy of Painting Morrowind adds a new Painting skill which allows you to create your own paintings and sell them or hang them on a wall. "
+repository = "https://github.com/jhaakma/joy-of-painting"
+authors = [ "Merlord", "Greatness7", "Melchior Dahrk"]
+version = "0.0.36"
+[dependencies]
+assets = [
+    "TheJoyOfPainting.esp",
+    "Icons\\jop",
+    "Meshes\\jop",
+    "Sound\\jop",
+    "Textures\\jop",
+    "Docs\\JoyOfPainting.md",
+    "MWSE\\mods\\mer\\joyOfPainting",
+    "shaders\\XEshaders\\jop_adjuster.fx",
+    "shaders\\XEshaders\\jop_charcoal.fx",
+    "shaders\\XEshaders\\jop_greyscale.fx",
+    "shaders\\XEshaders\\jop_ink.fx",
+    "shaders\\XEshaders\\jop_oil.fx",
+    "shaders\\XEshaders\\jop_vignette.fx",
+    "shaders\\XEshaders\\jop_watercolor.fx",
+    "shaders\\XEshaders\\jop_window.fx",
+]
+[dependencies.mwse]
+buildnumber = 3011
+[dependencies.mge-xe]
+version = "0.15.0"
+[dependencies.mods.skillsModule]
+name = "Skills Module"
+mwse-module = "OtherSkills"
+url = "https://www.nexusmods.com/morrowind/mods/46034?tab=files"
+[dependencies.mods.theCrafingFramework]
+mwse-module = "CraftingFramework"
+url = "https://www.nexusmods.com/morrowind/mods/51009?tab=files"
