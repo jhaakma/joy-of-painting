@@ -13,8 +13,8 @@ local function initAll(path)
     end
 end
 
-logger:debug("Initialising Controllers")
-initAll("controllers")
+logger:debug("Initialising Event Handlers")
+initAll("eventHandlers")
 logger:debug("Initialising Interops")
 initAll("interops")
 event.register(tes3.event.initialized, function()

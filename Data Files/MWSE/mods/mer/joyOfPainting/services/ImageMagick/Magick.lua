@@ -21,6 +21,11 @@ function Magick:new(commandName)
 end
 
 
+function Magick:log(logLevel, message, ...)
+    logger[logLevel:lower()](logger, message, ...)
+    return self
+end
+
 ---@return JOP.Magick
 --Begins a magick command, setting the command to "magick".
 function Magick:magick()
@@ -217,7 +222,7 @@ function Magick:removeTransparency(bgColor)
 end
 
 function Magick:formatDDS()
-    self.command = string.format('%s -format dds -define dds:mipmaps=5 -define dds:compression=dtx5 ', self.command)
+    self.command = string.format('%s -format dds -define dds:mipmaps=5 -define dds:compression=dxt5 ', self.command)
     return self
 end
 

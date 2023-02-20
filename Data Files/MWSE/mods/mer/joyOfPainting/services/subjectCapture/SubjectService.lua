@@ -6,7 +6,7 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("SubjectService")
-local VisibilityService = require("mer.joyOfPainting.services.VisibilityService")
+local VisibilityService = require("mer.joyOfPainting.services.subjectCapture.VisibilityService")
 
 ---@class JOP.SubjectService
 local SubjectService = {
@@ -17,7 +17,7 @@ local SubjectService = {
 
 ---@class JOP.SubjectService.params
 ---@field occlusionTester OcclusionTester
----@field logger MWSELogger
+---@field logger mwseLogger
 ---@field subjects table<string, JOP.Subject>
 
 ---@class JOP.Subject.Result

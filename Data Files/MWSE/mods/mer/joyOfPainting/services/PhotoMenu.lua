@@ -3,19 +3,22 @@
     adjusting Zoom etc
 ]]
 
-local ImageBuilder = require("mer.joyOfPainting.services.ImageBuilder")
+local ImageBuilder = require("mer.joyOfPainting.services.ImageMagick.ImageBuilder")
 local ShaderService = require("mer.joyOfPainting.services.ShaderService")
 local config = require("mer.joyOfPainting.config")
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("PhotoMenu")
+local occlusionTesterLogger = common.createLogger("OcclusionTester")
 local GUID = require("mer.joyOfPainting.services.GUID")
 local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local SkillService = require("mer.joyOfPainting.services.SkillService")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
 local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
-local OcclusionTester = require("mer.joyOfPainting.services.OcclusionTester")
-local SubjectService = require("mer.joyOfPainting.services.SubjectService")
+local OcclusionTester = require("mer.joyOfPainting.services.subjectCapture.OcclusionTester")
+local SubjectService = require("mer.joyOfPainting.services.subjectCapture.SubjectService")
 local alwaysOnShaders
+
+
 
 ---@class JOP.PhotoMenu
 local PhotoMenu = {
@@ -75,12 +78,17 @@ function PhotoMenu:getImageBuilder()
     }
 
     local builder = ImageBuilder:new(imageData)
-
         :registerStep("calculateSubjectResults", function(next)
-            local tester = OcclusionTester.new()
-            local subjectService = SubjectService.new{ occlusionTester = tester}
+            local occlusionTester = OcclusionTester.new{
+                logger = occlusionTesterLogger,
+            }
+            local subjectService = SubjectService.new{
+                occlusionTester = occlusionTester
+            }
             local subjects = subjectService:getSubjects()
             self.subjects = subjects
+            timer.frame.delayOneFrame(next)
+            return true
         end)
         :registerStep("doCaptureCallback", function()
             if self.captureCallback then

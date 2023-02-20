@@ -22,7 +22,7 @@
 local Image = {}
 Image.blocked = false
 
-local Magick = require("mer.joyOfPainting.services.Magick")
+local Magick = require("mer.joyOfPainting.services.ImageMagick.Magick")
 local config = require("mer.joyOfPainting.config")
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("Image")
@@ -51,6 +51,7 @@ function Image:finish(callback)
     Image.blocked = false
     if callback then callback() end
 end
+
 
 --[[
     This function takes a screenshot of the current

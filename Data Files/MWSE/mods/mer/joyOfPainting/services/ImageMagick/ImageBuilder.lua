@@ -1,6 +1,6 @@
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("ImageBuilder")
-local Image = require("mer.joyOfPainting.services.Image")
+local Image = require("mer.joyOfPainting.services.ImageMagick.Image")
 
 local ImageBuilder = {}
 

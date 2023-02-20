@@ -1,4 +1,4 @@
-local pixelCounter = require("mer.joyOfPainting.services.pixelCounter")
+local pixelCounter = require("mer.joyOfPainting.services.subjectCapture.pixelCounter")
 
 ---@class OcclusionTester
 ---@field targets niNode[]
@@ -7,11 +7,13 @@ local pixelCounter = require("mer.joyOfPainting.services.pixelCounter")
 ---@field camera niCamera
 ---@field texture niRenderedTexture
 ---@field pixelData niPixelData
+---@field logger mwseLogger
 local OcclusionTester = {}
 OcclusionTester.__index = OcclusionTester
 
 ---@class OcclusionTester.params
 ---@field resolutionScale number
+---@field logger mwseLogger
 
 function OcclusionTester.getNearestPowerOfTwo(n)
     return 2 ^ math.floor(math.log(n, 2))
@@ -24,6 +26,8 @@ end
 function OcclusionTester.new(e)
     e = e or {}
     local this = setmetatable({}, OcclusionTester)
+
+    this.logger = e.logger or require("logging.logger").new{name="OcclusionTester"}
 
     -- Rounds width and height to nearest power of two.
     local s = e.resolutionScale or 1.0
@@ -122,6 +126,15 @@ function OcclusionTester:enable()
     for _, node in ipairs(self.targets) do
         node.appCulled = true
     end
+    -- apply zoom fov
+    local cameraData = tes3.worldController.worldCamera.cameraData
+    self.previousFov = cameraData.fov
+    if mge.camera.zoomEnable then
+        local x = math.tan((math.pi / 360) * mge.camera.fov)
+        cameraData.fov = math.atan(x / mge.camera.zoom) * (360 / math.pi)
+        self.logger:debug("Applying zoom fov: %s", cameraData.fov)
+    end
+
 end
 
 function OcclusionTester:disable()
@@ -130,9 +143,18 @@ function OcclusionTester:disable()
     for _, node in ipairs(self.targets) do
         node.appCulled = false
     end
+    -- restore fov
+    local cameraData = tes3.worldController.worldCamera.cameraData
+    if mge.camera.zoomEnable then
+        cameraData.fov = self.previousFov
+        self.logger:debug("Restoring fov: %s", cameraData.fov)
+    end
+
 end
 
 function OcclusionTester:capturePixelData()
+    self.logger:debug("Capturing pixel data...")
+
     ---@diagnostic disable
     self.camera.renderer:setRenderTarget(self.texture)
     self.camera:clear()
@@ -140,10 +162,13 @@ function OcclusionTester:capturePixelData()
     self.camera:swapBuffers()
     self.camera.renderer:setRenderTarget(nil)
     ---@diagnostic enable
+
+    self.logger:debug("Finished capturing pixel data.")
     assert(self.texture:readback(self.pixelData))
 end
 
 function OcclusionTester:getPixelCounts(e)
+    self.logger:debug("Counting pixels...")
     e = e or { visibleOnly = false, edges = false }
     if e.visibleOnly then
         self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.lessEqual
