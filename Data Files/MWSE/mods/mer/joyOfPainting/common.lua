@@ -5,13 +5,14 @@ local config = require("mer.joyOfPainting.config")
 local MWSELogger = require("logging.logger")
 local CraftingFramework = require("CraftingFramework")
 
----@type table<string, MWSELogger>
+---@type table<string, mwseLogger>
 common.loggers = {}
 
 function common.createLogger(serviceName)
     local logger = MWSELogger.new{
         name = string.format("JoyOfPainting - %s", serviceName),
-        logLevel = config.mcm.logLevel
+        logLevel = config.mcm.logLevel,
+        includeTimestamp = true,
     }
     common.loggers[serviceName] = logger
     return logger
@@ -97,6 +98,14 @@ function common.positioner(e)
         end
         CraftingFramework.interop.activatePositioner(e)
     end)
+end
+
+function common.getCanvasTexture(texture)
+    if (lfs.fileexists(tes3.installDirectory .. "\\Data Files\\Textures\\" .. texture)) then
+        return "Data Files\\Textures\\" .. texture
+    else
+        return "Data Files\\Textures\\jop\\" .. texture
+    end
 end
 
 return common
