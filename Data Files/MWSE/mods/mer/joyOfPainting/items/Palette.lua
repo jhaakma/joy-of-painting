@@ -17,7 +17,7 @@
 ---@field id string The id of the palette type
 ---@field name string The name of the palette type
 ---@field brushType string? The brush type to use for this palette. If not specified, this palette does not need a brush to use.
----@field refillMenu craftingFrameworkMenuActivator
+---@field refillMenu CraftingFramework.MenuActivator
 
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
@@ -174,7 +174,7 @@ function Palette:updateRecipes()
         self:initRefillMenuActivator()
     end
 
-    ---@type craftingFrameworkRecipeData[]
+    ---@type CraftingFramework.Recipe.data[]
     local recipes = {}
     for _, refill in pairs(config.refills[paintType.id]) do
         logger:debug("Adding %s to refill recipes", refill.recipe.id)

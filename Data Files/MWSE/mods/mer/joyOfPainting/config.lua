@@ -1,13 +1,23 @@
-
+---@class JOP.config
 local config = {}
 
---TODO: replace with Metadata API once available
----@type table<string, any>
----@diagnostic disable-next-line: assign-type-mismatch
-config.metadata = toml.loadFile("Data Files\\mer.joyOfPainting-metadata.toml")
-if not config.metadata then
-    error("Failed to load metadata.toml")
+--TODO: replace with loadMetadata once available
+if toml.loadMetadata then
+    config.metadata = toml.loadMetadata("The Joy of Painting")
+else
+    config.metadata = toml.loadFile("Data Files\\The Joy of Painting-metadata.toml")
 end
+if not config.metadata then
+    mwse.log("Failed to load metadata.toml")
+    config.metadata = {
+        package = {
+            name = "The Joy of Painting",
+            description = "Adds a painting skill and a merchant who sells painting supplies.",
+            version = "FIX THIS"
+        }
+    }
+end
+---Path to config file
 config.configPath = "joyOfPainting"
 config.ANIM_OFFSET = 2.0
 config.skills = {
@@ -46,25 +56,28 @@ config.skillPaintEffect = {
     MAX_SKILL = 60,
     MAX_RANDOM = 2.0
 }
---Configs for how much the painting skill affects the value of the painting
+---Configs for how much the painting skill affects the value of the painting
 config.skillGoldEffect = {
     MIN_EFFECT = 1,
     MAX_EFFECT = 30,
     MIN_SKILL = 10,
     MAX_SKILL = 100,
 }
+---Configs for how much paintings increase your painting skill
 config.skillProgress = {
     BASE_PROGRESS_PAINTING = 30,
     NEW_REGION_MULTI = 3.0,
     MAX_RANDOM = 10.0
 }
+---Configs for subject mechanics
 config.subject = {
     MINIMUM_PRESENCE = 0.01,
     MINIMUM_VISIBILITY = 0.1,
 }
 
---File locations
+
 local root = io.popen("cd"):read()
+--File locations
 config.locations = {}
 do
     config.locations.dataFiles = root .. "\\Data Files\\"
@@ -77,6 +90,7 @@ do
 end
 
 --Registered objects
+
 ---@type table<string, JOP.BackPack.Config>
 config.backpacks = {}
 ---@type JOP.Canvas[]
@@ -112,19 +126,27 @@ config.shaders = {}
 ---@type table<string, JOP.Subject>
 config.subjects = {}
 
+---@class JOP.config.persistent
 local persistentDefault = {
     zoom = 100,
     brightness = 50,
     contrast = 50,
     saturation = 50,
 }
+---@class JOP.config.MCM
 local mcmDefault = {
     enabled = true,
     logLevel = "DEBUG", --TODO: Change to INFO before full release
     savedPaintingIndexes = {},
+    ---The maximum number of saved paintings to keep
     maxSavedPaintings = 20,
+    ---The length in pixels of the smallest dimension of saved paintings
     savedPaintingSize = 1080,
+    ---Enable the tapestry removal feature
     enableTapestryRemoval = true,
+    ---Show the tapestry tooltip when hovering over a tapestry
+    showTapestryTooltip = true,
+    ---List of merchants who sell painting supplies
     paintSuppliesMerchants = {
         ["arrille"] = true,--seyda neen trader - high elf - 800
         ["ra'virr"] = true,--balmora trader - khajiit - 600 gold
@@ -148,12 +170,15 @@ local mcmDefault = {
         ["urfing"] = true --Moonmoth Legion Fort trader - Nord 400
     }
 }
---MCM Config (stored as JSON)
+--MCM Config (stored as JSON in MWSE/config/joyOfPainting.json)
+---@type JOP.config.MCM
 config.mcm = mwse.loadConfig(config.configPath, mcmDefault)
+---Save the current config.mcm to the config file
 config.save = function()
     mwse.saveConfig(config.configPath, config.mcm)
 end
 --Persistent Configs (Stored on tes3.player.data, save specific)
+---@type JOP.config.persistent
 config.persistent = setmetatable({}, {
     __index = function(_, key)
         if not tes3.player then return end

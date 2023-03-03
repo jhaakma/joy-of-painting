@@ -1,4 +1,8 @@
 local Tapestry = require("mer.joyOfPainting.items.Tapestry")
+local config = require("mer.joyOfPainting.config")
+local common = require("mer.joyOfPainting.common")
+local logger = common.createLogger("TapestryActivator")
+
 local tapestries = {
     { id = "furn_com_tapestry_01" },
     { id = "furn_com_tapestry_02" },
@@ -28,3 +32,35 @@ event.register(tes3.event.initialized, function()
         Tapestry.registerTapestry(tapestry)
     end
 end)
+
+---@type CraftingFramework
+local CraftingFramework = include("CraftingFramework")
+if CraftingFramework then
+    for _, tapestry in ipairs(tapestries) do
+        logger:debug("Registering tapestry %s", tapestry.id)
+        CraftingFramework.StaticActivator.register{
+            objectId = tapestry.id,
+            name = config.mcm.showTapestryTooltip and "Tapestry" or nil,
+            onActivate = function(reference)
+                if not reference then return end
+                if config.tapestries[reference.object.id:lower()] == nil then return end
+                if not config.mcm.enableTapestryRemoval then return end
+                tes3ui.showMessageMenu{
+                    message = "Tapestry",
+                    buttons = {
+                        {
+                            text = "Remove",
+                            callback = function()
+                                reference:delete()
+                                tes3.playSound{
+                                    sound = "Item Misc Up",
+                                }
+                            end
+                        }
+                    },
+                    cancels = true
+                }
+            end
+        }
+    end
+end

@@ -1,6 +1,5 @@
 local common = include("mer.joyOfPainting.common")
 local logger = common.createLogger("RightClickMenuExit Interop")
-local config = include("mer.joyOfPainting.config")
 
 local rcmeButtons = {
     {

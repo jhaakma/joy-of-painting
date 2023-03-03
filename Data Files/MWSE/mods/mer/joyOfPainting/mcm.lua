@@ -92,6 +92,13 @@ local function registerMCM()
         variable = mwse.mcm.createTableVariable{ id = "enableTapestryRemoval", table = config.mcm },
     }
 
+    page:createYesNoButton{
+        label = "Show Tapestry Tooltip",
+        description = "When enabled, a tooltip will be shown when you hover over a tapestry. Requires a restart for change to take effect.",
+        variable = mwse.mcm.createTableVariable{ id = "showTapestryTooltip", table = config.mcm },
+        restartRequired = true,
+    }
+
     page:createDropdown{
         label = "Log Level",
         description = "Set the logging level for all JoyOfPainting Loggers.",

@@ -5,6 +5,9 @@ repository = "https://github.com/jhaakma/joy-of-painting"
 authors = [ "Merlord", "Greatness7", "Melchior Dahrk",]
 version = "0.0.37"
 
+[tools.mwse]
+lua-mod = "mer.joyofpainting"
+
 [dependencies]
 assets = [ "TheJoyOfPainting.esp", "Icons\\jop", "Meshes\\jop", "Sound\\jop", "Textures\\jop", "Docs\\JoyOfPainting.md", "MWSE\\mods\\mer\\joyOfPainting", "shaders\\XEshaders\\jop_adjuster.fx", "shaders\\XEshaders\\jop_charcoal.fx", "shaders\\XEshaders\\jop_greyscale.fx", "shaders\\XEshaders\\jop_ink.fx", "shaders\\XEshaders\\jop_oil.fx", "shaders\\XEshaders\\jop_vignette.fx", "shaders\\XEshaders\\jop_watercolor.fx", "shaders\\XEshaders\\jop_window.fx",]
 
@@ -12,13 +15,13 @@ assets = [ "TheJoyOfPainting.esp", "Icons\\jop", "Meshes\\jop", "Sound\\jop", "T
 buildnumber = 3011
 
 [dependencies.mge-xe]
-version = "0.15.0"
+version = ">=0.15.0"
 
-[dependencies.mods.skillsModule]
-name = "Skills Module"
+[dependencies.mods."Skills Module"]
 mwse-module = "OtherSkills"
 url = "https://www.nexusmods.com/morrowind/mods/46034?tab=files"
 
-[dependencies.mods.theCrafingFramework]
+[dependencies.mods."The Crafting Framework"]
 mwse-module = "CraftingFramework"
+version = "^1.4.0"
 url = "https://www.nexusmods.com/morrowind/mods/51009?tab=files"

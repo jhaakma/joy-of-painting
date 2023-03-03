@@ -217,7 +217,7 @@ event.register(tes3.event.initialized, function()
     end
 end)
 
----@param e MenuActivatorRegisteredEvent
+---@param e CraftingFramework.MenuActivator.RegisteredEvent
 local function registerAshfallRecipes(e)
     local activator = e.menuActivator
     if activator then

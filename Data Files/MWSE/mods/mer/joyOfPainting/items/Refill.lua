@@ -4,7 +4,7 @@ local logger = common.createLogger("Refill")
 
 ---@class JOP.Refill
 ---@field paintType string The paint type to refill
----@field recipe craftingFrameworkRecipeData The recipe to use to refill this paint type
+---@field recipe CraftingFramework.Recipe.data The recipe to use to refill this paint type
 
 local Refill = {}
 

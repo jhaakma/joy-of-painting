@@ -20,7 +20,7 @@ end
 local logger = common.createLogger("common")
 
 function common.getVersion()
-    return config.metadata.version
+    return config.metadata.package.version
 end
 
 ---@param reference tes3reference
