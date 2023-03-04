@@ -60,7 +60,7 @@ if CraftingFramework then
                     },
                     cancels = true
                 }
-            end
+            end,
         }
     end
 end

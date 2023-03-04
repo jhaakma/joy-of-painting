@@ -2,6 +2,10 @@ local ashfall = include("mer.ashfall.interop")
 if not ashfall then return end
 local Easel = require("mer.joyOfPainting.items.Easel")
 local Dye = require("mer.joyOfPainting.items.Dye")
+local PaperMold = require("mer.joyOfPainting.items.PaperMold")
+local Sketchbook = require("mer.joyOfPainting.items.Sketchbook")
+
+---@type CraftingFramework.Recipe.data[]
 local recipes = {
     {
         id = "jop_frame_sq_01",
@@ -48,8 +52,7 @@ local recipes = {
         },
         skillRequirements = {ashfall.bushcrafting.survivalTiers.novice},
         destroyCallback = function(_recipe, e)
-            local reference = e.reference
-            local easel = Easel:new(reference)
+            local easel = Easel:new(e.reference)
             if easel and easel:hasCanvas() then
                 easel.painting:takeCanvas{blockSound = true}
             end
@@ -95,9 +98,9 @@ local recipes = {
             { material = "leather", count = 1 },
             { material = "paper", count = 2 }
         },
-        rotationAxis = 'y'
+        rotationAxis = 'y',
+        craftedOnly = false,
     },
-
     {
         id = "jop_brush_01",
         description = "A brush for painting.",
@@ -120,7 +123,7 @@ local recipes = {
         materials = {
             { material = "wood", count = 2 },
         },
-        rotationAxis = 'x'
+        rotationAxis = 'x',
     },
 
     {
@@ -132,7 +135,7 @@ local recipes = {
         materials = {
             { material = "wood", count = 2 },
         },
-        rotationAxis = 'x'
+        rotationAxis = 'x',
     },
     {
         id = "jop_paper_pulp",
@@ -185,7 +188,6 @@ local recipes = {
             end
         end
     },
-
     {
         id = "jop_paper_mold",
         description = "A mold for crafting sheets of paper.",

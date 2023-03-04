@@ -1,11 +1,7 @@
 local common = require("mer.joyOfPainting.common")
-local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("Tooltips")
 local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local Painting = require("mer.joyOfPainting.items.Painting")
-local Palette = require("mer.joyOfPainting.items.Palette")
-local Sketchbook = require("mer.joyOfPainting.items.Sketchbook")
-local PaperMold = require("mer.joyOfPainting.items.PaperMold")
 
 local function doPaintingTooltips(e, painting)
     local labelText
@@ -24,25 +20,6 @@ local function doPaintingTooltips(e, painting)
     end
 end
 
-local function doSketchbookTooltips(e, sketchbook)
-    local numSketches = sketchbook.data.sketches and #sketchbook.data.sketches or 0
-    local labelText = string.format("Sketches: %d", numSketches)
-    UIHelper.addLabelToTooltip{
-        tooltip = e.tooltip,
-        labelText = labelText,
-        color = tes3ui.getPalette("normal_color")
-    }
-
-    if sketchbook.data.sketchbookName then
-        local labelText = string.format('"%s"', sketchbook.data.sketchbookName)
-        UIHelper.addLabelToTooltip{
-            tooltip = e.tooltip,
-            labelText = labelText,
-            color = tes3ui.getPalette("normal_color")
-        }
-    end
-end
-
 ---@param e uiObjectTooltipEventData
 local function manageTooltips(e)
     local painting = Painting:new{
@@ -53,58 +30,10 @@ local function manageTooltips(e)
     if painting:hasPaintingData() then
         doPaintingTooltips(e, painting)
     end
-
-    if config.sketchbooks[e.object.id:lower()] then
-        local sketchbook = Sketchbook:new{
-            reference = e.reference,
-            item = e.object --[[@as JOP.tes3itemChildren]],
-            itemData = e.itemData
-        }
-        doSketchbookTooltips(e, sketchbook)
-    end
-
-    if Palette.isPalette(e.object.id) then
-        local palette = Palette:new{
-            reference = e.reference,
-            item = e.object --[[@as JOP.tes3itemChildren]],
-            itemData = e.itemData
-        }
-        if palette then
-            local labelText = string.format("Uses: %s/%s",
-                palette:getRemainingUses(),
-                palette:getMaxUses()
-            )
-            UIHelper.addLabelToTooltip{
-                tooltip = e.tooltip,
-                labelText = labelText,
-                color = tes3ui.getPalette("normal_color")
-            }
-        end
-    end
-
-    local paperMold = PaperMold:new{
-        reference = e.reference,
-        item = e.object --[[@as JOP.tes3itemChildren]],
-        itemData = e.itemData
-    }
-    if paperMold then
-        local text
-        if paperMold:hasPulp() then
-            text = "Pulp Drying"
-        elseif paperMold:hasPaper() then
-            text = "Paper Ready"
-        end
-        if text then
-            UIHelper.addLabelToTooltip{
-                tooltip = e.tooltip,
-                labelText = text,
-                color = tes3ui.getPalette("normal_color")
-            }
-        end
-    end
 end
 event.register(tes3.event.uiObjectTooltip, manageTooltips)
 
+---Adds the painting names to the inventory select menu
 ---@param e uiActivatedEventData
 local function onMenuInventorySelectMenu(e)
     logger:debug("Entering InventorySelectMenu")

@@ -1,6 +1,6 @@
 ---@class JOP.Palette.params
 ---@field reference tes3reference?
----@field item tes3item?
+---@field item tes3item|tes3object|tes3misc?
 ---@field itemData tes3itemData?
 ---@field paletteItem JOP.PaletteItem
 
@@ -52,6 +52,18 @@ function Palette.registerPaletteItem(e)
     if e.meshOverride then
         meshService.registerOverride(e.id, e.meshOverride)
     end
+    CraftingFramework.Indicator.register{
+        objectId = e.id,
+        additionalUI = function(indicator, parent)
+            local palette = Palette:new{
+                reference = indicator.reference,
+                item  = indicator.item,
+            }
+            if palette then
+                palette:doTooltip(parent)
+            end
+        end,
+    }
 end
 
 ---@param e JOP.PaintType
@@ -232,6 +244,13 @@ end
 
 function Palette.isPalette(id)
     return config.paletteItems[id:lower()] ~= nil
+end
+
+function Palette:doTooltip(parent)
+    local labelText = string.format("Uses: %s/%s",
+        self:getRemainingUses(),
+        self:getMaxUses())
+    parent:createLabel{text = labelText}
 end
 
 return Palette

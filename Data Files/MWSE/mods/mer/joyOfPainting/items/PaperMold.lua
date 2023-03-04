@@ -2,7 +2,7 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("PaperMold")
 local NodeManager = require("mer.joyOfPainting.services.NodeManager")
-
+local CraftingFramework = require("CraftingFramework")
 ---@class JOP.PaperMold.data
 ---@field id string The id of the paper mold
 ---@field hoursToDry number The number of hours it takes for the paper to dry
@@ -25,6 +25,19 @@ function PaperMold.registerPaperMold(e)
     logger:debug("Registering paper mold %s", e.id)
     e.id = e.id:lower()
     config.paperMolds[e.id] = table.copy(e, {})
+    CraftingFramework.Indicator.register{
+        objectId = e.id,
+        additionalUI = function(indicator, parent)
+            local paperMold = PaperMold:new{
+                reference = indicator.reference,
+                item = indicator.item,
+                itemData = indicator.dataHolder,
+            }
+            if paperMold then
+                paperMold:doTooltip(parent)
+            end
+        end,
+    }
 end
 
 function PaperMold.registerPaperPulp(e)
@@ -180,5 +193,33 @@ function PaperMold:takePaper()
     NodeManager.updateSwitch("paper_mold")
 end
 
+function PaperMold:getDryness()
+    if not self:hasPulp() then
+        return 0
+    end
+    local now = tes3.getSimulationTimestamp()
+    local timeAddedPulp = self:getTimeAddedPulp()
+    local hoursToDry = self:getHoursToDry()
+    local dryness = (now - timeAddedPulp) / hoursToDry
+    return dryness
+end
+
+---@param parent tes3uiElement
+function PaperMold:doTooltip(parent)
+    self:processMold(timestamp)
+    logger:debug("Creating tooltip")
+    local text
+    if self:hasPulp() then
+        logger:debug("Has pulp")
+        text = string.format("Pulp Drying: %d%%", self:getDryness() * 100)
+    elseif self:hasPaper() then
+        logger:debug("Has paper")
+        text = "Paper Ready"
+    end
+    if text then
+        logger:debug("Creating label")
+        parent:createLabel{text = text}
+    end
+end
 
 return PaperMold

@@ -65,7 +65,6 @@ end
 function PhotoMenu:getImageBuilder()
     local paintingTexture = getpaintingTexture()
     logger:debug("Painting name: %s", paintingTexture)
-
     local imageData = {
         savedPaintingPath = "Data Files\\" .. PaintService.getSavedPaintingPath(self.artStyle),
         paintingPath = "Data Files\\" .. PaintService.getPaintingTexturePath(paintingTexture),

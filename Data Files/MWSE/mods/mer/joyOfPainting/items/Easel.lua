@@ -6,6 +6,7 @@ local Painting = require("mer.joyOfPainting.items.Painting")
 local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
 local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 local Activator = require("mer.joyOfPainting.services.Activator")
+local Frame = require("mer.joyOfPainting.items.Frame")
 
 ---@class JOP.CanvasData
 ---@field canvasId string|nil The id of the original canvas object
@@ -135,8 +136,7 @@ function Easel:openAttachCanvasMenu()
                 local painting = Painting:new{ item = e2.item, itemData = e2.itemData }
                 local canvasId = (painting.data.canvasId or e2.item.id):lower()
                 local canvasConfig = config.canvases[canvasId]
-                local isFrame = config.frames[e2.item.id]
-                if isFrame then
+                if Frame.isFrame(e2.item) then
                     logger:trace("Filtering on frame: %s", e2.item.id)
                     return false
                 end

@@ -262,22 +262,25 @@ function UIHelper.createPaintingImage(parent, e)
 
     --create image
     local paintingPath = PaintService.getPaintingTexturePath(e.paintingTexture)
-    local image = outerBlock:createImage{
-        id = "JOP_PaintingImage",
-        path = paintingPath
-    }
-    image.width = dimensions.width
-    image.height = dimensions.height
-    image.scaleMode = true
-
-    --tooltip shows location of painting
-    if e.tooltipText then
-        image:register("help", function()
-            UIHelper.createTooltipMenu{
-                header = e.tooltipHeader,
-                text = e.tooltipText
-            }
-        end)
+    if tes3.getFileExists(paintingPath) then
+        local image = outerBlock:createImage{
+            id = "JOP_PaintingImage",
+            path = paintingPath
+        }
+        image.width = dimensions.width
+        image.height = dimensions.height
+        image.scaleMode = true
+            --tooltip shows location of painting
+        if e.tooltipText then
+            image:register("help", function()
+                UIHelper.createTooltipMenu{
+                    header = e.tooltipHeader,
+                    text = e.tooltipText
+                }
+            end)
+        end
+    else
+        logger:warn("Painting texture '%s' does not exist", paintingPath)
     end
 end
 

@@ -3,6 +3,7 @@ local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("Sketchbook")
 local Painting = require("mer.joyOfPainting.items.Painting")
 local UIHelper = require("mer.joyOfPainting.services.UIHelper")
+local CraftingFramework = require("CraftingFramework")
 
 ---@class JOP.Sketchbook
 local Sketchbook = {
@@ -34,6 +35,19 @@ function Sketchbook.registerSketchbook(e)
     logger:assert(type(e.id) == "string", "id must be a string")
     e.id = e.id:lower()
     config.sketchbooks[e.id] = table.copy(e, {})
+    CraftingFramework.Indicator.register{
+        objectId = e.id,
+        additionalUI = function(indicator, parent)
+            local sketchbook = Sketchbook:new{
+                reference = indicator.reference,
+                item = indicator.item --[[@as JOP.tes3itemChildren]],
+                itemData = indicator.dataHolder --[[@as tes3itemData]]
+            }
+            if sketchbook then
+                sketchbook:doTooltip(parent)
+            end
+        end
+    }
 end
 
 ---@param e JOP.Sketchbook.data
@@ -506,7 +520,12 @@ function Sketchbook:rename()
             table = self.data,
         },
         callback = function()
-            tes3.messageBox("Sketchbook renamed to: %s", self.data.sketchbookName)
+            if self.data.sketchbookName == "" then
+                self.data.sketchbookName = nil
+            end
+            if self.data.sketchbookName then
+                tes3.messageBox("Sketchbook renamed to: %s", self.data.sketchbookName)
+            end
             menu:destroy()
             ---@diagnostic disable-next-line: redundant-parameter
             tes3ui.leaveMenuMode("JOP.NamePaintingMenu")
@@ -547,10 +566,21 @@ function Sketchbook:activate()
     }
 end
 
+function Sketchbook:doTooltip(parent)
+    local numSketches = self.data.sketches and #self.data.sketches or 0
+    local labelText = string.format("Sketches: %d", numSketches)
+    parent:createLabel{ text = labelText }
+    if self.data.sketchbookName then
+        labelText = string.format('"%s"', self.data.sketchbookName)
+        parent:createLabel{ text = labelText }
+    end
+end
+
 function Sketchbook:close()
     tes3ui.leaveMenuMode()
     self.menu:destroy()
 end
+
 
 
 return Sketchbook

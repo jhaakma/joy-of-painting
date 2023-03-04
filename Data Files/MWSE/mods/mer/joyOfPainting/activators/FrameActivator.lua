@@ -3,6 +3,7 @@ local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("FrameActivator")
 local Painting = require("mer.joyOfPainting.items.Painting")
 local Activator = require("mer.joyOfPainting.services.Activator")
+local Frame = require("mer.joyOfPainting.items.Frame")
 
 ---@param e equipEventData|activateEventData
 local function activate(e)
@@ -12,10 +13,8 @@ local function activate(e)
         item = e.item,
         itemData = e.itemData,
     }
-
+    local frameConfig = Frame.getFrameConfig(painting.item)
     local isPainted = painting:hasPaintingData()
-    local frameConfig = config.frames[painting.item.id:lower()]
-
     local safeRef
     if e.target then
         if tes3ui.menuMode() then
@@ -56,11 +55,11 @@ local function activate(e)
                                     return false
                                 end
                                 local canvasConfig = painting:getCanvasConfig()
-                                local isFrame = config.frames[id]
-                                if isFrame then
+                                if Frame.isFrame(e2.item) then
                                     logger:debug("Filtering on frame: %s", id)
                                     return false
                                 end
+
                                 if frameConfig.frameSize then
                                     logger:debug("Filtering on frame size: %s", frameConfig.frameSize)
                                     if canvasConfig and frameConfig.frameSize ~= canvasConfig.frameSize then
@@ -200,7 +199,7 @@ Activator.registerActivator{
     end,
     isActivatorItem = function(e)
         if not e.target then return false end
-        return config.frames[e.object.id:lower()] ~= nil
+        return Frame.isFrame(e.object)
     end,
     blockStackActivate = true
 }

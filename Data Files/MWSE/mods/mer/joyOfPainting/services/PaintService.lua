@@ -5,7 +5,12 @@ local logger = common.createLogger("PaintService")
 local PaintService = {}
 
 function PaintService.createTexture(texture)
-    return niSourceTexture.createFromPath(PaintService.getPaintingTexturePath(texture), false)
+    local path = PaintService.getPaintingTexturePath(texture)
+    if not tes3.getFileExists(path) then
+        logger:warn("Painting texture '%s' does not exist", path)
+        return nil
+    end
+    return niSourceTexture.createFromPath(path, false)
 end
 
 function PaintService.createIcon(texture)
@@ -14,8 +19,11 @@ function PaintService.createIcon(texture)
     return niSourceTexture.createFromPath(path, true)
 end
 
+---Returns the path of the given texture file, relative to the Data Files directory
 function PaintService.getPaintingTexturePath(texture)
-    return "textures\\jop\\p\\" .. texture
+    --Check the file exists
+    local path = "textures\\jop\\p\\" .. texture
+    return path
 end
 
 function PaintService.getSavedPaintingDimensions(image)

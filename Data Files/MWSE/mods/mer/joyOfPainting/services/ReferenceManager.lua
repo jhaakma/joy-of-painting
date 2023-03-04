@@ -1,5 +1,6 @@
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("ReferenceManager")
+---@class JOP.ReferenceManager
 local ReferenceManager = {
     new = function(self, o)
         o = o or {}   -- create object if user does not provide one
@@ -58,6 +59,12 @@ function ReferenceManager.invalidate(e)
     end
 end
 
+---@class JOP.ReferenceController.registerReferenceController.params
+---@field id string The id of the controller
+---@field requirements fun(self: JOP.ReferenceManager, ref:tes3reference):boolean A function that returns true if the reference is valid for this controller
+---@field onActive fun(self: JOP.ReferenceManager, ref:tes3reference) A callback that is triggered when a reference is activated
+
+---@param e JOP.ReferenceController.registerReferenceController.params
 function ReferenceManager.registerReferenceController(e)
     assert(e.id, "No id provided")
     assert(e.requirements, "No reference requirements provieded")

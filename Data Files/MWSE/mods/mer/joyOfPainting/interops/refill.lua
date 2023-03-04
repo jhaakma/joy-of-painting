@@ -43,13 +43,10 @@ local refills = {
             customRequirements = Dye.customRequirements,
             noResult = true,
             craftCallback = function()
-                mwse.log("Refill callback")
                 Dye.craftCallback()
                 local paletteToRefill = Palette.getPaletteToRefill()
                 if paletteToRefill then
                     paletteToRefill:doRefill()
-                else
-                    mwse.log("no palette to refill")
                 end
             end,
         }
@@ -99,8 +96,6 @@ local refills = {
                 local paletteToRefill = Palette.getPaletteToRefill()
                 if paletteToRefill then
                     paletteToRefill:doRefill()
-                else
-                    mwse.log("no palette to refill")
                 end
             end,
         }

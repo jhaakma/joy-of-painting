@@ -29,4 +29,13 @@ function Frame.registerFrame(e)
     config.frames[e.id] = table.copy(e, {})
 end
 
+function Frame.isFrame(item)
+    return config.frames[item.id:lower()] ~= nil
+end
+
+function Frame.getFrameConfig(item)
+    return config.frames[item.id:lower()]
+end
+
+
 return Frame

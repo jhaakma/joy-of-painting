@@ -144,47 +144,52 @@ function Painting:isSketch()
         and not self:getCanvasConfig().requiresEasel
 end
 
+function Painting:isPaintingObject()
+    return self.reference
+        and self.reference.object.id == self.data.paintingTexture
+end
+
+---Removes all data and replaces the painting with the original canvas
 function Painting:clearCanvas()
     logger:debug("Clearing painting data")
-
-    --Clear frame data
-    if config.frames[self.item.id:lower()] then
-        logger:debug("clearing data for frame")
-        for _, field in ipairs(self.canvasFields) do
-            self.data[field] = nil
-        end
+    if self.data.canvasId then
+        logger:debug("Has canvasId: %s", self.data.canvasId)
         if self.reference then
-            logger:debug("Frame doVisuals")
-            self:doVisuals()
+            if self:isPaintingObject() then
+                logger:debug("%s is painting, replacing with original canvas", self.reference)
+                tes3.createReference{
+                    object = self.data.canvasId,
+                    position = self.reference.position:copy(),
+                    orientation =  self.reference.orientation:copy(),
+                    cell = self.reference.cell,
+                    scale =    self.reference.scale,
+                }
+                self.reference:delete()
+            else
+                logger:debug("%s is not the actual painting, so just reset the canvas", self.reference)
+                self:resetCanvas()
+            end
+        elseif self.item then
+            logger:debug("Replacing item %s in inventory with original canvas %s", self.item.id, self.data.canvasId)
+            tes3.addItem{
+                item = self.data.canvasId,
+                count = 1,
+                reference = tes3.player,
+                playSound = false,
+            }
+            tes3.removeItem{
+                item = self.item.id,
+                itemData = self.dataHolder,
+                count = 1,
+                reference = tes3.player,
+                playSound = false,
+            }
+        else
+            logger:warn("No reference or item, can't clear canvas")
         end
-
-    --Replace reference with original canvas
-    elseif self.reference then
-        logger:debug("Replacing reference with original canvas")
-        tes3.createReference{
-            object = self.data.canvasId,
-            position = self.reference.position,
-            orientation = self.reference.orientation,
-            cell = self.reference.cell,
-            scale = self.reference.scale,
-        }
-        self.reference:delete()
-    --Replace item in inventory with original canvas
     else
-        logger:debug("Replacing item in inventory with original canvas")
-        tes3.addItem{
-            item = self.data.canvasId,
-            count = 1,
-            reference = tes3.player,
-            playSound = false,
-        }
-        tes3.removeItem{
-            item = self.item.id,
-            itemData = self.dataHolder,
-            count = 1,
-            reference = tes3.player,
-            playSound = false,
-        }
+        logger:debug("No canvas ID, cleaning")
+        self:cleanCanvas()
     end
 end
 
@@ -444,9 +449,14 @@ function Painting:doPaintingVisuals()
         else
             logger:warn("Painted node not found for %s", self.id)
         end
+    else
+        --remove paintingTexture data
+        logger:warn("Painting texture not found for %s, clearing canvas", self.id)
+        self:clearCanvas()
     end
 end
 
+---Reset all data and remove painting nodes from the object
 function Painting:resetCanvas()
     for _, field in ipairs(Painting.canvasFields) do
         self.data[field] = nil
@@ -484,7 +494,7 @@ function Painting:attachCanvas(item, itemData)
     end
 end
 
-
+---Resets data and attaches a clean canvas
 function Painting:cleanCanvas()
     logger:debug("Cleaning canvas")
     local canvasId = self.data.canvasId or self.reference.object.id
