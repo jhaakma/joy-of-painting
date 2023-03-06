@@ -6,12 +6,12 @@
 
 ---@class JOP.PaletteItem
 ---@field id string The id of the palette item. Must be a valid tes3item
----@field meshOverride string The mesh to use for this palette item
----@field breaks boolean Whether the palette breaks when uses run out
----@field fullByDefault boolean Whether the palette is full by default
----@field uses number The number of uses for the palette
 ---@field paintType string The paintType that this palette can be used with
-
+---@field meshOverride string? The mesh to use for this palette item
+---@field breaks boolean? **Default: false** Whether the palette breaks when uses run out
+---@field fullByDefault boolean? **Default: false** Whether the palette is full by default
+---@field uses number The number of uses for the palette
+---@field paintValue number? The additional value when the palette is full of paint
 
 ---@class JOP.PaintType
 ---@field id string The id of the palette type
@@ -24,6 +24,7 @@ local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("Palette")
 local NodeManager = require("mer.joyOfPainting.services.NodeManager")
 local CraftingFramework = require("CraftingFramework")
+local ValueModifier = require("mer.joyOfPainting.services.ValueModifier")
 local meshService = require("mer.joyOfPainting.services.MeshService")
 ---@class JOP.Palette
 local Palette = {
@@ -58,12 +59,36 @@ function Palette.registerPaletteItem(e)
             local palette = Palette:new{
                 reference = indicator.reference,
                 item  = indicator.item,
+                itemData = indicator.dataHolder --[[@as tes3itemData]],
             }
             if palette then
                 palette:doTooltip(parent)
             end
         end,
     }
+    if e.paintValue then
+        ValueModifier.register{
+            objectId = e.id,
+            calcValue = function(calcEventData)
+                local newPrice = calcEventData.price
+
+                local palette = Palette:new{
+                    item = calcEventData.item,
+                    itemData = calcEventData.itemData,
+                }
+                if palette then
+                    local remainingRatio = palette:getRemainingUses() / palette:getMaxUses()
+                    --if the palette breaks, price decays to 0, otherwise it builds up to paintValue from base
+                    if palette.paletteItem.breaks then
+                        newPrice = math.floor(calcEventData.price * remainingRatio)
+                    else
+                        newPrice = math.floor(calcEventData.price + (e.paintValue * remainingRatio))
+                    end
+                end
+                return newPrice
+            end
+        }
+    end
 end
 
 ---@param e JOP.PaintType

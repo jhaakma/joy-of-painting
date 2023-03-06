@@ -28,21 +28,25 @@ local paletteItems = {
         paintType = "ink",
         fullByDefault = true,
         uses = 20,
+        paintValue = 20,
     },
     {
         id = "jop_water_palette_01",
         paintType = "watercolor",
         uses = 15,
+        paintValue = 20,
     },
     {
         id = "Jop_oil_palette_01",
         paintType = "oil",
-        uses = 10
+        uses = 10,
+        paintValue = 40,
     },
     {
         id = "T_Com_Paint_Palette_01",
         paintType = "oil",
-        uses = 10
+        uses = 10,
+        paintValue = 40,
     }
 }
 

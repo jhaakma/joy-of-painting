@@ -46,7 +46,7 @@ local function registerMCM()
     local template = mwse.mcm.createTemplate{ name = metadata.package.name }
     template.onClose = function()
         config.save()
-        event.trigger("JoyOfPainting:UpdateMerchants")
+        event.trigger("JoyOfPainting:McmUpdated")
     end
     template:register()
 
@@ -60,11 +60,11 @@ local function registerMCM()
         callback = function(self)
             if self.variable.value == true then
                 logger:info("Enabling mod")
-                event.trigger("JoyOfPainting:EnableMod")
-                event.trigger("JoyOfPainting:UpdateMerchants")
+                event.trigger("JoyOfPainting:ModEnabled")
+                event.trigger("JoyOfPainting:McmUpdated")
             else
                 logger:info("Disabling mod")
-                event.trigger("JoyOfPainting:DisableMod")
+                event.trigger("JoyOfPainting:ModDisabled")
             end
         end
     }

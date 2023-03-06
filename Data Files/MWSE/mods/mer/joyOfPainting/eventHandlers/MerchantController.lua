@@ -1,7 +1,7 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
-local logger = common.createLogger("MerchantManager")
-local MerchantManager = require("mer.joyOfPainting.lib.MerchantManager.v1")
+local logger = common.createLogger("MerchantController")
+local MerchantManager = require("mer.joyOfPainting.services.MerchantManager")
 
 local containers = {}
 
@@ -28,7 +28,7 @@ local manager = MerchantManager.new{
     containers = containers
 }
 
-event.register("JoyOfPainting:UpdateMerchants", function()
+event.register("JoyOfPainting:McmUpdated", function()
     --Compare list of paintSuppliesMerchants or registeredMerchants and register any missing
     for merchantId, active in pairs(config.mcm.paintSuppliesMerchants) do
         merchantId = string.lower(merchantId)
