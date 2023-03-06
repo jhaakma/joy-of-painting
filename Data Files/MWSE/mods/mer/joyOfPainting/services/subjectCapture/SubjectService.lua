@@ -6,7 +6,6 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("SubjectService")
-local VisibilityService = require("mer.joyOfPainting.services.subjectCapture.VisibilityService")
 
 ---@class JOP.SubjectService
 local SubjectService = {
@@ -63,16 +62,16 @@ end
 ]]
 ---@return table<string, JOP.Subject>
 function SubjectService:getPotentialSubjects()
+    local camera = tes3.worldController.worldCamera.cameraData.camera
     local subjects = {}
     for _, cell in pairs(tes3.getActiveCells()) do
         ---@param ref tes3reference
         for _, ref in pairs(cell.actors) do
-            if  ref.sceneNode ~= nil then
-                local sphere = ref.sceneNode.worldBoundOrigin
-                local radius = ref.sceneNode.worldBoundRadius
-                if VisibilityService.isSphereVisible(sphere, radius) then
-                    self:insertSubject(subjects, ref)
-                end
+            if  ref.sceneNode ~= nil
+                and not ref.sceneNode:isAppCulled()
+                and not ref.sceneNode:isFrustumCulled(camera)
+            then
+                self:insertSubject(subjects, ref)
             end
         end
     end
@@ -90,6 +89,7 @@ function SubjectService:subjectMeetsVisibilityThreshold(result)
         and result.visibility > config.subject.MINIMUM_VISIBILITY
 end
 
+
 --[[
     Generate a result for a subject.
 ]]
@@ -100,13 +100,10 @@ function SubjectService:generateResult(subject)
     self.occlusionTester:setTargets(subject.nodes)
     self.occlusionTester:enable()
     result.count = #subject.nodes
-    result.presence = self.occlusionTester:getPresence()
-    result.visibility = self.occlusionTester:getVisibility()
-    result.framing = 1 - self.occlusionTester:getActiveEdgePixelRatio()
-    if tes3.player.data.jop_generatePixelBinary then
-        logger:debug("Saving pixel binary for %s", subject.id)
-        self.occlusionTester.pixelData:saveBinary("nifs\\" .. subject.id .. ".nif")
-    end
+    local diagnostics = self.occlusionTester:getPixelDiagnostics(subject.id)
+    result.presence = diagnostics.presence
+    result.visibility = diagnostics.visibility
+    result.framing = 1 - diagnostics.framing
     self.occlusionTester:disable()
     return result
 end

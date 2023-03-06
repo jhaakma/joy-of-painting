@@ -337,14 +337,18 @@ end
 
 function Painting:doPaintAnim()
     logger:debug("doPaintAnim()")
-
+    local texture = PaintService.createTexture(self.data.paintingTexture)
+    if not texture then
+        logger:error("Texture '%s' missing, unable to animate painting", self.data.paintingTexture)
+        return
+    end
     --get texture node
     local paintTexNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_ANIM_TEX_NODE) --[[@as niNode]]
-    assert(paintTexNode ~= nil, "No paint node found")
+    logger:assert(paintTexNode ~= nil, "No paint node found")
 
     --set texture
     NodeManager.cloneTextureProperty(paintTexNode)
-    paintTexNode.texturingProperty.baseMap.texture = PaintService.createTexture(self.data.paintingTexture)
+    paintTexNode.texturingProperty.baseMap.texture = texture
     paintTexNode:update()
     paintTexNode:updateProperties()
 

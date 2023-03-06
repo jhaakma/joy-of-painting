@@ -168,7 +168,9 @@ local mcmDefault = {
         ["sedam omalen"] = true,--Ald Velothi's only trader - Dark Elf 400
         ["ferele athram"] = true, --Tel Aruhn trader
         ["urfing"] = true --Moonmoth Legion Fort trader - Nord 400
-    }
+    },
+    --Enable debug mode (generates debug meshes)
+    debugMode = false,
 }
 --MCM Config (stored as JSON in MWSE/config/joyOfPainting.json)
 ---@type JOP.config.MCM

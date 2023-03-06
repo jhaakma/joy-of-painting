@@ -1,4 +1,5 @@
-local pixelCounter = require("mer.joyOfPainting.services.subjectCapture.pixelCounter")
+local config = require("mer.joyOfPainting.config")
+local PixelMap = require("mer.joyOfPainting.services.subjectCapture.PixelMap")
 
 ---@class OcclusionTester
 ---@field targets niNode[]
@@ -8,11 +9,15 @@ local pixelCounter = require("mer.joyOfPainting.services.subjectCapture.pixelCou
 ---@field texture niRenderedTexture
 ---@field pixelData niPixelData
 ---@field logger mwseLogger
+---@field viewportAspectResolution number
+---@field viewportScale number
 local OcclusionTester = {}
 OcclusionTester.__index = OcclusionTester
 
 ---@class OcclusionTester.params
 ---@field resolutionScale number
+---@field viewportAspectResolution number
+---@field viewportScale number
 ---@field logger mwseLogger
 
 function OcclusionTester.getNearestPowerOfTwo(n)
@@ -26,6 +31,8 @@ end
 function OcclusionTester.new(e)
     e = e or {}
     local this = setmetatable({}, OcclusionTester)
+    this.viewportAspectResolution = e.viewportAspectResolution or 1.0
+    this.viewportScale = e.viewportScale or 1.0
 
     this.logger = e.logger or require("logging.logger").new{name="OcclusionTester"}
 
@@ -79,7 +86,6 @@ function OcclusionTester:setTargets(sceneNodes)
             end
         end
     end
-
     self.mask:clearTransforms()
     self.mask:update()
 end
@@ -87,12 +93,9 @@ end
 --- Returns a normalized value representing the ratio of pixels that are not occluded.
 ---
 ---@return number
-function OcclusionTester:getVisibility()
+function OcclusionTester:getVisibility(maximum, visible)
     local ratio = 0.0
-
-    local maximum = self:getPixelCounts({ visibleOnly = false })
     if maximum ~= 0 then
-        local visible = self:getPixelCounts({ visibleOnly = true })
         ratio = (visible / maximum)
     end
     return ratio
@@ -100,24 +103,40 @@ end
 
 --- Returns a normalized value representing the ratio of active, visible
 --- pixels compared to the total pixels in the scene.
-function OcclusionTester:getPresence()
+function OcclusionTester:getPresence(active, total)
     local ratio = 0.0
-
-    local active, total = self:getPixelCounts({ visibleOnly = true })
     if total ~= 0 then
         ratio = (active / total)
     end
     return ratio
 end
 
-function OcclusionTester:getActiveEdgePixelRatio()
+function OcclusionTester:getFraming(active, total)
     local ratio = 0.0
-
-    local active, total = self:getPixelCounts({ visibleOnly = true, edgeOnly = true })
     if total ~= 0 then
         ratio = (active / total)
     end
     return ratio
+end
+
+---@class JOP.OcclusionTester.PixelDiagnostics
+---@field presence number The ratio of active, visible pixels compared to the total pixels in the scene.
+---@field visibility number The ratio of active pixels that are not occluded.
+---@field framing number The ratio of active pixels that are on the edge of the scene.
+
+function OcclusionTester:getPixelDiagnostics(id)
+    local totalActiveData = self:getPixelCounts({ visibleOnly = false })
+    self:dumpDebug(id .. "_total")
+    local visibleOnlyData = self:getPixelCounts({ visibleOnly = true })
+    self:dumpDebug(id .. "_visible")
+    local presence = self:getPresence(visibleOnlyData.active, totalActiveData.total)
+    local visibility = self:getVisibility(totalActiveData.active, visibleOnlyData.active)
+    local framing = self:getFraming(visibleOnlyData.activeEdges, visibleOnlyData.totalEdges)
+    return {
+        presence = presence,
+        visibility = visibility,
+        framing = framing,
+    }
 end
 
 function OcclusionTester:enable()
@@ -126,15 +145,10 @@ function OcclusionTester:enable()
     for _, node in ipairs(self.targets) do
         node.appCulled = true
     end
-    -- apply zoom fov
-    local cameraData = tes3.worldController.worldCamera.cameraData
-    self.previousFov = cameraData.fov
     if mge.camera.zoomEnable then
-        local x = math.tan((math.pi / 360) * mge.camera.fov)
-        cameraData.fov = math.atan(x / mge.camera.zoom) * (360 / math.pi)
-        self.logger:debug("Applying zoom fov: %s", cameraData.fov)
+        self.logger:warn("MGE Zoom is enabled during Occlusion testing")
+        mge.camera.zoom = 1
     end
-
 end
 
 function OcclusionTester:disable()
@@ -143,13 +157,6 @@ function OcclusionTester:disable()
     for _, node in ipairs(self.targets) do
         node.appCulled = false
     end
-    -- restore fov
-    local cameraData = tes3.worldController.worldCamera.cameraData
-    if mge.camera.zoomEnable then
-        cameraData.fov = self.previousFov
-        self.logger:debug("Restoring fov: %s", cameraData.fov)
-    end
-
 end
 
 function OcclusionTester:capturePixelData()
@@ -167,20 +174,31 @@ function OcclusionTester:capturePixelData()
     assert(self.texture:readback(self.pixelData))
 end
 
+function OcclusionTester:dumpDebug(subjectId)
+    if config.mcm.debugMode then
+        self.logger:warn("Dumping debug image for %s", subjectId)
+        local plane = tes3.loadMesh("jop\\debug_plane.nif")
+        plane.texturingProperty.maps[1].texture = self.pixelData:createSourceTexture()
+        plane:saveBinary(string.format("data files\\meshes\\jop\\debug\\%s.nif", subjectId))
+    end
+end
+
+---@return JOP.PixelMap.countPixels.data
 function OcclusionTester:getPixelCounts(e)
-    self.logger:debug("Counting pixels...")
-    e = e or { visibleOnly = false, edges = false }
+    e = e or { visibleOnly = false}
     if e.visibleOnly then
         self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.lessEqual
     else
         self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.always
     end
     self:capturePixelData()
-    if e.edges then
-        return pixelCounter.countActiveEdgePixels(self.pixelData)
-    else
-        return pixelCounter.countActivePixels(self.pixelData)
-    end
+    self.logger:debug("Counting pixels...")
+    local pixelMap = PixelMap.new{
+        pixelData = self.pixelData,
+        viewportScale = self.viewportScale,
+        aspectRatio = self.viewportAspectResolution,
+    }
+    return pixelMap:getPixelCountData()
 end
 
 
