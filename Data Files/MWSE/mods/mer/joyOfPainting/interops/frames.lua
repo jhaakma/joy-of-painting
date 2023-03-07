@@ -1,4 +1,4 @@
-local interop = require("mer.joyOfPainting.interop")
+local JoyOfPainting = require("mer.joyOfPainting")
 
 local frameSizes = {
     {
@@ -47,13 +47,25 @@ local frames = {
     {
         id = "jop_frame_t_02",
         frameSize = "tall"
-    }
+    },
+    {
+        id = "jop_frame_sq_03",
+        frameSize = "square"
+    },
+    {
+        id = "jop_frame_w_03",
+        frameSize = "wide"
+    },
+    {
+        id = "jop_frame_t_03",
+        frameSize = "tall"
+    },
 }
 event.register(tes3.event.initialized, function()
     for _, frameSize in ipairs(frameSizes) do
-        interop.Frame.registerFrameSize(frameSize)
+        JoyOfPainting.Frame.registerFrameSize(frameSize)
     end
     for _, frame in ipairs(frames) do
-        interop.Frame.registerFrame(frame)
+        JoyOfPainting.Frame.registerFrame(frame)
     end
 end)

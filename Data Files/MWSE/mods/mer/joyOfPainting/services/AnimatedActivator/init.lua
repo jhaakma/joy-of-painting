@@ -1,21 +1,19 @@
 local common = require("mer.joyOfPainting.common")
-local config = require("mer.joyOfPainting.config")
-local logger = common.createLogger("Activator")
-local ReferenceManager = require("mer.joyOfPainting.services.ReferenceManager")
+local logger = common.createLogger("AnimatedActivator")
+local ANIM_TIMER_EVENT = "JOP:AnimatedActivator:playAnimation:timer"
 
-local ANIM_TIMER_EVENT = "JOP:Activator:playAnimation:timer"
-
-local Activator = {
-    ---@type JoyOfPainting.Activator[]
+local AnimatedActivator = {
+    ---@type JoyOfPainting.AnimatedActivator[]
     activators = {}
 }
 
----@class JoyOfPainting.Activator.callbackParams
+---@class JoyOfPainting.AnimatedActivator.callbackParams
 ---@field target tes3reference?
 ---@field item tes3item?
 ---@field itemData tes3itemData?
 
----@class JoyOfPainting.Activator
+---
+---@class JoyOfPainting.AnimatedActivator
 ---@field id string
 ---@field onActivate function
 ---@field onPickup function
@@ -24,15 +22,15 @@ local Activator = {
 ---@field getAnimationGroup fun(reference:tes3reference):number? Returns the current active animation group to play
 
 
----@param activator JoyOfPainting.Activator
-function Activator.registerActivator(activator)
+---@param activator JoyOfPainting.AnimatedActivator
+function AnimatedActivator.registerActivator(activator)
     logger:assert(type(activator.onActivate) == "function", "onActivate must be a function")
     logger:assert(type(activator.isActivatorItem) == "function", "isActivatorItem must be a function")
-    table.insert(Activator.activators, activator)
+    table.insert(AnimatedActivator.activators, activator)
 end
 
 ---@param e activateEventData
-function Activator.doBlockActivate(e)
+function AnimatedActivator.doBlockActivate(e)
     if e.activator ~= tes3.player then
         logger:debug("Not player, skip")
         return true
@@ -58,7 +56,7 @@ local function animationCallback(e)
 end
 timer.register(ANIM_TIMER_EVENT, animationCallback)
 
----@class JOP.Activator.playAnimation.params
+---@class JOP.AnimatedActivator.playAnimation.params
 ---@field reference tes3reference? Reference to play the animation on
 ---@field group table? Animation group to play
 ---@field sound string? Sound to play
@@ -66,8 +64,8 @@ timer.register(ANIM_TIMER_EVENT, animationCallback)
 ---@field callback function? Called after the animation is done
 ---@field nextAnimation number? The animation to play if this one is interrupted by save/load
 
----@param e JOP.Activator.playAnimation.params
-function Activator.playActivatorAnimation(e)
+---@param e JOP.AnimatedActivator.playAnimation.params
+function AnimatedActivator.playActivatorAnimation(e)
 
     logger:debug("Playing animation %s for %s", e.group.group, e.reference)
     --play animation
@@ -108,4 +106,4 @@ function Activator.playActivatorAnimation(e)
     end
 end
 
-return Activator
+return AnimatedActivator

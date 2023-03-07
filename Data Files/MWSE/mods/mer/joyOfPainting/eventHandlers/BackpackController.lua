@@ -1,7 +1,7 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("backpackController")
-local BackpackService = require("mer.joyOfPainting.services.BackpackService")
+local BackpackService = require("mer.joyOfPainting.items.Backpack")
 
 --register backpack slot if it doesn't exist
 pcall(function() tes3.addClothingSlot{

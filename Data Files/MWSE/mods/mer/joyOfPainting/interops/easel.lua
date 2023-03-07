@@ -1,5 +1,5 @@
 --Add canvases via the interop
-local interop = require("mer.joyOfPainting.interop")
+local JoyOfPainting = require("mer.joyOfPainting")
 local easel = {
     {
         id = "jop_easel_01",
@@ -12,6 +12,6 @@ local easel = {
 }
 event.register(tes3.event.initialized, function()
     for _, data in ipairs(easel) do
-        interop.Easel.registerEasel(data)
+        JoyOfPainting.Easel.registerEasel(data)
     end
 end)

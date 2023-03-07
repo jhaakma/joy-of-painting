@@ -1,7 +1,7 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("PaperMoldActivator")
-local Activator = require("mer.joyOfPainting.services.Activator")
+local Activator = require("mer.joyOfPainting.services.AnimatedActivator")
 local PaperMold = require("mer.joyOfPainting.items.PaperMold")
 
 local function activate(e)

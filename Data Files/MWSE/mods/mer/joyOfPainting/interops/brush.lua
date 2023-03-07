@@ -1,4 +1,4 @@
-local interop = require("mer.joyOfPainting.interop")
+local JoyOfPainting = require("mer.joyOfPainting")
 
 local brushes = {
     {
@@ -59,9 +59,9 @@ local brushTypes = {
 }
 event.register(tes3.event.initialized, function()
     for _, brush in ipairs(brushTypes) do
-        interop.Brush.registerBrushType(brush)
+        JoyOfPainting.Brush.registerBrushType(brush)
     end
     for _, brush in ipairs(brushes) do
-        interop.Brush.registerBrush(brush)
+        JoyOfPainting.Brush.registerBrush(brush)
     end
 end)

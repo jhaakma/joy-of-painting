@@ -1,4 +1,4 @@
-local interop = require("mer.joyOfPainting.interop")
+local JoyOfPainting = require("mer.joyOfPainting")
 local Dye = require("mer.joyOfPainting.items.Dye")
 local Palette = require("mer.joyOfPainting.items.Palette")
 local common = require("mer.joyOfPainting.common")
@@ -103,7 +103,7 @@ local refills = {
 }
 event.register(tes3.event.initialized, function()
     for _, refill in ipairs(refills) do
-        interop.Refill.registerRefill(refill)
+        JoyOfPainting.Refill.registerRefill(refill)
     end
 end)
 

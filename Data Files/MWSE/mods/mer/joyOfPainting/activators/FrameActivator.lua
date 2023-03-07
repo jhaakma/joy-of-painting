@@ -2,7 +2,7 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("FrameActivator")
 local Painting = require("mer.joyOfPainting.items.Painting")
-local Activator = require("mer.joyOfPainting.services.Activator")
+local Activator = require("mer.joyOfPainting.services.AnimatedActivator")
 local Frame = require("mer.joyOfPainting.items.Frame")
 
 ---@param e equipEventData|activateEventData
@@ -24,8 +24,8 @@ local function activate(e)
         safeRef = tes3.makeSafeObjectHandle(painting.reference)
         if safeRef == nil then
             logger:warn("Failed to make safe handle for %s", painting.reference.object.id)
+            return
         end
-
     end
     tes3ui.showMessageMenu{
         message = "Frame Menu",
@@ -40,6 +40,10 @@ local function activate(e)
                         end
 
                         local ref = safeRef and safeRef:getObject()
+                        if not ref then
+                            logger:warn("Skipping add painting because reference is invalid")
+                            return
+                        end
 
                         logger:debug("Add Painting")
                         tes3ui.showInventorySelectMenu{
@@ -151,7 +155,7 @@ local function activate(e)
                         logger:warn("Skipping view painting because reference is invalid")
                         return
                     end
-                    local ref = safeRef and safeRef:getObject()
+                    local ref = safeRef:getObject()
                     common.positioner{
                         reference = ref,
                         pinToWall = true,

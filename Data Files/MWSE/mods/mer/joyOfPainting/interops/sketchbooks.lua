@@ -1,4 +1,4 @@
-local interop = require("mer.joyOfPainting.interop")
+local JoyOfPainting = require("mer.joyOfPainting")
 local sketchbooks = {
     {
         id = "jop_sketchbook_01"
@@ -6,6 +6,6 @@ local sketchbooks = {
 }
 event.register(tes3.event.initialized, function()
     for _, sketchbook in ipairs(sketchbooks) do
-        interop.Sketchbook.registerSketchbook(sketchbook)
+        JoyOfPainting.Sketchbook.registerSketchbook(sketchbook)
     end
 end)

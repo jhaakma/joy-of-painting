@@ -7,7 +7,7 @@ local logger = common.createLogger("PaperActivator")
 local Painting = require("mer.joyOfPainting.items.Painting")
 local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
-local Activator = require("mer.joyOfPainting.services.Activator")
+local Activator = require("mer.joyOfPainting.services.AnimatedActivator")
 
 local function paperPaint(reference, artStyleName)
     local painting = Painting:new{

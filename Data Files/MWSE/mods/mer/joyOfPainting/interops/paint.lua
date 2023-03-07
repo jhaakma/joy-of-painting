@@ -1,4 +1,4 @@
-local interop = require("mer.joyOfPainting.interop")
+local JoyOfPainting = require("mer.joyOfPainting")
 
 local paletteItems = {
     {
@@ -74,9 +74,9 @@ local paintTypes = {
 }
 event.register(tes3.event.initialized, function()
     for _, item in ipairs(paletteItems) do
-        interop.Palette.registerPaletteItem(item)
+        JoyOfPainting.Palette.registerPaletteItem(item)
     end
     for _, paintType in ipairs(paintTypes) do
-        interop.Palette.registerPaintType(paintType)
+        JoyOfPainting.Palette.registerPaintType(paintType)
     end
 end)

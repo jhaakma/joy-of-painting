@@ -1,7 +1,7 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("artStyle")
-local interop = require("mer.joyOfPainting.interop")
+local JoyOfPainting = require("mer.joyOfPainting")
 local SkillService = require("mer.joyOfPainting.services.SkillService")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
 
@@ -267,13 +267,13 @@ local artStyles = {
 }
 event.register(tes3.event.initialized, function()
 for _, shader in ipairs(shaders) do
-        interop.ArtStyle.registerShader(shader)
+        JoyOfPainting.ArtStyle.registerShader(shader)
     end
     for _, control in ipairs(controls) do
-        interop.ArtStyle.registerControl(control)
+        JoyOfPainting.ArtStyle.registerControl(control)
     end
     for _, artStyle in ipairs(artStyles) do
-        interop.ArtStyle.registerArtStyle(artStyle)
+        JoyOfPainting.ArtStyle.registerArtStyle(artStyle)
     end
     event.trigger("JoyOfPainting:ArtStyles")
 end)

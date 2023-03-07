@@ -2,7 +2,7 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("FieldEaselActivator")
 local Easel = require("mer.joyOfPainting.items.Easel")
-local Activator = require("mer.joyOfPainting.services.Activator")
+local Activator = require("mer.joyOfPainting.services.AnimatedActivator")
 
 local function activateEasel(e)
     logger:debug("Activating Easel")

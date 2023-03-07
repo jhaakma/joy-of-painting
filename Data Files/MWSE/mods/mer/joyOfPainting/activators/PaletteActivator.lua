@@ -1,7 +1,7 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("PaletteActivator")
-local Activator = require("mer.joyOfPainting.services.Activator")
+local Activator = require("mer.joyOfPainting.services.AnimatedActivator")
 local Palette = require("mer.joyOfPainting.items.Palette")
 
 local function activate(e)

@@ -1,6 +1,6 @@
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("ActivatorController")
-local Activator = require("mer.joyOfPainting.services.Activator")
+local Activator = require("mer.joyOfPainting.services.AnimatedActivator")
 local ReferenceManager = require("mer.joyOfPainting.services.ReferenceManager")
 
 ---@param e activateEventData
@@ -11,7 +11,6 @@ local function onActivate(e)
     if e.activator ~= tes3.player then
         return
     end
-
     for _, activator in pairs(Activator.activators) do
         if activator.isActivatorItem(e) then
             if common.isShiftDown() then

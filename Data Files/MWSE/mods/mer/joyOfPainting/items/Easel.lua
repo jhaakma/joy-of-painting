@@ -5,7 +5,7 @@ local NodeManager = require("mer.joyOfPainting.services.NodeManager")
 local Painting = require("mer.joyOfPainting.items.Painting")
 local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
 local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
-local Activator = require("mer.joyOfPainting.services.Activator")
+local Activator = require("mer.joyOfPainting.services.AnimatedActivator")
 local Frame = require("mer.joyOfPainting.items.Frame")
 
 ---@class JOP.CanvasData

@@ -66,7 +66,7 @@ function Palette.registerPaletteItem(e)
             end
         end,
     }
-    if e.paintValue then
+    if e.paintValue or e.breaks then
         ValueModifier.register{
             objectId = e.id,
             calcValue = function(calcEventData)

@@ -1,4 +1,4 @@
-local BackpackService = require("mer.joyOfPainting.services.BackpackService")
+local BackpackService = require("mer.joyOfPainting.items.Backpack")
 
 local backpacks = {
     {

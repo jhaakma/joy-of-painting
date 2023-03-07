@@ -2,7 +2,7 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("SketchbookActivator")
 local Sketchbook = require("mer.joyOfPainting.items.Sketchbook")
-local Activator = require("mer.joyOfPainting.services.Activator")
+local Activator = require("mer.joyOfPainting.services.AnimatedActivator")
 ---@param e equipEventData|activateEventData
 local function activate(e)
     logger:debug("Activating sketchbook")
