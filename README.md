@@ -14,7 +14,7 @@ See the release history here: https://github.com/jhaakma/joy-of-painting/release
 ### ImageMagick
 ImageMagick is an image editing tool, and it must be installed on your machine so it can be used by this mod.
 
-- Download from here: https://imagemagick.org/archive/binaries/ImageMagick-7.1.0-55-Q16-HDRI-x64-dll.exe
+- Download and run the latest .exe from here: https://imagemagick.org/script/download.php#windows
 
 ### MGE XE v0.15.0 or later
 Requires MGE XE v0.15 or later in order to capture the screenshots used for paintings.
