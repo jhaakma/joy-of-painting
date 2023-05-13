@@ -108,7 +108,7 @@ function Palette:new(e)
 
     palette.reference = e.reference
     palette.item = e.item
-    self.itemData = e.itemData
+    palette.itemData = e.itemData
     if e.reference and not e.item then
         palette.item = e.reference.object --[[@as JOP.tes3itemChildren]]
     end

@@ -1,7 +1,7 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("MerchantController")
-local MerchantManager = require("mer.joyOfPainting.services.MerchantManager")
+local MerchantManager = require("CraftingFramework.components.MerchantManager")
 
 local containers = {}
 

@@ -527,8 +527,7 @@ function Sketchbook:rename()
                 tes3.messageBox("Sketchbook renamed to: %s", self.data.sketchbookName)
             end
             menu:destroy()
-            ---@diagnostic disable-next-line: redundant-parameter
-            tes3ui.leaveMenuMode("JOP.NamePaintingMenu")
+            tes3ui.leaveMenuMode()
         end,
     })
     tes3ui.acquireTextInput(textField.elements.inputField)

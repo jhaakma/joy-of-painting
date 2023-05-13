@@ -98,6 +98,7 @@ end
 ---@param e JOP.Painting.params
 ---@return JOP.Painting
 function Painting:new(e)
+
     local painting = setmetatable({}, self)
     logger:assert(e.reference ~= nil or e.item ~= nil,
         "Painting:new() requires either a reference or an item")
@@ -108,6 +109,12 @@ function Painting:new(e)
     -- reference data
     painting.data = setmetatable({}, {
         __index = function(_, k)
+            if painting.reference then
+                logger:trace("Getting data field %s from reference %s", k, painting.reference.id)
+                if not painting.reference.supportsLuaData then
+                    return nil
+                end
+            end
             if not (
                 painting.dataHolder
                 and painting.dataHolder.data
@@ -118,6 +125,10 @@ function Painting:new(e)
             return painting.dataHolder.data.joyOfPainting[k]
         end,
         __newindex = function(_, k, v)
+            if e.reference and not e.reference.supportsLuaData then
+                return
+            end
+
             if not (
                 painting.dataHolder
                 and painting.dataHolder.data

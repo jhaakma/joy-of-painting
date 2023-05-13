@@ -186,11 +186,13 @@ end
 ---@return JOP.PixelMap.countPixels.data
 function OcclusionTester:getPixelCounts(e)
     e = e or { visibleOnly = false}
+    ---@diagnostic disable
     if e.visibleOnly then
         self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.lessEqual
     else
         self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.always
     end
+    ---@diagnostic enable
     self:capturePixelData()
     self.logger:debug("Counting pixels...")
     local pixelMap = PixelMap.new{

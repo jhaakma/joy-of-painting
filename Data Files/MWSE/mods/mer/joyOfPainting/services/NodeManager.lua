@@ -42,6 +42,7 @@ end
 
 ---@param node niNode
 function NodeManager.cloneTextureProperty(node)
+    ---@diagnostic disable-next-line
     local prop = node:detachProperty(ni.propertyType.texturing)
     assert(prop ~= nil, "No material property found on node")
     local clonedProp = prop:clone() --[[@as any]]

@@ -17,6 +17,7 @@ if not config.metadata then
         }
     }
 end
+
 ---Path to config file
 config.configPath = "joyOfPainting"
 config.ANIM_OFFSET = 2.0

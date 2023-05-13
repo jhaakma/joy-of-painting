@@ -1,6 +1,6 @@
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
-local metadata = config.metadata
+local metadata = config.metadata --[[@as MWSE.Metadata]]
 local logger = common.createLogger("MCM")
 
 local LINKS_LIST = {
@@ -8,10 +8,10 @@ local LINKS_LIST = {
         text = "Release history",
         url = "https://github.com/jhaakma/joy-of-painting/releases"
     },
-    -- {
-    --     text = "Wiki",
-    --     url = "https://github.com/jhaakma/joy-of-painting/wiki"
-    -- },
+    {
+        text = "Wiki",
+        url = "https://github.com/jhaakma/joy-of-painting/wiki"
+    },
     -- {
     --     text = "Nexus",
     --     url = "https://www.nexusmods.com/morrowind/mods/51366"
@@ -55,7 +55,7 @@ local function registerMCM()
 
     page:createYesNoButton{
         label = "Enable Mod",
-        description = "Turn this mod on or off. Expect a delay if enabling for the first time this game session, as it will take a moment to register all of the recipes.",
+        description = "Turn this mod on or off.",
         variable = mwse.mcm.createTableVariable{ id = "enabled", table = config.mcm },
         callback = function(self)
             if self.variable.value == true then
