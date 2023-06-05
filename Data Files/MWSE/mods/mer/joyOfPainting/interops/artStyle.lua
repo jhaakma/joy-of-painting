@@ -79,7 +79,7 @@ local controls = {
         shader = "jop_adjuster",
         name = "Fog Color",
         sliderDefault = 50,
-        shaderMin = 0,
+        shaderMin = 0.05,
         shaderMax = 1,
     }
 }
@@ -215,6 +215,8 @@ local artStyles = {
         controls = {
             "brightness",
             "contrast",
+            "distance",
+            "bgColor",
             --"saturation",
         },
         valueModifier = 4,
@@ -258,6 +260,8 @@ local artStyles = {
         controls = {
             "brightness",
             "contrast",
+            "distance",
+            "bgColor",
         },
         valueModifier = 9,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
