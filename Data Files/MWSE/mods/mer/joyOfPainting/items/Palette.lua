@@ -1,4 +1,4 @@
----@class JOP.Palette.params
+---@class JOP.Palette.params : JOP.ItemInstanceParams
 ---@field reference tes3reference?
 ---@field item tes3item|tes3object|tes3misc?
 ---@field itemData tes3itemData?
@@ -26,17 +26,15 @@ local NodeManager = require("mer.joyOfPainting.services.NodeManager")
 local CraftingFramework = require("CraftingFramework")
 local ValueModifier = require("mer.joyOfPainting.services.ValueModifier")
 local meshService = require("mer.joyOfPainting.services.MeshService")
----@class JOP.Palette
+---@class JOP.Palette : JOP.ItemInstance
 local Palette = {
     classname = "Palette",
     ---@type JOP.PaletteItem
     paletteItem = nil,
     ---@type tes3reference
     reference = nil,
+    ---@type tes3misc
     item = nil,
-    itemData = nil,
-    dataHolder = nil,
-    data = nil,
 }
 Palette.__index = Palette
 
@@ -101,58 +99,15 @@ function Palette.registerPaintType(e)
 end
 
 ---@param e JOP.Palette.params
----@return JOP.Palette|nil
+---@return JOP.Palette | nil
 function Palette:new(e)
-    logger:assert((e.reference or e.item) ~= nil, "Palette requires either a reference or an item")
-    local palette = setmetatable({}, self)
-
-    palette.reference = e.reference
-    palette.item = e.item
-    palette.itemData = e.itemData
-    if e.reference and not e.item then
-        palette.item = e.reference.object --[[@as JOP.tes3itemChildren]]
-    end
-
-    palette.paletteItem = config.paletteItems[palette.item.id:lower()]
-    if palette.paletteItem == nil then
-        logger:debug("%s is not a palette", palette.item.id)
+    local instance = common.createItemInstance(e, self, logger)
+    instance.paletteItem = config.paletteItems[instance.item.id:lower()]
+    if instance.paletteItem == nil then
+        logger:debug("%s is not a instance", instance.item.id)
         return nil
     end
-    palette.dataHolder = (e.itemData ~= nil) and e.itemData or e.reference
-    palette.data = setmetatable({}, {
-        __index = function(_, k)
-            if not (
-                palette.dataHolder
-                and palette.dataHolder.data
-                and palette.dataHolder.data.joyOfPainting
-            ) then
-                return nil
-            end
-            return palette.dataHolder.data.joyOfPainting[k]
-        end,
-        __newindex = function(_, k, v)
-            if palette.dataHolder == nil then
-                logger:debug("Setting value %s and dataHolder doesn't exist yet", k)
-                if not palette.reference then
-                    logger:debug("palette.item: %s", palette.item)
-                    --create itemData
-                    palette.dataHolder = tes3.addItemData{
-                        to = tes3.player,
-                        item = palette.item.id,
-                    }
-                    if palette.dataHolder == nil then
-                        logger:error("Failed to create itemData for palette")
-                        return
-                    end
-                end
-            end
-            if not ( palette.dataHolder.data and palette.dataHolder.data.joyOfPainting) then
-                palette.dataHolder.data.joyOfPainting = {}
-            end
-            palette.dataHolder.data.joyOfPainting[k] = v
-        end
-    })
-    return palette
+    return instance --[[@as JOP.Palette]]
 end
 
 function Palette:use()

@@ -1,6 +1,7 @@
 local ashfall = include("mer.ashfall.interop")
 if not ashfall then return end
 
+---@class JOP.Dye
 local Dye = {}
 
 Dye.customRequirements = {

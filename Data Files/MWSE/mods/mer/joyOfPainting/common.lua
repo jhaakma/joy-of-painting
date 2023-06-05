@@ -5,6 +5,8 @@ local config = require("mer.joyOfPainting.config")
 local MWSELogger = require("logging.logger")
 local CraftingFramework = require("CraftingFramework")
 
+common.inspect = require("inspect")
+
 ---@type table<string, mwseLogger>
 common.loggers = {}
 
@@ -106,6 +108,72 @@ function common.getCanvasTexture(texture)
     else
         return "Data Files\\Textures\\jop\\" .. texture
     end
+end
+
+---@class JOP.ItemInstanceParams
+---@field reference? tes3reference
+---@field item? tes3item
+---@field itemData? tes3itemData
+
+---@class JOP.ItemInstance
+---@field reference tes3reference
+---@field item tes3item
+---@field itemData tes3itemData
+---@field paletteItem JOP.PaletteItem
+---@field data table --access to the joyOfPainting data table
+
+---comment
+---@param e JOP.ItemInstanceParams
+---@param class table The class object to create an instance of
+---@param thisLogger mwseLogger
+---@return JOP.ItemInstance
+function common.createItemInstance(e, class, thisLogger)
+    thisLogger = thisLogger or logger
+    thisLogger:assert((e.reference or e.item) ~= nil, "requires either a reference or an item")
+    local instance = setmetatable({}, class)
+
+    instance.reference = e.reference
+    instance.item = e.item
+    instance.itemData = e.itemData
+    if e.reference and not e.item then
+        instance.item = e.reference.object --[[@as JOP.tes3itemChildren]]
+    end
+
+    instance.dataHolder = (e.itemData ~= nil) and e.itemData or e.reference
+    instance.data = setmetatable({}, {
+        __index = function(_, k)
+            if not (
+                instance.dataHolder
+                and instance.dataHolder.data
+                and instance.dataHolder.data.joyOfPainting
+            ) then
+                return nil
+            end
+            return instance.dataHolder.data.joyOfPainting[k]
+        end,
+        __newindex = function(_, k, v)
+            if instance.dataHolder == nil then
+                thisLogger:debug("Setting value %s and dataHolder doesn't exist yet", k)
+                if not instance.reference then
+                    thisLogger:debug("instance.item: %s", instance.item)
+                    --create itemData
+                    instance.dataHolder = tes3.addItemData{
+                        to = tes3.player,
+                        item = instance.item.id,
+                    }
+                    if instance.dataHolder == nil then
+                        thisLogger:error("Failed to create itemData for instance")
+                        return
+                    end
+                end
+            end
+            if not ( instance.dataHolder.data and instance.dataHolder.data.joyOfPainting) then
+                instance.dataHolder.data.joyOfPainting = {}
+            end
+            instance.dataHolder.data.joyOfPainting[k] = v
+        end
+    })
+    return instance
 end
 
 return common

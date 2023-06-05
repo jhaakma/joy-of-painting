@@ -1,5 +1,6 @@
 local JoyOfPainting = require("mer.joyOfPainting")
 local Dye = require("mer.joyOfPainting.items.Dye")
+local OilPaints = require("mer.joyOfPainting.items.OilPaints")
 local Palette = require("mer.joyOfPainting.items.Palette")
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("Refill")
@@ -21,10 +22,10 @@ local refills = {
         --Red, blue and yellow dye
         paintType = "watercolor",
         recipe = {
-            name = "Plant Pigments",
+            name = "Pigments",
             previewMesh = "jop//dye//dye_red.nif",
             id = "jop_watercolor_refill",
-            description = "Refill the palette using red, blue and yellow dye from gathered flowers and plants",
+            description = "Refill the palette using red, blue and yellow dye from gathered flowers and plants or purchased from a painting merchant.",
             materials = {
                 {
                     material = "red_pigment",
@@ -52,10 +53,14 @@ local refills = {
         }
     },
     {
+        paintType = "oil",
+        recipe = OilPaints.getRecipe(),
+    },
+    {
         --Red, blue and yellow paint
         paintType = "oil",
         recipe = {
-            name = "Paint Pots",
+            name = "Oil Paints (TR)",
             id = "jop_oil_refill",
             description = "Refill the palette using red, blue and yellow paint.",
             materials = {
@@ -80,7 +85,7 @@ local refills = {
                 for materialId, count in pairs(materialsUsed) do
                     local emptyId = emptyMapping[materialId]
                     if emptyId and count > 0 then
-                        local empty = tes3.getObject(emptyId)
+                        local empty = tes3.getObject(emptyId) --[[@as tes3misc]]
                         if empty then
                             logger:debug("Adding %d %s", count, emptyId)
                             tes3.addItem{
@@ -112,6 +117,7 @@ local materials = {
         id = "red_pigment",
         name = "Red Pigment",
         ids = {
+            "jop_dye_red",
             "ingred_fire_petal_01",
             "ingred_heather_01",
             "ingred_holly_01",
@@ -128,6 +134,7 @@ local materials = {
         id = "blue_pigment",
         name = "Blue Pigment",
         ids = {
+            "jop_dye_blue",
             "ingred_bc_coda_flower",
             "ingred_belladonna_01",
             "ingred_stoneflower_petals_01",
@@ -141,6 +148,7 @@ local materials = {
         id = "yellow_pigment",
         name = "Yellow Pigment",
         ids = {
+            "jop_dye_yellow",
             "ingred_bittergreen_petals_01",
             "ingred_gold_kanet_01",
             "ingred_golden_sedge_01",
