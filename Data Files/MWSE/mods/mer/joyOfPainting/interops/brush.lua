@@ -45,6 +45,14 @@ local brushes = {
         id = "t_com_paintbrush_04y",
         brushType = "brush",
     },
+    {
+        id = "ab_misc_compaintbrush01",
+        brushType = "brush",
+    },
+    {
+        id = "ab_misc_compaintbrush02",
+        brushType = "brush",
+    }
 }
 
 local brushTypes = {

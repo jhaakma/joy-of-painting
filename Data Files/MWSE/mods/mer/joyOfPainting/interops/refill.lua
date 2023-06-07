@@ -25,7 +25,7 @@ local refills = {
             name = "Pigments",
             previewMesh = "jop//dye//dye_red.nif",
             id = "jop_watercolor_refill",
-            description = "Refill the palette using red, blue and yellow dye from gathered flowers and plants or purchased from a painting merchant.",
+            description = "Refill the palette by mixing water with red, blue and yellow pigment. Pigment can be from gathered flowers and plants or purchased from a painting merchant.",
             materials = {
                 {
                     material = "red_pigment",
@@ -77,7 +77,10 @@ local refills = {
                     quantity = 1,
                 },
             },
-            knownByDefault = true,
+            knowledgeRequirement = function(self)
+                --check that TR is installed
+                return tes3.isModActive("Tamriel_Data.esm")
+            end,
             noResult = true,
             previewMesh = "pc\\m\\pc_misc_p_pot.nif",
             craftCallback = function(_craftable, data)
