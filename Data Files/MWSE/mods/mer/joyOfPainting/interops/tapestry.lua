@@ -33,18 +33,29 @@ event.register(tes3.event.initialized, function()
     end
 end)
 
----@type CraftingFramework
-local CraftingFramework = include("CraftingFramework")
-if CraftingFramework then
-    for _, tapestry in ipairs(tapestries) do
-        logger:debug("Registering tapestry %s", tapestry.id)
+local function registerTapestry(tapestry)
+    logger:debug("Registering tapestry %s", tapestry.id)
+    ---@type CraftingFramework
+    local CraftingFramework = include("CraftingFramework")
+    if CraftingFramework then
+        if CraftingFramework.StaticActivator.registeredObjects[tapestry.id:lower()] then
+            logger:warn("%s already registered as a static activator, skipping", tapestry.id)
+            return
+        end
         CraftingFramework.StaticActivator.register{
             objectId = tapestry.id,
             name = config.mcm.showTapestryTooltip and "Tapestry" or nil,
+            craftedOnly = false,
+
             onActivate = function(reference)
+                logger:debug("Activated tapestry")
                 if not reference then return end
-                if config.tapestries[reference.object.id:lower()] == nil then return end
-                if not config.mcm.enableTapestryRemoval then return end
+                --if config.tapestries[reference.object.id:lower()] == nil then return end
+                if not config.mcm.enableTapestryRemoval then
+                    logger:debug("Tapestry removal disabled")
+                    return
+                end
+                logger:debug("Showing tapestry menu")
                 tes3ui.showMessageMenu{
                     message = "Tapestry",
                     buttons = {
@@ -64,3 +75,9 @@ if CraftingFramework then
         }
     end
 end
+
+event.register("initialized", function()
+    for _, tapestry in ipairs(tapestries) do
+        registerTapestry(tapestry)
+    end
+end, { priority = -10 })

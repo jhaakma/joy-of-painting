@@ -19,13 +19,50 @@ local emptyMapping = {
 ---@type JOP.Refill[]
 local refills = {
     {
-        --Red, blue and yellow dye
+        --Ashfall - crush plant dyes and mix with water
+        paintType = "watercolor",
+        recipe = {
+            name = "Plant Dyes",
+            previewMesh = "n\\ingred_gold_kanet_01.nif",
+            previewScale = 1.5,
+            id = "jop_watercolor_refill_ashfall",
+            description = "Refill the palette by mixing water with red, blue and yellow dye made by crushing plants and flowers.",
+            materials = {
+                {
+                    material = "red_dye",
+                    quantity = 1,
+                },
+                {
+                    material = "blue_dye",
+                    quantity = 1,
+                },
+                {
+                    material = "yellow_dye",
+                    quantity = 1,
+                },
+            },
+            knowledgeRequirement = function()
+                --check that ashfall is installed
+                return tes3.isModActive("Ashfall.esp")
+            end,
+            customRequirements = Dye.customRequirements,
+            noResult = true,
+            craftCallback = function()
+                Dye.craftCallback()
+                local paletteToRefill = Palette.getPaletteToRefill()
+                if paletteToRefill then
+                    paletteToRefill:doRefill()
+                end
+            end,
+        }
+    },
+    {
         paintType = "watercolor",
         recipe = {
             name = "Pigments",
-            previewMesh = "jop//dye//dye_red.nif",
-            id = "jop_watercolor_refill",
-            description = "Refill the palette by mixing water with red, blue and yellow pigment. Pigment can be from gathered flowers and plants or purchased from a painting merchant.",
+            previewMesh = "jop\\dye\\dye_red.nif",
+            id = "jop_watercolor_refill_pigment",
+            description = "Refill the palette with red, blue and yellow pigments. Pigment can be purchased from a painting merchant.",
             materials = {
                 {
                     material = "red_pigment",
@@ -40,8 +77,10 @@ local refills = {
                     quantity = 1,
                 },
             },
-            knownByDefault = true,
-            customRequirements = Dye.customRequirements,
+            knowledgeRequirement = function()
+                --check that ashfall is installed
+                return tes3.isModActive("Ashfall.esp")
+            end,
             noResult = true,
             craftCallback = function()
                 Dye.craftCallback()
@@ -52,6 +91,8 @@ local refills = {
             end,
         }
     },
+
+
     {
         paintType = "oil",
         recipe = OilPaints.getRecipe(),
@@ -121,6 +162,27 @@ local materials = {
         name = "Red Pigment",
         ids = {
             "jop_dye_red",
+        },
+    },
+    {
+        id = "blue_pigment",
+        name = "Blue Pigment",
+        ids = {
+            "jop_dye_blue",
+        },
+    },
+    {
+        id = "yellow_pigment",
+        name = "Yellow Pigment",
+        ids = {
+            "jop_dye_yellow",
+        },
+    },
+
+    {
+        id = "red_dye",
+        name = "Red Dye",
+        ids = {
             "ingred_fire_petal_01",
             "ingred_heather_01",
             "ingred_holly_01",
@@ -134,10 +196,9 @@ local materials = {
         },
     },
     {
-        id = "blue_pigment",
-        name = "Blue Pigment",
+        id = "blue_dye",
+        name = "Blue Dye",
         ids = {
-            "jop_dye_blue",
             "ingred_bc_coda_flower",
             "ingred_belladonna_01",
             "ingred_stoneflower_petals_01",
@@ -148,10 +209,9 @@ local materials = {
         },
     },
     {
-        id = "yellow_pigment",
-        name = "Yellow Pigment",
+        id = "yellow_dye",
+        name = "Yellow Dye",
         ids = {
-            "jop_dye_yellow",
             "ingred_bittergreen_petals_01",
             "ingred_gold_kanet_01",
             "ingred_golden_sedge_01",
