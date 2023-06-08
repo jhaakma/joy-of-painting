@@ -53,6 +53,8 @@ config.merchantPaintingSupplies = {
     jop_dye_yellow = 10,
     jop_dye_blue = 10,
     misc_inkwell = 10,
+    misc_quill = 4,
+    ['sc_paper plain'] = 25,
 }
 config.BASE_PRICE = 2
 config.MAX_RANDOM_PRICE_EFFECT = 1.5
