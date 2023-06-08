@@ -37,6 +37,9 @@ end
 function OilPaints.getPlayerRefills()
     local refills = 0
     local stack = tes3.player.object.inventory:findItemStack(OilPaints.id)
+    if not stack then
+        return refills
+    end
     local stackCount = stack.count and stack.count or 1
     local variablesCount = stack.variables and #stack.variables or 0
     local fullPaints = stackCount - variablesCount
