@@ -27,7 +27,7 @@ local paletteItems = {
         meshOverride = "meshes\\jop\\inkwell.nif",
         paintType = "ink",
         fullByDefault = true,
-        uses = 20,
+        uses = 50,
         paintValue = 20,
     },
     {
