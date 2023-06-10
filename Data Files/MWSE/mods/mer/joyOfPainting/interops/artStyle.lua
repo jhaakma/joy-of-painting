@@ -9,6 +9,7 @@ local shaders = {
     { id = "adjuster", shaderId = "jop_adjuster" },
     { id = "charcoal", shaderId = "jop_charcoal" },
     { id = "greyscale", shaderId = "jop_greyscale" },
+    { id = "blackAndWhite", shaderId = "jop_blackwhite" },
     { id = "ink", shaderId = "jop_ink" },
     { id = "oil", shaderId = "jop_oil" },
     { id = "sketch", shaderId = "jop_sketch" },
@@ -81,6 +82,15 @@ local controls = {
         sliderDefault = 50,
         shaderMin = 0.05,
         shaderMax = 1,
+    },
+    {
+        id = "threshold",
+        uniform = "threshold",
+        shader = "jop_blackwhite",
+        name = "Threshold",
+        sliderDefault = 50,
+        shaderMin = 0.01,
+        shaderMax = 1,
     }
 }
 
@@ -106,7 +116,7 @@ local artStyles = {
                 :formatDDS()
                 :param(image.screenshotPath)
                 :trim()
-                :autoGamma()
+                --:autoGamma()
                 :blur(detailLevel)
                 :paint(detailLevel)
                 --:charcoal(tes3.player.data.charcoal or 1)
@@ -124,13 +134,15 @@ local artStyles = {
             end
         end,
         shaders = {
-            "charcoal",
-            "greyscale",
+            --"charcoal",
+            --"greyscale",
+            "blackAndWhite",
             "adjuster",
         },
         controls = {
             "brightness",
-            "contrast",
+            --"contrast",
+            "threshold",
             "distance",
             "bgColor",
         },
