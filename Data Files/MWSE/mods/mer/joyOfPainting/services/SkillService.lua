@@ -6,6 +6,9 @@ local SkillService = {}
 
 SkillService.skills = {}
 
+function SkillService.getPaintingSkillLevel()
+    return SkillService.skills.painting.value
+end
 
 --Painting skill determines how "blobby" the paint effect is
 function SkillService.getDetailLevel()
@@ -22,8 +25,8 @@ function SkillService.getDetailLevel()
 end
 
 function SkillService.getValueEffect()
-    local paintingSkill = SkillService.skills.painting.value
     local c = config.skillGoldEffect
+    local paintingSkill = math.clamp(SkillService.skills.painting.value, c.MIN_SKILL, c.MAX_SKILL)
     local valueEffect = math.remap(
         paintingSkill,
         c.MIN_SKILL,

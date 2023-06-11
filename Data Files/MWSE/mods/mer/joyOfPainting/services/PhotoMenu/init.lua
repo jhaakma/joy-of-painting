@@ -213,7 +213,14 @@ end
 
 
 function PhotoMenu:setShaderValue(control)
-    local shaderValue = math.remap(config.persistent[control.id], 0, 100, control.shaderMin, control.shaderMax)
+    local shaderValue
+    if control.calculate then
+        local paintingSkill = SkillService.getPaintingSkillLevel()
+        shaderValue = control.calculate(paintingSkill)
+    else
+        shaderValue = math.remap(config.persistent[control.id], 0, 100, control.shaderMin, control.shaderMax)
+    end
+
     logger:debug("Setting %s to %s", control.id, shaderValue)
     ShaderService.setUniform(control.shader, control.uniform, shaderValue)
 end
@@ -268,7 +275,9 @@ function PhotoMenu:createShaderControls(parent)
         if not control then
             logger:error("Control %s not found", controlName)
         else
-            self:createControlSlider(controlsBlock, control)
+            if not control.calculate then
+                self:createControlSlider(controlsBlock, control)
+            end
             self:setShaderValue(control)
         end
     end
@@ -286,11 +295,7 @@ function PhotoMenu:resetControls()
         if table.find(self.shaders, control.shader)then
             logger:debug("ShaderService is active, Resetting %s", control.id)
             config.persistent[control.id] = control.sliderDefault
-            ShaderService.setUniform(
-                control.shader,
-                control.uniform,
-                math.remap(control.sliderDefault, 0, 100, control.shaderMin, control.shaderMax)
-            )
+            self:setShaderValue(control)
         end
     end
     local controlsBlock = self:getControlsBlock()

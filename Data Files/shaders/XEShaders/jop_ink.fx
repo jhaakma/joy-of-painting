@@ -6,6 +6,7 @@ extern float inkThickness = 0.001;
 extern float Brightness = 0.2;
 extern float distance = 500;
 extern float maxDistance = 500-2;
+extern float contrast = 1;
 
 texture lastshader;
 texture lastpass;
@@ -27,6 +28,7 @@ float readDepth(float2 tex)
 float4 brightness(float2 tex: TEXCOORD0) : COLOR0
 {
   float4 color = tex2D(s0, tex);
+  color.rgb *= contrast;
   color.rgb += Brightness;
 
   float depth = readDepth(tex);

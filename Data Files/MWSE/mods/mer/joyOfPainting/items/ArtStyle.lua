@@ -15,6 +15,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field sliderDefault number The default value for the slider
 ---@field shaderMin number The minimum value for the shader variable
 ---@field shaderMax number The maximum value for the shader variable
+---@field calculate? fun(skillLevel: number): number A function that returns the value to be used for the shader variable
 
 ---@class JOP.ArtStyle.data
 ---@field name string The name of the art style
@@ -77,7 +78,7 @@ function ArtStyle:new(data)
     local shaders = data.shaders
     artStyle.shaders = {}
     for _, shader in ipairs(shaders) do
-        logger:assert(config.shaders[shader], string.format("Shader %s not found", shader))
+        logger:assert(config.shaders[shader] ~= nil, string.format("Shader %s not found", shader))
         table.insert(artStyle.shaders, config.shaders[shader])
     end
     artStyle.paintType = config.paintTypes[data.paintType]

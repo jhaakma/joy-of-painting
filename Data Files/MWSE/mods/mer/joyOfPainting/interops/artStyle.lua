@@ -29,6 +29,15 @@ local controls = {
         shaderMax = 0.25,
     },
     {
+        id = "detail",
+        uniform = "contrast",
+        shader = "jop_ink",
+        name = "Detail",
+        sliderDefault = 50,
+        shaderMin = 0.1,
+        shaderMax = 1.9,
+    },
+    {
         id = "contrast",
         uniform = "contrast",
         shader = "jop_adjuster",
@@ -53,8 +62,15 @@ local controls = {
         shader = "jop_ink",
         name = "Line Thickness",
         sliderDefault = 50,
-        shaderMin = 0.0005,
-        shaderMax = 0.0030,
+        shaderMin = config.ink.THICKNESS_MIN,
+        shaderMax = config.ink.THICKNESS_MAX,
+        calculate = function(paintingSkill)
+            paintingSkill = math.clamp(paintingSkill, config.ink.SKILL_MIN, config.ink.SKILL_MAX)
+            return math.remap(paintingSkill,
+                config.ink.SKILL_MIN, config.ink.SKILL_MAX,
+                config.ink.THICKNESS_MAX, config.ink.THICKNESS_MIN
+            )
+        end
     },
     {
         id = "distance",
@@ -134,10 +150,8 @@ local artStyles = {
                 :formatDDS()
                 :param(image.screenshotPath)
                 :trim()
-                --:autoGamma()
                 :blur(detailLevel)
                 :paint(detailLevel)
-                --:charcoal(tes3.player.data.charcoal or 1)
                 :sketch()
                 :brightnessContrast(-40, 80)
                 :removeWhite(90)
@@ -158,7 +172,7 @@ local artStyles = {
             "adjuster",
         },
         controls = {
-            "brightness",
+            "blackWhiteBrightness",
             "blackWhiteContrast",
             "threshold",
             "distance",
@@ -186,7 +200,7 @@ local artStyles = {
                 :trim()
                 :autoGamma()
                 :removeWhite(50)
-                :paint(detailLevel)
+                --:paint(detailLevel)
                 :resizeHard(savedWidth, savedHeight)
                 --:blur(detailLevel)
                 :gravity("center")
@@ -203,7 +217,7 @@ local artStyles = {
             "adjuster",
         },
         controls = {
-            "brightness",
+            "detail",
             "inkThickness",
             "inkDistance",
         },

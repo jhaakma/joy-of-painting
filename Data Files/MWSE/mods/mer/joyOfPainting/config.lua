@@ -56,7 +56,7 @@ config.merchantPaintingSupplies = {
     misc_quill = 4,
     ['sc_paper plain'] = 25,
 }
-config.BASE_PRICE = 2
+config.BASE_PRICE = 1.5
 config.MAX_RANDOM_PRICE_EFFECT = 1.5
 --Configs for how much the painting skill affects the quality of the painting
 config.skillPaintEffect = {
@@ -69,7 +69,7 @@ config.skillPaintEffect = {
 ---Configs for how much the painting skill affects the value of the painting
 config.skillGoldEffect = {
     MIN_EFFECT = 1,
-    MAX_EFFECT = 30,
+    MAX_EFFECT = 25,
     MIN_SKILL = 10,
     MAX_SKILL = 100,
 }
@@ -85,6 +85,13 @@ config.subject = {
     MINIMUM_VISIBILITY = 0.1,
 }
 
+--Configs for how thick ink is based on skill
+config.ink = {
+    THICKNESS_MIN = 0.0005,
+    THICKNESS_MAX = 0.0045,
+    SKILL_MIN = 10,
+    SKILL_MAX = 60,
+}
 
 local root = io.popen("cd"):read()
 --File locations
