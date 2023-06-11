@@ -1,11 +1,16 @@
 // Black and White Shader
 texture lastshader;
 sampler2D s0 = sampler_state { texture = <lastshader>; addressu = clamp; };
-extern float threshold = 0.3;
+extern float threshold = 0.5;
+extern float contrast = 1.0;
+extern float brightness = 0.0;
 
 float4 blackAndWhite(float2 tex: TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(s0, tex);
+    color.rgb += (brightness +0.1);
+    color.rgb *= (contrast + 1.5);
+
 
     // Convert the color to black and white
     float average = (color.r + color.g + color.b) / 3;

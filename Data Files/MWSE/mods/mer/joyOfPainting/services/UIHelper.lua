@@ -61,6 +61,7 @@ function UIHelper.createNamePaintingField(parent, e)
             table = e.dataHolder
         },
         callback = function()
+            e.dataHolder.paintingName = string.trim(e.dataHolder.paintingName)
             if e.dataHolder.paintingName:len() > 31 then
                 tes3ui.showMessageMenu{
                     message = "Name too long. Max 22 characters.",

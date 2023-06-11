@@ -84,6 +84,24 @@ local controls = {
         shaderMax = 1,
     },
     {
+        id = "blackWhiteContrast",
+        uniform = "contrast",
+        shader = "jop_blackwhite",
+        name = "Contrast",
+        sliderDefault = 50,
+        shaderMin = -1.1,
+        shaderMax = 1.5,
+    },
+    {
+        id = "blackWhiteBrightness",
+        uniform = "brightness",
+        shader = "jop_blackwhite",
+        name = "Brightness",
+        sliderDefault = 50,
+        shaderMin = -0.5,
+        shaderMax = 0.5,
+    },
+    {
         id = "threshold",
         uniform = "threshold",
         shader = "jop_blackwhite",
@@ -141,7 +159,7 @@ local artStyles = {
         },
         controls = {
             "brightness",
-            --"contrast",
+            "blackWhiteContrast",
             "threshold",
             "distance",
             "bgColor",
