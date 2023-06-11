@@ -2,13 +2,19 @@
 ---@class JOP.Magick
 ---@field name string The name of the magick command being built. Used for logging.
 ---@field command string The magick command to be executed.
-local Magick = {}
+local Magick = {
+    magickPath = "magick"
+}
 local Async = require("mer.joyOfPainting.services.Async")
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("Magick")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
 
+function Magick.setMagickPath(newPath)
+    logger:debug("Setting magick path to %s", newPath)
+    Magick.magickPath = newPath
+end
 
 ---@return JOP.Magick
 function Magick:new(commandName)
@@ -29,7 +35,7 @@ end
 ---@return JOP.Magick
 --Begins a magick command, setting the command to "magick".
 function Magick:magick()
-    self.command ='magick'
+    self.command = self.magickPath
     return self
 end
 
