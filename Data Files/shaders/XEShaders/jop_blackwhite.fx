@@ -19,19 +19,20 @@ float4 blackAndWhite(float2 tex: TEXCOORD0) : COLOR0
     float darkGrayThreshold = (threshold + 0.0) / 2.0;
     float lightGrayThreshold = (threshold + 1.0) / 2.0;
 
-    float dark1 = 0.01;
-    float dark2 = 0.30;
-    float dark3 = 0.50;
+    float black = 0.10;
+    float darkGrey = 0.30;
+    float lightGrey = 0.50;
+    float white = 0.70;
 
     // Quantize the average value to the limited band of shades
     if (average < darkGrayThreshold)
-        color.rgb = float3(dark1, dark1, dark1); // Black
+        color.rgb = float3(black, black, black);
     else if (average < threshold)
-        color.rgb = float3(dark2, dark2, dark2); // Light Gray
+        color.rgb = float3(darkGrey, darkGrey, darkGrey);
     else if (average < lightGrayThreshold)
-        color.rgb = float3(dark3, dark3, dark3); // Dark Gray
+        color.rgb = float3(lightGrey, lightGrey, lightGrey);
     else
-        color.rgb = float3(1, 1, 1); // White
+        color.rgb = float3(white, white, white);
 
     return color;
 }
