@@ -206,7 +206,7 @@ end
 
 ---@param parent tes3uiElement
 function PaperMold:doTooltip(parent)
-    self:processMold(timestamp)
+    self:processMold()
     logger:debug("Creating tooltip")
     local text
     if self:hasPulp() then

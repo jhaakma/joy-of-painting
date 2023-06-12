@@ -77,10 +77,6 @@ local refills = {
                     quantity = 1,
                 },
             },
-            knowledgeRequirement = function()
-                --check that ashfall is installed
-                return tes3.isModActive("Ashfall.esp")
-            end,
             noResult = true,
             craftCallback = function()
                 Dye.craftCallback()

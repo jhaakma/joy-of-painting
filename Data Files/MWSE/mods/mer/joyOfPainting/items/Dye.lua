@@ -1,5 +1,4 @@
 local ashfall = include("mer.ashfall.interop")
-if not ashfall then return end
 
 ---@class JOP.Dye
 local Dye = {}
@@ -8,6 +7,9 @@ Dye.customRequirements = {
     {
         getLabel = function() return "Water: 10 units" end,
         check = function()
+            if not ashfall then
+                return false
+            end
             ---@param stack tes3itemStack
             for _, stack in pairs(tes3.player.object.inventory) do
                 if stack.variables then
@@ -40,10 +42,12 @@ Dye.customRequirements = {
             return false
         end
     }
-
 }
 
 Dye.craftCallback = function(_craftable)
+    if not ashfall then
+        return
+    end
     ---@param stack tes3itemStack
     for _, stack in pairs(tes3.player.object.inventory) do
         if stack.variables then
