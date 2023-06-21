@@ -12,9 +12,9 @@ texture depthframe;
 texture lastpass;
 texture tex1 < string src="jop/wclut.tga"; >;
 
-sampler s0 = sampler_state { texture=<lastshader>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
-sampler s1 = sampler_state { texture=<lastpass>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
-sampler SamplerLUT = sampler_state { texture = <tex1>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
+sampler sLastShader = sampler_state { texture=<lastshader>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
+sampler sLastPass = sampler_state { texture=<lastpass>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
+sampler sLutTex = sampler_state { texture = <tex1>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
 
 #define PI acos(-1)
 
@@ -108,15 +108,15 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
 	float dx =width/height * LineThickness;
 	float dy =LineThickness;
 
-	float4 c1 = tex2D(s0, tex + float2(-dx,-dy));
-	float4 c2 = tex2D(s0, tex + float2(0,-dy));
-	float4 c3 = tex2D(s0, tex + float2(-dx,dy));
-	float4 c4 = tex2D(s0, tex + float2(-dx,0));
-	float4 c5 = tex2D(s0, tex + float2(0,0));
-	float4 c6 = tex2D(s0, tex + float2(dx,0));
-	float4 c7 = tex2D(s0, tex + float2(dx,-dy));
-	float4 c8 = tex2D(s0, tex + float2(0,dy));
-	float4 c9 = tex2D(s0, tex + float2(dx,dy));
+	float4 c1 = tex2D(sLastShader, tex + float2(-dx,-dy));
+	float4 c2 = tex2D(sLastShader, tex + float2(0,-dy));
+	float4 c3 = tex2D(sLastShader, tex + float2(-dx,dy));
+	float4 c4 = tex2D(sLastShader, tex + float2(-dx,0));
+	float4 c5 = tex2D(sLastShader, tex + float2(0,0));
+	float4 c6 = tex2D(sLastShader, tex + float2(dx,0));
+	float4 c7 = tex2D(sLastShader, tex + float2(dx,-dy));
+	float4 c8 = tex2D(sLastShader, tex + float2(0,dy));
+	float4 c9 = tex2D(sLastShader, tex + float2(dx,dy));
 
 	float4 c0 = (-c1-c2-c3-c4+c6+c7+c8+c9);
 
@@ -129,7 +129,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
         c0 = float4(val, val, val, val);
 
 
-	c1 = tex2D(s0,tex);
+	c1 = tex2D(sLastShader,tex);
 
 	float3 hsl = RGBToHSL(c1.xyz);
 	hsl.g *= Saturation;
@@ -137,6 +137,7 @@ float4 main(float2 tex : TEXCOORD0) : COLOR
 
 	return c1 * c0;
 }
+
 
 float3 ClutFunc( float3 colorIN, sampler2D LutSampler )
 {
@@ -152,8 +153,8 @@ float3 ClutFunc( float3 colorIN, sampler2D LutSampler )
 
 float4 lut(in float2 tex:TEXCOORD0): COLOR0
 {
-	float4 scene = tex2D(s1,tex);
-	scene.rgb =  ClutFunc(scene.rgb, SamplerLUT);
+	float4 scene = tex2D(sLastPass,tex);
+	scene.rgb =  ClutFunc(scene.rgb, sLutTex);
 	return scene;
 }
 

@@ -4,8 +4,8 @@
 #define Saturation 1.0
 extern float inkThickness = 0.001;
 extern float Brightness = 0.2;
-extern float distance = 500;
-extern float maxDistance = 500-2;
+extern float distance = 250;
+extern float maxDistance = 250-1;
 extern float contrast = 1;
 
 texture lastshader;
