@@ -79,7 +79,7 @@ local controls = {
         name = "Fog",
         sliderDefault = 100,
         shaderMin = 8,
-        shaderMax = 500,
+        shaderMax = 250,
     },
     {
         id = "inkDistance",
@@ -88,7 +88,7 @@ local controls = {
         name = "Fog",
         sliderDefault = 100,
         shaderMin = 8,
-        shaderMax = 500,
+        shaderMax = 250,
     },
     {
         id = "bgColor",
@@ -166,8 +166,6 @@ local artStyles = {
             end
         end,
         shaders = {
-            --"charcoal",
-            --"greyscale",
             "blackAndWhite",
             "adjuster",
         },
@@ -259,9 +257,9 @@ local artStyles = {
         controls = {
             "brightness",
             "contrast",
+            "saturation",
             "distance",
             "bgColor",
-            --"saturation",
         },
         valueModifier = 4,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",

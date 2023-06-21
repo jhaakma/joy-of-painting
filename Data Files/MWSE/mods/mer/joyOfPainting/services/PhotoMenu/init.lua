@@ -80,18 +80,20 @@ function PhotoMenu:getImageBuilder()
 
     local builder = ImageBuilder:new(imageData)
         :registerStep("calculateSubjectResults", function(next)
-            local occlusionTester = OcclusionTester.new{
-                logger = occlusionTesterLogger,
-                viewportAspectResolution = config.frameSizes[self.canvasConfig.frameSize].aspectRatio,
-                viewportScale = 0.8
-            }
-            local subjectService = SubjectService.new{
-                occlusionTester = occlusionTester,
-            }
-            local subjects = subjectService:getSubjects()
-            self.subjects = subjects
-            timer.frame.delayOneFrame(next)
-            return true
+            if config.mcm.enableSubjectCapture then
+                local occlusionTester = OcclusionTester.new{
+                    logger = occlusionTesterLogger,
+                    viewportAspectResolution = config.frameSizes[self.canvasConfig.frameSize].aspectRatio,
+                    viewportScale = 0.8
+                }
+                local subjectService = SubjectService.new{
+                    occlusionTester = occlusionTester,
+                }
+                local subjects = subjectService:getSubjects()
+                self.subjects = subjects
+                timer.frame.delayOneFrame(next)
+                return true
+            end
         end)
         :registerStep("doCaptureCallback", function()
             if self.captureCallback then

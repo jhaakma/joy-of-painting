@@ -21,6 +21,7 @@ local function activateEasel(e)
     }
 end
 
+--Unpacked static version of field easel
 Activator.registerActivator{
     id = "mer_joyOfPainting_fieldEasel",
     onActivate = activateEasel,
@@ -80,6 +81,7 @@ local function activateMiscEasel(e)
     }
 end
 
+--Packed misc version of field easel
 Activator.registerActivator{
     onActivate = activateMiscEasel,
     isActivatorItem = function(e)
@@ -90,11 +92,15 @@ Activator.registerActivator{
         if not e.target then
             return false
         end
-        if not config.miscEasels[e.object.id:lower()] then
-            return false
+
+        ---@type JOP.Easel
+        local easel = Easel.getEaselFromMiscId(e.target.object.id:lower())
+        if easel and easel.doesPack then
+            logger:debug("is Misc Field Easel: true")
+            return true
         end
-        logger:debug("Is a misc easel")
-        return true
+        logger:debug("is Misc Field Easel: false")
+        return false
     end,
     blockStackActivate = true
 }

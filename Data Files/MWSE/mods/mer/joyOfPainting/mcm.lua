@@ -117,12 +117,6 @@ local function registerMCM()
         end
     }
 
-    page:createOnOffButton{
-        label = "Debug Mode",
-        description = "Enable debug mode. For development use only.",
-        variable = mwse.mcm.createTableVariable{ id = "debugMode", table = config.mcm },
-    }
-
     template:createExclusionsPage{
         label = "Paint Supplies Merchants",
         description = "Select which merchants sell paint supplies.",

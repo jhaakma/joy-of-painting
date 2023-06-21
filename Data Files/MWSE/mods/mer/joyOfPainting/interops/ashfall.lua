@@ -63,6 +63,32 @@ local recipes = {
         additionalMenuOptions = Easel.getActivationButtons(),
     },
     {
+        id = "jop_easel_misc",
+        placedObject = "jop_easel_02",
+        description = "A finely crafted, portable wooden easel.",
+        materials = {
+            { material = "wood", count = 4 },
+            { material = "rope", count = 1},
+        },
+        skillRequirements = {ashfall.bushcrafting.survivalTiers.expert},
+        category = "Painting",
+        soundType = "wood",
+        maxSteepness = 0.1,
+        additionalMenuOptions = Easel.getActivationButtons(),
+        destroyCallback = function(_recipe, e)
+            local easel = Easel:new(e.reference)
+            if easel and easel:hasCanvas() then
+                easel.painting:takeCanvas{blockSound = true}
+            end
+        end,
+        pickUp = function(craftable, reference)
+            local easel = Easel:new(reference)
+            if easel then
+                easel:pickUp()
+            end
+        end
+    },
+    {
         id = "jop_canvas_square_01",
         description = "A square canvas. Place on an easel to start painting.",
         category = "Painting",

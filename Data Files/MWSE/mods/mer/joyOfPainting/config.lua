@@ -42,6 +42,7 @@ config.merchantPaintingSupplies = {
     jop_frame_t_03 = 10,
     jop_parchment_01 = 50,
     jop_easel_pack = 1,
+    jop_easel_misc = 1,
     jop_brush_01 = 1,
     jop_canvas_square_01 = 20,
     jop_canvas_wide_01 = 20,
@@ -187,7 +188,8 @@ local mcmDefault = {
         ["urfing"] = true --Moonmoth Legion Fort trader - Nord 400
     },
     --Enable debug mode (generates debug meshes)
-    debugMode = false,
+    debugMeshes = false,
+    enableSubjectCapture = false,
 }
 --MCM Config (stored as JSON in MWSE/config/joyOfPainting.json)
 ---@type JOP.config.MCM

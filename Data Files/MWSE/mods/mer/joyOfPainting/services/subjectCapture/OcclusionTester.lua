@@ -175,7 +175,7 @@ function OcclusionTester:capturePixelData()
 end
 
 function OcclusionTester:dumpDebug(subjectId)
-    if config.mcm.debugMode then
+    if config.mcm.debugMeshes then
         self.logger:warn("Dumping debug image for %s", subjectId)
         local plane = tes3.loadMesh("jop\\debug_plane.nif")
         plane.texturingProperty.maps[1].texture = self.pixelData:createSourceTexture()

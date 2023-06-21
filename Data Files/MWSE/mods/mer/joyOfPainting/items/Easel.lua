@@ -28,6 +28,7 @@ local Easel = {
     data = nil,
     ---@type JOP.Painting
     painting = nil,
+    --- If true, can be packed up
     ---@type boolean
     doesPack = nil,
     ---@type string
@@ -224,9 +225,11 @@ end
 ---@return boolean
 function Easel:canAttachCanvas()
     return self.data.canvasId == nil
-        and Easel.playerHasCanvas()
 end
 
+function Easel:isPortable()
+    return self.miscItem ~= nil
+end
 
 ---@return boolean
 function Easel:hasCanvas()
@@ -282,29 +285,26 @@ function Easel:close()
 end
 
 function Easel:pickUp()
-    if not self:canPickUp() then
-        logger:warn("Tried to pick up an easel that can't be picked up")
-        return
-    end
     if not self.miscItem then
         logger:error("Tried to pick up an easel that doesn't pack")
         return
     end
+    if self:hasCanvas() then
+        self:takeCanvas()
+    end
     logger:debug("Picking up")
 
-    Activator.playActivatorAnimation{
-        reference = self.reference,
-        group = self.data.opened and self.animationGroups.openPacking or self.animationGroups.packing,
-        nextAnimation = self.animationGroups.unpacked.group,
-        duration = self.data.opened and 3.6 or 1.4,
-        sound = "Wooden Door Open 1",
-        callback = function()
-            logger:debug("Adding %s to inventory and deleting easel", self.miscItem)
-            tes3.addItem{
-                reference = tes3.player,
-                item = self.miscItem,
-                count = 1,
-            }
+    local function swap()
+        logger:debug("Adding %s to inventory and deleting easel", self.miscItem)
+        local item = tes3.getObject(self.miscItem) --[[@as tes3clothing]]
+        tes3.addItem{
+            reference = tes3.player,
+            item = item,
+            count = 1,
+        }
+        self.reference:delete()
+        --Equip if backpack
+        if item.objectType == tes3.objectType.clothing then
             local isEquipped = tes3.getEquippedItem{
                 actor = tes3.player,
                 objectType = tes3.objectType.clothing,
@@ -312,13 +312,26 @@ function Easel:pickUp()
             }
             if not isEquipped then
                 logger:debug("Equipping %s", self.miscItem)
+                ---@diagnostic disable-next-line
                 tes3.player.mobile:equip{
-                    item = self.miscItem
+                    item = item
                 }
             end
-            self.reference:delete()
         end
-    }
+    end
+
+    if self.doesPack then
+        Activator.playActivatorAnimation{
+            reference = self.reference,
+            group = self.data.opened and self.animationGroups.openPacking or self.animationGroups.packing,
+            nextAnimation = self.animationGroups.unpacked.group,
+            duration = self.data.opened and 3.6 or 1.4,
+            sound = "Wooden Door Open 1",
+            callback = swap
+        }
+    else
+        swap()
+    end
 end
 
 function Easel:setClamp()
@@ -370,8 +383,14 @@ function Easel.isEasel(reference)
         and Easel.getEaselConfig(reference.object.id) ~= nil
 end
 
+
 function Easel.getEaselConfig(easelId)
     return config.easels[easelId:lower()]
+end
+
+--- Get the easel config from the misc item id
+function Easel.getEaselFromMiscId(easelId)
+    return config.miscEasels[easelId:lower()]
 end
 
 ---Check the player's inventory for canvas items
@@ -485,7 +504,19 @@ function Easel.getActivationButtons()
             end,
             showRequirements = function(e)
                 local easel = Easel:new(e.reference)
-                return easel and easel:canAttachCanvas() and easel:isOpen()
+                return easel and easel:isOpen() and easel:canAttachCanvas()
+            end,
+            enableRequirements = function(e)
+                return Easel.playerHasCanvas()
+            end,
+            tooltipDisabled = function(e)
+                local text = ""
+                if not Easel.playerHasCanvas() then
+                    text = "You do not have any canvases."
+                end
+                return {
+                    text = text
+                }
             end
         },
         {
@@ -518,7 +549,7 @@ function Easel.getActivationButtons()
             end,
             showRequirements = function(e)
                 local easel = Easel:new(e.reference)
-                return easel and easel.doesPack
+                return easel and not easel.reference.data.crafted
             end
         },
         {
@@ -539,14 +570,11 @@ function Easel.getActivationButtons()
             callback = function(e)
                 local easel = Easel:new(e.reference)
                 if not easel then return end
-                if easel:hasCanvas() then
-                    easel:takeCanvas()
-                end
                 easel:pickUp()
             end,
             showRequirements = function(e)
                 local easel = Easel:new(e.reference)
-                return easel and easel.doesPack == true
+                return easel and not easel.reference.data.crafted
             end
         }
     }
