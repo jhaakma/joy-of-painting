@@ -20,25 +20,17 @@ logger:debug("Initialising Interops")
 initAll("interops")
 
 local function setMagickPath()
-    --check if 'Data Files\ImageMagick\magick.exe' exists
-    local magickPath = "Data Files/ImageMagick/magick.exe"
-    if lfs.attributes(magickPath) then
-        Magick.setMagickPath(magickPath)
-    else
-        --check if ImageMagick exists in PATH
-        local magickExists = os.execute("magick -version")
-        if magickExists then
-            Magick.setMagickPath("magick")
-        else
-            logger:error("Image magick is not installed")
-            timer.frame.delayOneFrame(function()
-                tes3.messageBox{
-                    message = "Joy of Painting ERROR: ImageMagick is not installed.",
-                    buttons = { "OK" }
-                }
-            end)
+    local paths = {
+        "Data Files/ImageMagick/magick.exe",
+        "Data Files/MWSE/lib/ImageMagick/magick.exe"
+    }
+    for _, path in ipairs(paths) do
+        if lfs.attributes(path) then
+            Magick.setMagickPath(path)
+            return
         end
     end
+    Magick.setMagickPath("magick")
 end
 
 
