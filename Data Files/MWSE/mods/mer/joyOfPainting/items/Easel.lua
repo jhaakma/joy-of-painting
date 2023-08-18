@@ -312,8 +312,7 @@ function Easel:pickUp()
             }
             if not isEquipped then
                 logger:debug("Equipping %s", self.miscItem)
-                ---@diagnostic disable-next-line
-                tes3.player.mobile:equip{
+                tes3.mobilePlayer:equip{
                     item = item
                 }
             end

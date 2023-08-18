@@ -162,13 +162,11 @@ end
 function OcclusionTester:capturePixelData()
     self.logger:debug("Capturing pixel data...")
 
-    ---@diagnostic disable
     self.camera.renderer:setRenderTarget(self.texture)
     self.camera:clear()
     self.camera:click()
     self.camera:swapBuffers()
     self.camera.renderer:setRenderTarget(nil)
-    ---@diagnostic enable
 
     self.logger:debug("Finished capturing pixel data.")
     assert(self.texture:readback(self.pixelData))
@@ -186,13 +184,11 @@ end
 ---@return JOP.PixelMap.countPixels.data
 function OcclusionTester:getPixelCounts(e)
     e = e or { visibleOnly = false}
-    ---@diagnostic disable
     if e.visibleOnly then
         self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.lessEqual
     else
         self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.always
     end
-    ---@diagnostic enable
     self:capturePixelData()
     self.logger:debug("Counting pixels...")
     local pixelMap = PixelMap.new{
