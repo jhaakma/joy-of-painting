@@ -80,9 +80,9 @@ config.skillGoldEffect = {
 }
 ---Configs for how much paintings increase your painting skill
 config.skillProgress = {
-    BASE_PROGRESS_PAINTING = 30,
+    BASE_PROGRESS_PAINTING = 10,
     NEW_REGION_MULTI = 3.0,
-    MAX_RANDOM = 10.0
+    MAX_RANDOM = 5.0
 }
 ---Configs for subject mechanics
 config.subject = {
