@@ -110,8 +110,8 @@ end
 ---@field cancelCallback function? The function to call whe the cancel button is pressed
 ---@field tooltipHeader string? The header to show in the on-hover tooltip
 ---@field tooltipText string? The text to show in the on-hover tooltip
----@field buttons JOP.UIHelper.openNamePaintingMenu.button[] list of additional buttons to show at the bottom of the menu
----@field cancels boolean True if the menu has a cancel button
+---@field buttons JOP.UIHelper.openNamePaintingMenu.button[]? list of additional buttons to show at the bottom of the menu
+---@field cancels? boolean True if the menu has a cancel button
 ---@field setNameText string? The text to display on the rename button
 
 --[[
@@ -239,8 +239,8 @@ end
 ---@field paintingName string
 ---@field paintingTexture string
 ---@field canvasId string
----@field tooltipText string
----@field tooltipHeader string
+---@field tooltipText? string
+---@field tooltipHeader? string
 
 --Display a painting in a UI menu
 ---@param parent tes3uiElement

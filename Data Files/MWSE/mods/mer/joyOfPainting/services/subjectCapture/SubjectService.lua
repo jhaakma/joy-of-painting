@@ -16,8 +16,8 @@ local SubjectService = {
 
 ---@class JOP.SubjectService.params
 ---@field occlusionTester OcclusionTester
----@field logger mwseLogger
----@field subjects table<string, JOP.Subject>
+---@field logger? mwseLogger
+---@field subjects? table<string, JOP.Subject>
 
 ---@class JOP.Subject.Result
 ---@field presence number The ratio of active pixels to total screen pixels

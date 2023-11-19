@@ -15,10 +15,10 @@ local OcclusionTester = {}
 OcclusionTester.__index = OcclusionTester
 
 ---@class OcclusionTester.params
----@field resolutionScale number
----@field viewportAspectResolution number
----@field viewportScale number
----@field logger mwseLogger
+---@field resolutionScale? number
+---@field viewportAspectResolution? number
+---@field viewportScale? number
+---@field logger? mwseLogger
 
 function OcclusionTester.getNearestPowerOfTwo(n)
     return 2 ^ math.floor(math.log(n, 2))

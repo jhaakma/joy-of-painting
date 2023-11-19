@@ -9,6 +9,7 @@ else
 end
 if not config.metadata then
     mwse.log("Failed to load metadata.toml")
+    ---@diagnostic disable missing-fields
     config.metadata = {
         package = {
             name = "The Joy of Painting",
@@ -16,11 +17,14 @@ if not config.metadata then
             version = "FIX THIS"
         }
     }
+    ---@diagnostic enable missing-fields
 end
 
 ---Path to config file
 config.configPath = "joyOfPainting"
 config.ANIM_OFFSET = 2.0
+
+---@type table<string, SkillsModule.Skill.constructorParams>
 config.skills = {
     painting = {
         id = "painting",
@@ -145,6 +149,8 @@ config.shaders = {}
 config.subjects = {}
 
 ---@class JOP.config.persistent
+---@field lightingMode any
+---@field zoom number
 local persistentDefault = {
     zoom = 100,
     brightness = 50,

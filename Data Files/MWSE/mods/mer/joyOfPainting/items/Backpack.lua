@@ -10,7 +10,7 @@ local logger = common.createLogger("backpackService")
 ---@class JOP.BackPack.Config
 ---@field id string id of the backpack object
 ---@field filename string path to the nif to attach
----@field offset JOP.BackPack.Config.offset table of transation, rotation and scale to apply
+---@field offset? JOP.BackPack.Config.offset table of transation, rotation and scale to apply
 
 ---@class JOP.BackpackService
 local BackpackService = {

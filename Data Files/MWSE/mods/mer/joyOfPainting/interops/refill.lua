@@ -30,15 +30,15 @@ local refills = {
             materials = {
                 {
                     material = "red_dye",
-                    quantity = 1,
+                    count = 1,
                 },
                 {
                     material = "blue_dye",
-                    quantity = 1,
+                    count = 1,
                 },
                 {
                     material = "yellow_dye",
-                    quantity = 1,
+                    count = 1,
                 },
             },
             knowledgeRequirement = function()
@@ -66,15 +66,15 @@ local refills = {
             materials = {
                 {
                     material = "red_pigment",
-                    quantity = 1,
+                    count = 1,
                 },
                 {
                     material = "blue_pigment",
-                    quantity = 1,
+                    count = 1,
                 },
                 {
                     material = "yellow_pigment",
-                    quantity = 1,
+                    count = 1,
                 },
             },
             noResult = true,
@@ -103,15 +103,15 @@ local refills = {
             materials = {
                 {
                     material = "red_paint",
-                    quantity = 1,
+                    count = 1,
                 },
                 {
                     material = "blue_paint",
-                    quantity = 1,
+                    count = 1,
                 },
                 {
                     material = "yellow_paint",
-                    quantity = 1,
+                    count = 1,
                 },
             },
             knowledgeRequirement = function(self)

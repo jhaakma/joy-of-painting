@@ -2,17 +2,19 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("SkillService")
 
+---@class JOP.SkillService
 local SkillService = {}
 
+---@type table<string, SkillsModule.Skill>
 SkillService.skills = {}
 
 function SkillService.getPaintingSkillLevel()
-    return SkillService.skills.painting.value
+    return SkillService.skills.painting.current
 end
 
 --Painting skill determines how "blobby" the paint effect is
 function SkillService.getDetailLevel()
-    local paintingSkill = SkillService.skills.painting.value
+    local paintingSkill = SkillService.skills.painting.current
     local MAX_RADIUS = config.skillPaintEffect.MAX_RADIUS
     local MIN_RADIUS = config.skillPaintEffect.MIN_RADIUS
     local MIN_SKILL = config.skillPaintEffect.MIN_SKILL
@@ -26,7 +28,7 @@ end
 
 function SkillService.getValueEffect()
     local c = config.skillGoldEffect
-    local paintingSkill = math.clamp(SkillService.skills.painting.value, c.MIN_SKILL, c.MAX_SKILL)
+    local paintingSkill = math.clamp(SkillService.skills.painting.current, c.MIN_SKILL, c.MAX_SKILL)
     local valueEffect = math.remap(
         paintingSkill,
         c.MIN_SKILL,
@@ -66,7 +68,7 @@ function SkillService.progressSkillFromPainting()
     local rand = math.random(0, config.skillProgress.MAX_RANDOM)
     progress = progress + rand
     logger:debug("Progressing painting skill by %d", progress)
-    paintingSkill:progressSkill(progress)
+    paintingSkill:exercise(progress)
 end
 
 return SkillService

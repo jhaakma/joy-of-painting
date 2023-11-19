@@ -5,40 +5,42 @@ local ReferenceManager = require("mer.joyOfPainting.services.ReferenceManager")
 
 ---@param e activateEventData
 local function onActivate(e)
-    e.object = e.target.object
-    e.dataHolder = e.target
+    local onActivateParams = table.copy(e)
+    onActivateParams.object = e.target.object
+    onActivateParams.dataHolder = e.target
 
-    if e.activator ~= tes3.player then
+    if onActivateParams.activator ~= tes3.player then
         return
     end
     for _, activator in pairs(Activator.activators) do
-        if activator.isActivatorItem(e) then
+        if activator.isActivatorItem(onActivateParams) then
             if common.isShiftDown() then
                 if activator.onPickup then
-                    activator.onPickup(e)
+                    activator.onPickup(onActivateParams)
                 end
                 return
-            elseif activator.blockStackActivate and common.isStack(e.target) then
-                logger:debug("%s is stack, skip", e.target.object.id)
+            elseif activator.blockStackActivate and common.isStack(onActivateParams.target) then
+                logger:debug("%s is stack, skip", onActivateParams.target.object.id)
                 return
             else
-                logger:debug("%s is activator item, activating", e.target.object.id)
-                activator.onActivate(e)
+                logger:debug("%s is activator item, activating", onActivateParams.target.object.id)
+                activator.onActivate(onActivateParams)
                 return true
             end
         end
     end
-    logger:debug("No activators found for %s", e.target.object.id)
+    logger:debug("No activators found for %s", onActivateParams.target.object.id)
 end
 event.register("activate", onActivate)
 
 ---@param e equipEventData
 local function onEquip(e)
-    e.object = e.item
-    e.dataHolder = e.itemData
+    local onActivateParams = table.copy(e)
+    onActivateParams.object = e.item
+    onActivateParams.dataHolder = e.itemData
     for _, activator in pairs(Activator.activators) do
-        if activator.isActivatorItem(e) then
-            activator.onActivate(e)
+        if activator.isActivatorItem(onActivateParams) then
+            activator.onActivate(onActivateParams)
             return
         end
     end

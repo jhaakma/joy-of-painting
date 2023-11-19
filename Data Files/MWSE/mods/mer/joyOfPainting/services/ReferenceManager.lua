@@ -62,7 +62,7 @@ end
 ---@class JOP.ReferenceController.registerReferenceController.params
 ---@field id string The id of the controller
 ---@field requirements fun(self: JOP.ReferenceManager, ref:tes3reference):boolean A function that returns true if the reference is valid for this controller
----@field onActive fun(self: JOP.ReferenceManager, ref:tes3reference) A callback that is triggered when a reference is activated
+---@field onActive? fun(self: JOP.ReferenceManager, ref:tes3reference) A callback that is triggered when a reference is activated
 
 ---@param e JOP.ReferenceController.registerReferenceController.params
 function ReferenceManager.registerReferenceController(e)

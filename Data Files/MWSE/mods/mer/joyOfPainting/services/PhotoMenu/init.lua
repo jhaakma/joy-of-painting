@@ -23,16 +23,16 @@ local alwaysOnShaders
 
 
 ---@class JOP.PhotoMenu
+---@field artStyle JOP.ArtStyle
+---@field canvasConfig table
+---@field paintingName string
+---@field captureCallback function
+---@field closeCallback function
+---@field cancelCallback function
+---@field finalCallback function
+---@field isLooking boolean? default false
 local PhotoMenu = {
     shaders = nil,
-    ---@type JOP.ArtStyle
-    artStyle = nil,
-    canvasConfig = nil,
-    paintingName = nil,
-    captureCallback = nil,
-    closeCallback = nil,
-    cancelCallback = nil,
-    finalCallback = nil,
     isLooking = false
 }
 PhotoMenu.menuID = "TJOP.PhotoMenu"
@@ -50,6 +50,7 @@ function PhotoMenu:new(data)
     self.__index = self
     o.shaders = {}
     o.artStyle = ArtStyle:new(data.artStyle)
+
     --add always on shaders
     for _, shader in ipairs(alwaysOnShaders) do
         table.insert(o.shaders, shader)

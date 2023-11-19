@@ -19,11 +19,11 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 
 ---@class JOP.ArtStyle.data
 ---@field name string The name of the art style
----@field magickCommand function A function that returns a Magick command to execute
+---@field magickCommand fun(image: JOP.Image): function A function that returns a Magick command to execute
 ---@field shaders string[] A list of shaders to apply to the painting
 ---@field controls string[] A list of controls to use for this art style
 ---@field valueModifier number The value modifier for the painting
----@field animAlphaTexture string The texture used to control the alpha during painting animation
+---@field animAlphaTexture string? The texture used to control the alpha during painting animation
 ---@field paintType string The type of palette to use for this art style
 ---@field requiresEasel boolean? Whether the art style requires an easel to be painted on
 

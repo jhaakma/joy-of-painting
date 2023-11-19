@@ -14,12 +14,12 @@ local AnimatedActivator = {
 
 ---
 ---@class JoyOfPainting.AnimatedActivator
----@field id string
+---@field id? string
 ---@field onActivate function
----@field onPickup function
+---@field onPickup? function
 ---@field isActivatorItem function
----@field blockStackActivate boolean
----@field getAnimationGroup fun(reference:tes3reference):number? Returns the current active animation group to play
+---@field blockStackActivate? boolean
+---@field getAnimationGroup? fun(reference:tes3reference):number? Returns the current active animation group to play
 
 
 ---@param activator JoyOfPainting.AnimatedActivator

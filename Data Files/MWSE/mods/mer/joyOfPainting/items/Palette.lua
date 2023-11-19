@@ -2,7 +2,7 @@
 ---@field reference tes3reference?
 ---@field item tes3item|tes3object|tes3misc?
 ---@field itemData tes3itemData?
----@field paletteItem JOP.PaletteItem
+---@field paletteItem JOP.PaletteItem?
 
 ---@class JOP.PaletteItem
 ---@field id string The id of the palette item. Must be a valid tes3item
@@ -157,6 +157,7 @@ function Palette:initRefillMenuActivator()
         showCategoriesButton = false,
         showFilterButton = false,
         showSortButton = false,
+        recipes = {}
     }
 end
 

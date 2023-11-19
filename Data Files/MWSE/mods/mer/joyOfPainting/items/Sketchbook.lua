@@ -6,17 +6,13 @@ local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local CraftingFramework = require("CraftingFramework")
 
 ---@class JOP.Sketchbook
+---@field reference tes3reference
+---@field item JOP.tes3itemChildren
+---@field dataHolder tes3itemData|tes3reference
+---@field data table joyOfPainting data
+---@field currentSketchIndex integer
 local Sketchbook = {
     classname = "Sketchbook",
-    ---@type tes3reference
-    reference = nil,
-	---@type JOP.tes3itemChildren
-    item = nil,
-	---@type tes3itemData|tes3reference|nil
-    dataHolder = nil,
-    data = nil,
-	---@type integer
-    currentSketchIndex = nil,
 }
 Sketchbook.__index = Sketchbook
 
@@ -26,6 +22,7 @@ Sketchbook.__index = Sketchbook
 
 
 ---@class JOP.Sketchbook.data
+---@field id string?
 ---@field reference tes3reference?
 ---@field item JOP.tes3itemChildren
 ---@field itemData tes3itemData?

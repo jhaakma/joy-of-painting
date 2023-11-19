@@ -70,8 +70,8 @@ end
 ---@class JOP.Switch
 ---@field id string The id of the switch
 ---@field switchName string The name of the switch node
----@field additionalReqs function The condition to check if the switch should be active
----@field requirements function The full requirements check including whether the switch node exists
+---@field additionalReqs? function The condition to check if the switch should be active
+---@field requirements? function The full requirements check including whether the switch node exists
 ---@field getActiveNode function The function to determine which node should be active
 
 ---@type table<string, JOP.Switch>

@@ -308,7 +308,7 @@ function Easel:pickUp()
             local isEquipped = tes3.getEquippedItem{
                 actor = tes3.player,
                 objectType = tes3.objectType.clothing,
-                slot = 11
+                slot = 11 ---@diagnostic disable-line
             }
             if not isEquipped then
                 logger:debug("Equipping %s", self.miscItem)
@@ -543,6 +543,7 @@ function Easel.getActivationButtons()
         {
             text = "Position",
             callback = function(e)
+                ---@diagnostic disable-next-line
                 common.positioner{
                     reference = e.reference,
                 }

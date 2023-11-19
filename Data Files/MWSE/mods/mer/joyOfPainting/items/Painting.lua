@@ -476,11 +476,16 @@ function Painting:doPaintingVisuals()
     end
 end
 
----Reset all data and remove painting nodes from the object
-function Painting:resetCanvas()
+function Painting:clearData()
+    logger:debug("Clearing painting data")
     for _, field in ipairs(Painting.canvasFields) do
         self.data[field] = nil
     end
+end
+
+---Reset all data and remove painting nodes from the object
+function Painting:resetCanvas()
+    self:clearData()
     --Remove children from the attach_canvas node
     local attachNode = NodeManager.getCanvasAttachNode(self.reference.sceneNode)
     if attachNode then
