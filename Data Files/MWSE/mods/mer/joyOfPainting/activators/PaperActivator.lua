@@ -32,6 +32,10 @@ local function paperPaint(reference, artStyleName)
                     tes3.messageBox("You scrape the paint from the canvas.")
                     painting:cleanCanvas()
                 end,
+                closeCallback = function()
+                    --clear painting data from paper
+                    painting:clearData()
+                end,
                 finalCallback = function(e)
                     logger:debug("Creating new object for painting %s", e.paintingName)
                     local newPaintingObject = painting:createPaintingObject()
