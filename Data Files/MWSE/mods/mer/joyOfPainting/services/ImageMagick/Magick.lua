@@ -54,13 +54,23 @@ function Magick:composite(gravity, overlay, original)
     return self
 end
 
-function Magick:compositeClone(overlay, width, height)
+---@param baseTexture string The texture to place under the current texture
+---@param width number The width of the final image
+---@param height number The height of the final image
+---@param baseTextureRotation number The rotation of the base texture, in degrees. Defaults to 0.
+function Magick:compositeClone(baseTexture, width, height, baseTextureRotation)
     local resizeText = (width and height) and string.format('-resize "%sx%s!" ', width, height) or ""
+    local rotateText = baseTextureRotation
+        and baseTextureRotation ~= 0
+        and string.format('-rotate "%s" ', baseTextureRotation)
+        or ""
     self.command = string.format(
-        '%s ( "%s" %s) +swap -compose atop -composite ',
+        '%s ( "%s" %s %s) +swap -compose atop -composite',
         self.command,
-        overlay,
-        resizeText)
+        baseTexture,
+        rotateText,
+        resizeText
+    )
     return self
 end
 

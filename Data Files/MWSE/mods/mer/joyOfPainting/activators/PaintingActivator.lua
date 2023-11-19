@@ -105,7 +105,6 @@ Activator.registerActivator{
             itemData = e.itemData,
         }
         return painting:isCanvas()
-            and ( painting:hasPaintingData()
-            or painting:isRotatable())
+            and ( painting:hasPaintingData())
     end
 }

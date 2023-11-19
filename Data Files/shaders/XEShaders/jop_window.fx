@@ -17,7 +17,7 @@ float4 aspect_ratio(float2 tex: TEXCOORD0) : COLOR0
   float new_height;
 
   // Check if the screen has a wider or taller aspect ratio than the given width and height
-  if (aspectRatio * screenRatio> screenRatio  ) {
+  if (aspectRatio < screenRatio ) {
     // If the screen is wider than the given width and height, the rectangle should stretch to the width of the screen
     new_width = 1;
     new_height = 1 / (aspectRatio * screenRatio);
@@ -49,7 +49,7 @@ float4 aspect_ratio(float2 tex: TEXCOORD0) : COLOR0
   }
 }
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "final";  >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 10000; >
 {
 	pass p0 { PixelShader = compile ps_3_0 aspect_ratio(); }
 }

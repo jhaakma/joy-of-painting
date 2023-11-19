@@ -14,18 +14,13 @@ local meshService = require("mer.joyOfPainting.services.MeshService")
 ---@alias JOP.tes3itemChildren tes3alchemy|tes3apparatus|tes3armor|tes3book|tes3clothing|tes3ingredient|tes3light|tes3lockpick|tes3misc|tes3probe|tes3repairTool|tes3weapon
 
 ---@class JOP.Painting
+---@field id string
+---@field reference tes3reference
+---@field data table
+---@field item JOP.tes3itemChildren
+---@field dataHolder tes3itemData?
 local Painting = {
     classname = "Painting",
-    ---@type string
-    id = nil,
-    ---@type tes3reference
-    reference = nil,
-    ---@type table
-    data = nil,
-	---@type JOP.tes3itemChildren
-    item = nil,
-	---@type tes3itemData?
-    dataHolder = nil,
 }
 
 Painting.__index = Painting
@@ -39,9 +34,9 @@ Painting.canvasFields = {
     "artStyle",
 }
 ---@class JOP.Painting.params
----@field reference tes3reference
----@field item JOP.tes3itemChildren
----@field itemData tes3itemData
+---@field reference? tes3reference
+---@field item? JOP.tes3itemChildren
+---@field itemData? tes3itemData
 
 ---@class JOP.Canvas
 ---@field canvasId string The id of the canvas. Must be unique.
@@ -55,7 +50,8 @@ Painting.canvasFields = {
 ---@field requiresEasel boolean? Whether the canvas requires an easel to be painted on
 ---@field animSpeed number The speed of the painting animation
 ---@field animSound string The sound to play while painting
----@field clampOffset number The amount to raise the easel clamp
+---@field clampOffset number? The amount to raise the easel clamp
+---@field baseRotation number? *Default: 0* How much the canvas texture should be rotated when compositing
 
 ---@param e JOP.Canvas
 function Painting.registerCanvas(e)
@@ -136,7 +132,7 @@ function Painting:new(e)
             ) then
                 if not painting.reference then
                     --create itemData
-                    painting.dataholder = tes3.addItemData{
+                    painting.dataHolder = tes3.addItemData{
                         to = tes3.player,
                         item = painting.item,
                     }
@@ -307,7 +303,7 @@ function Painting:rotate()
             scale = self.reference.scale,
         }
         self.reference:delete()
-
+        self.reference = newRef
     else
         --Remove old item from inventory and add rotated version
         tes3.addItem{
@@ -332,14 +328,17 @@ function Painting:rotate()
 end
 
 function Painting:resetPaintTime()
+    logger:debug("Resetting paint anim time")
     local now = tes3.getSimulationTimestamp(false)
     local root = self.reference.sceneNode:getObjectByName("SWITCH_PAINT")
     for node in table.traverse{root} do
         if node.controller then
+            logger:debug("Resetting controller for %s", node.name)
             node.controller.phase = -now + config.ANIM_OFFSET
         end
         for _, prop in pairs{node.materialProperty, node.texturingProperty} do
             if prop.controller then
+                logger:debug("Resetting controller for %s", node.name)
                 prop.controller.phase = -now + config.ANIM_OFFSET
             end
         end
@@ -371,6 +370,7 @@ function Painting:doPaintAnim()
         local switchNode = self.reference.sceneNode:getObjectByName(NodeManager.nodes.PAINT_SWITCH) --[[@as niSwitchNode]]
         local animIndex = NodeManager.getIndex(switchNode, NodeManager.nodes.PAINT_SWITCH_ANIMATING )
         if animIndex then
+            logger:debug("Setting animation switch index")
             switchNode.switchIndex = animIndex
         else
             logger:error("No animating node found")
@@ -413,7 +413,9 @@ function Painting:createPaintingObject()
     logger:debug("artstyle name: ", self.data.artStyle.name)
     local canvasObj = tes3.getObject(self.data.canvasId or self.reference.object.id:lower())
     logger:debug("EnchantCapacity = %s", canvasObj.enchantCapacity)
-    local paintingObject = tes3.createObject{
+
+    ---@type tes3.createObject.params
+    local objParams = {
         id = self.data.paintingTexture,
         name = config.artStyles[self.data.artStyle].name,
         mesh = canvasObj.mesh,
@@ -435,7 +437,10 @@ function Painting:createPaintingObject()
         objectType = tes3.objectType.miscItem,--canvasObj.objectType,
         icon = PaintService.getPaintingIconPath(self.data.paintingTexture),
         value = self:calculateValue(),
-    } --[[@as JOP.tes3itemChildren]]
+    }
+
+    local paintingObject = tes3.createObject(objParams) --[[@as JOP.tes3itemChildren]]
+
     logger:debug("Created painting object %s", paintingObject.id)
     return paintingObject
 end

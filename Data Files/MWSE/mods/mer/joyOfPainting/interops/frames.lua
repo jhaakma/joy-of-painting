@@ -19,9 +19,15 @@ local frameSizes = {
 
     {
         id = "paper_portrait",
+        width = 80,
+        height = 100
+    },
+
+    {
+        id = "paper_landscape",
         width = 100,
-        height = 120
-    }
+        height = 80
+    },
 }
 local frames = {
     {

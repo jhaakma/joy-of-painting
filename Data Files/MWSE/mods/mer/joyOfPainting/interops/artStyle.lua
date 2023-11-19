@@ -136,7 +136,7 @@ local artStyles = {
         magickCommand = function(image)
             local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
 
-            local skill = SkillService.skills.painting.value
+            local skill = SkillService.skills.painting.current
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
                 config.skillPaintEffect.MIN_SKILL, 40,
@@ -144,7 +144,6 @@ local artStyles = {
             ), 10, 1)
             logger:debug("Charcoal Sketch detail level is %d", detailLevel)
             return function(next)
-
                 image.magick:new("createCharoalSketch")
                 :magick()
                 :formatDDS()
@@ -153,12 +152,12 @@ local artStyles = {
                 :blur(detailLevel)
                 :paint(detailLevel)
                 :sketch()
-                :brightnessContrast(-40, 80)
+                :brightnessContrast(-30, 80)
                 :removeWhite(90)
                 :resizeHard(savedWidth, savedHeight)
                 :gravity("center")
                 :compositeClone(common.getCanvasTexture(image.canvasConfig.canvasTexture),
-                    savedWidth, savedHeight)
+                    savedWidth, savedHeight, image.canvasConfig.baseRotation)
                 :repage()
                 :param(image.savedPaintingPath)
                 :execute(next)
@@ -183,7 +182,7 @@ local artStyles = {
         name = "Ink Sketch",
         magickCommand = function(image)
             local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
-            local skill = SkillService.skills.painting.value
+            local skill = SkillService.skills.painting.current
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
                 config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
@@ -203,7 +202,7 @@ local artStyles = {
                 --:blur(detailLevel)
                 :gravity("center")
                 :compositeClone(common.getCanvasTexture(image.canvasConfig.canvasTexture),
-                    savedWidth, savedHeight)
+                    savedWidth, savedHeight, image.canvasConfig.baseRotation)
                 :repage()
                 :param(image.savedPaintingPath)
                 :execute(next)
@@ -226,7 +225,7 @@ local artStyles = {
         name = "Watercolor Painting",
         magickCommand = function(image)
             local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
-            local skill = SkillService.skills.painting.value
+            local skill = SkillService.skills.painting.current
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
                 config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
@@ -244,6 +243,8 @@ local artStyles = {
                 :paint(detailLevel)
                 :resizeHard(savedWidth, savedHeight)
                 --:gravity("center")
+                :compositeClone(common.getCanvasTexture(image.canvasConfig.canvasTexture),
+                    savedWidth, savedHeight, image.canvasConfig.baseRotation)
                 :repage()
                 :param(image.savedPaintingPath)
                 :execute(next)
@@ -264,7 +265,7 @@ local artStyles = {
         valueModifier = 4,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
         paintType = "watercolor",
-        requiresEasel = true,
+        --requiresEasel = true,
     },
 
     {
@@ -272,7 +273,7 @@ local artStyles = {
         ---@param image JOP.Image
         magickCommand = function(image)
             local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
-            local skill = SkillService.skills.painting.value
+            local skill = SkillService.skills.painting.current
             logger:debug("Painting skill is %d", skill)
             local detailLevel = math.clamp(math.remap(skill,
                 config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,

@@ -99,6 +99,15 @@ local function activate(e)
                 end,
             },
             {
+                text = "Rotate",
+                callback = function()
+                    painting:rotate()
+                end,
+                showRequirements = function()
+                    return painting:getRotatedId() ~= nil
+                end
+            },
+            {
                 text = "Pick Up",
                 callback = function()
                     common.pickUp(painting.reference)
