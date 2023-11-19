@@ -63,6 +63,7 @@ local canvases = {
         canvasTexture = "tx_paper_plain_01.dds",
         animSpeed = 2.0,
         animSound = "jop_scribble_01",
+        baseRotation = 90,
     },
 
     {
