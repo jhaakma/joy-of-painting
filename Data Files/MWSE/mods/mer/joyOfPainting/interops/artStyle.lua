@@ -196,7 +196,7 @@ local artStyles = {
                 :param(image.screenshotPath)
                 :trim()
                 :autoGamma()
-                :removeWhite(50)
+                :removeWhite(70)
                 --:paint(detailLevel)
                 :resizeHard(savedWidth, savedHeight)
                 --:blur(detailLevel)
