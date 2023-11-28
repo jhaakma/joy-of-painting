@@ -8,7 +8,7 @@ static const float screen_height = rcpres.y;
 texture lastshader;
 sampler2D s0 = sampler_state { texture = <lastshader>; addressu = clamp; };
 
-float4 aspect_ratio(float2 tex: TEXCOORD0) : COLOR0
+float4 add_window(float2 tex: TEXCOORD0) : COLOR0
 {
   // Calculate the aspect ratio of the screen
   float screenRatio = screen_width / screen_height;
@@ -49,7 +49,8 @@ float4 aspect_ratio(float2 tex: TEXCOORD0) : COLOR0
   }
 }
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 10000; >
+//Priority adjusted to 100,000,000 above final because this REALLY can not be overwritten without breaking the mod
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 100000000; >
 {
-	pass p0 { PixelShader = compile ps_3_0 aspect_ratio(); }
+	pass p0 { PixelShader = compile ps_3_0 add_window(); }
 }
