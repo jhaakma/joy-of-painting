@@ -312,7 +312,6 @@ function Easel:pickUp()
             }
             if not isEquipped then
                 logger:debug("Equipping %s", self.miscItem)
-                ---@diagnostic disable-next-line
                 tes3.player.mobile:equip{
                     item = item
                 }
@@ -543,7 +542,6 @@ function Easel.getActivationButtons()
         {
             text = "Position",
             callback = function(e)
-                ---@diagnostic disable-next-line
                 common.positioner{
                     reference = e.reference,
                 }

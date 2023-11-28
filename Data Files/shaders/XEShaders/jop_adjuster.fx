@@ -12,7 +12,6 @@ texture depthframe;
 
 sampler2D s0 = sampler_state { texture = <lastshader>; addressu = clamp; };
 sampler s1 = sampler_state { texture=<depthframe>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
-sampler s2 = sampler_state { texture=<lastpass>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
 
 float readDepth(float2 tex)
 {

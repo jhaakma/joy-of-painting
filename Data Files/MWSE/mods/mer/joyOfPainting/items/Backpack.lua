@@ -86,7 +86,6 @@ function BackpackService.adjustBodyWeight(ref, node)
 
     local r = node.rotation
     local scale = tes3vector3.new(heightMod, weightMod, weightMod)
-    ---@diagnostic disable-next-line: param-type-mismatch
     node.rotation = tes3matrix33.new(r.x * scale, r.y * scale, r.z * scale)
 end
 
