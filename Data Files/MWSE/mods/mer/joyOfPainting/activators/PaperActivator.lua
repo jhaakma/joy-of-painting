@@ -15,11 +15,15 @@ local function paperPaint(reference, artStyleName)
     }
     painting.data.artStyle = artStyleName
 
-    local canvasConfig = painting:getCanvasConfig()
-    if canvasConfig then
+    if painting:getCanvasConfig() then
         timer.delayOneFrame(function()
             PhotoMenu:new{
-                canvasConfig = canvasConfig,
+                getCanvasConfig = function()
+                    return painting:getCanvasConfig()
+                end,
+                doRotate = function(photoMenu)
+                    painting:rotate()
+                end,
                 artStyle = config.artStyles[artStyleName],
                 captureCallback = function(e)
                     --set paintingTexture before creating object

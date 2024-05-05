@@ -24,8 +24,9 @@ local alwaysOnShaders
 
 ---@class JOP.PhotoMenu
 ---@field artStyle JOP.ArtStyle
----@field canvasConfig table
----@field paintingName string
+---@field getCanvasConfig function
+---@field doRotate function
+---@field painting JOP.Painting
 ---@field captureCallback function
 ---@field closeCallback function
 ---@field cancelCallback function
@@ -71,7 +72,7 @@ function PhotoMenu:getImageBuilder()
     local imageData = {
         savedPaintingPath = "Data Files\\" .. PaintService.getSavedPaintingPath(self.artStyle),
         paintingPath = "Data Files\\" .. PaintService.getPaintingTexturePath(paintingTexture),
-        canvasConfig = self.canvasConfig,
+        canvasConfig = self.getCanvasConfig(),
         iconSize = 32,
         iconBorder = 3,
         iconPath = config.locations.paintingIconsDir .. paintingTexture,
@@ -84,7 +85,7 @@ function PhotoMenu:getImageBuilder()
             if config.mcm.enableSubjectCapture then
                 local occlusionTester = OcclusionTester.new{
                     logger = occlusionTesterLogger,
-                    viewportAspectResolution = config.frameSizes[self.canvasConfig.frameSize].aspectRatio,
+                    viewportAspectResolution = config.frameSizes[self.getCanvasConfig().frameSize].aspectRatio,
                     viewportScale = 0.8
                 }
                 local subjectService = SubjectService.new{
@@ -117,13 +118,13 @@ function PhotoMenu:getImageBuilder()
             logger:debug("Starting painting")
             self:hideMenu()
             self:finishMenu()
-            tes3.playSound{sound = self.canvasConfig.animSound}
+            tes3.playSound{sound = self.getCanvasConfig().animSound}
         end)
         :registerStep("waitForPaintingAnim", function(next)
             logger:debug("Waiting %G seconds for painting animation to finish",
-                self.canvasConfig.animSpeed)
+                self.getCanvasConfig().animSpeed)
             timer.start{
-                duration = self.canvasConfig.animSpeed,
+                duration = self.getCanvasConfig().animSpeed,
                 type = timer.simulate,
                 callback = next
             }
@@ -141,7 +142,7 @@ function PhotoMenu:getImageBuilder()
             UIHelper.openPaintingMenu{
                 dataHolder = self,
                 paintingTexture = paintingTexture,
-                canvasId = self.canvasConfig.canvasId,
+                canvasId = self.getCanvasConfig().canvasId,
                 callback = next,
                 cancelCallback = self.cancelCallback,
                 setNameText = "Name " .. self.artStyle.name,
@@ -286,6 +287,25 @@ function PhotoMenu:createShaderControls(parent)
     end
 end
 
+-- Rotate the painting
+function PhotoMenu:createRotateButton(parent)
+    if not self.doRotate then
+        return
+    end
+    logger:debug("Creating rotate button")
+    local button = parent:createButton {
+        id = "JOP.RotateButton",
+        text = "Rotate " .. tes3.getObject(self.getCanvasConfig().canvasId).name
+    }
+    button:register("mouseClick", function(e)
+        self:close()
+        timer.delayOneFrame(function()timer.delayOneFrame(function()
+            self:doRotate()
+            self:open()
+        end)end)
+    end)
+end
+
 function PhotoMenu:resetControls()
     logger:debug("Resetting controls")
     for _, shader in ipairs(self.shaders) do
@@ -335,9 +355,9 @@ function PhotoMenu:createCloseButton(parent)
 end
 
 function PhotoMenu:setAspectRatio()
-    local frameSize = config.frameSizes[self.canvasConfig.frameSize]
+    local frameSize = config.frameSizes[self.getCanvasConfig().frameSize]
     if not frameSize then
-        logger:error("Frame Size '%s' is not registered.", self.canvasConfig.frameSize)
+        logger:error("Frame Size '%s' is not registered.", self.getCanvasConfig().frameSize)
         return
     end
     ShaderService.setUniform(
@@ -401,7 +421,6 @@ function PhotoMenu:registerIOEvents()
             end
         end
     end
-
     self.zoomSlider:registerEvents()
 
     timer.frame.delayOneFrame(function()
@@ -431,6 +450,7 @@ function PhotoMenu:createMenu()
     self.zoomSlider:create(menu)
     self:createShaderControls(menu)
     self:createResetButton(menu)
+    self:createRotateButton(menu)
     self:createCaptureButtons(menu)
     self:createCloseButton(menu)
     self.active = true

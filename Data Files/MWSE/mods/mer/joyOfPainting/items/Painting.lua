@@ -1,7 +1,6 @@
 local NodeManager = require("mer.joyOfPainting.services.NodeManager")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
 local SkillService = require("mer.joyOfPainting.services.SkillService")
-local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
 local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
@@ -304,6 +303,7 @@ function Painting:rotate()
         }
         self.reference:delete()
         self.reference = newRef
+        self.item = newRef.object
     else
         --Remove old item from inventory and add rotated version
         tes3.addItem{

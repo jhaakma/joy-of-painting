@@ -22,7 +22,7 @@ end
 ---Returns the path of the given texture file, relative to the Data Files directory
 function PaintService.getPaintingTexturePath(texture)
     --Check the file exists
-    local path = "textures\\jop\\p\\" .. texture
+    local path = "Textures\\jop\\p\\" .. texture
     return path
 end
 
@@ -71,7 +71,7 @@ function PaintService.getSavedPaintingPath(artStyle)
         index = 1
         config.mcm.savedPaintingIndexes[artStyle.name] = index
     end
-    return string.format("textures\\jop\\saved\\%s\\%s.png",
+    return string.format("Textures\\jop\\saved\\%s\\%s.png",
         artStyle.name, index)
 end
 

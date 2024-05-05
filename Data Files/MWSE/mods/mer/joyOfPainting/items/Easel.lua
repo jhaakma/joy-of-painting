@@ -159,17 +159,25 @@ function Easel:openAttachCanvasMenu()
     end)
 end
 
+function Easel:getCanvasConfig()
+    return config.canvases[self.data.canvasId]
+end
+
 ---Start painting
 function Easel:paint(artStyle)
     self.data.artStyle = artStyle
     self.reference.sceneNode.appCulled = true
-    local canvasConfig = config.canvases[self.data.canvasId]
-    assert(canvasConfig, "No canvas config found for canvas " .. self.data.canvasId)
-    if canvasConfig then
+    assert(self:getCanvasConfig(), "No canvas config found for canvas " .. self.data.canvasId)
+    if self:getCanvasConfig() then
         timer.delayOneFrame(function()
             PhotoMenu:new{
-                canvasConfig = canvasConfig,
+                getCanvasConfig = function()
+                    return self:getCanvasConfig()
+                end,
                 artStyle = config.artStyles[artStyle],
+                doRotate = function(photoMenu)
+                    self:rotateCanvas()
+                end,
                 captureCallback = function(e)
                     --set paintingTexture before creating object
                     self.data.subjects = e.subjects

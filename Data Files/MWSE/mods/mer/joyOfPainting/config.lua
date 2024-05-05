@@ -102,7 +102,7 @@ local root = io.popen("cd"):read()
 --File locations
 config.locations = {}
 do
-    config.locations.dataFiles = root .. "\\Data Files\\"
+    config.locations.dataFiles = "Data Files\\"
     config.locations.screenshot = config.locations.dataFiles .. "Textures\\jop\\sreenshot.png"
     config.locations.paintingsDir = config.locations.dataFiles .. "Textures\\jop\\p\\"
     config.locations.iconsDir = config.locations.dataFiles .. "Icons\\jop\\"

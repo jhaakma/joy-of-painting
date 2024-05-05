@@ -85,21 +85,17 @@ end
 Activator.registerActivator{
     onActivate = activateMiscEasel,
     isActivatorItem = function(e)
-        if e.target and tes3ui.menuMode() then
-            logger:debug("Menu mode, skip")
-            return false
-        end
         if not e.target then
             return false
         end
-
+        if e.target and tes3ui.menuMode() then
+            return false
+        end
         ---@type JOP.Easel
         local easel = Easel.getEaselFromMiscId(e.target.object.id:lower())
         if easel and easel.doesPack then
-            logger:debug("is Misc Field Easel: true")
             return true
         end
-        logger:debug("is Misc Field Easel: false")
         return false
     end,
     blockStackActivate = true

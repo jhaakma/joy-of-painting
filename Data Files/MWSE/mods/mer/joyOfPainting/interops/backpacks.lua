@@ -16,3 +16,4 @@ event.register(tes3.event.initialized, function()
         BackpackService.registerBackpack(backpack)
     end
 end)
+
