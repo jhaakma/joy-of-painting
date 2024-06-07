@@ -147,12 +147,6 @@ function Magick:greyscale()
     return self
 end
 
-function Magick:sketch()
-    self.command = string.format('%s ( +clone -tile "%s" -draw "color 0,0 reset" +clone +swap -compose color_dodge -composite ) -fx "u*.2+v*.8" ',
-        self.command, PaintService.getSketchTexture())
-    return self
-end
-
 function Magick:charcoal(thickness)
     thickness = thickness or 1
     self.command = string.format('%s -charcoal %s ', self.command, thickness)

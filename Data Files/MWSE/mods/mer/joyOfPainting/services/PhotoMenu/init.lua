@@ -42,23 +42,24 @@ local function getpaintingTexture()
     return GUID.generate() .. ".dds"
 end
 
-function PhotoMenu:new(data)
+
+function PhotoMenu:new(photoMenuParams)
     alwaysOnShaders = {
         config.shaders.window,
     }
     logger:debug("Creating new PhotoMenu")
-    local o = setmetatable(data, self)
+    local o = setmetatable(photoMenuParams, self)
     self.__index = self
     o.shaders = {}
-    o.artStyle = ArtStyle:new(data.artStyle)
+    o.artStyle = ArtStyle:new(photoMenuParams.artStyle)
 
     --add always on shaders
     for _, shader in ipairs(alwaysOnShaders) do
         table.insert(o.shaders, shader)
     end
-    if data.artStyle and data.artStyle.shaders then
+    if photoMenuParams.artStyle and photoMenuParams.artStyle.shaders then
         logger:debug("artstyle has shaders")
-        for _, shader in ipairs(data.artStyle.shaders) do
+        for _, shader in ipairs(photoMenuParams.artStyle.shaders) do
             table.insert(o.shaders, shader)
         end
     end
@@ -215,12 +216,12 @@ function PhotoMenu:createHeader(parent)
 end
 
 
-
+---@param control JOP.ArtStyle.control
 function PhotoMenu:setShaderValue(control)
     local shaderValue
     if control.calculate then
         local paintingSkill = SkillService.getPaintingSkillLevel()
-        shaderValue = control.calculate(paintingSkill)
+        shaderValue = control.calculate(paintingSkill, self.artStyle)
     else
         shaderValue = math.remap(config.persistent[control.id], 0, 100, control.shaderMin, control.shaderMax)
     end
@@ -300,7 +301,7 @@ function PhotoMenu:createRotateButton(parent)
     button:register("mouseClick", function(e)
         self:close()
         timer.delayOneFrame(function()timer.delayOneFrame(function()
-            self:doRotate()
+            self:doRotate(self)
             self:open()
         end)end)
     end)
@@ -476,6 +477,16 @@ function PhotoMenu:hideMenu()
     self.active = false
 end
 
+function PhotoMenu:resetControlDefaults()
+    for _, controlId in pairs(self.artStyle.controls) do
+        local control = config.controls[controlId]
+        if control.defaultValue then
+            logger:debug("Resetting %s to %s", control.id, control.defaultValue)
+            ShaderService.setUniform(control.shader, control.uniform, control.defaultValue)
+        end
+    end
+end
+
 --Destroy menu and restore all settings (shaders, controls etc)
 function PhotoMenu:close()
     logger:debug("Closing Photo Menu")
@@ -491,6 +502,7 @@ function PhotoMenu:finishMenu()
     self:unregisterIOEvents()
     self:restoreMGESettings()
     self:disableShaders()
+    self:resetControlDefaults()
 end
 
 

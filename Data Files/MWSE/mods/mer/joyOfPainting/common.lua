@@ -59,12 +59,22 @@ function common.disablePlayerControls()
     logger:debug("Disabling player controls")
     --disable everything except vanity
     tes3.setPlayerControlState{ enabled = false}
+    tes3.player.data.jopDisablePlayerControls = true
 end
 
 function common.enablePlayerControls()
     logger:debug("Enabling player controls")
     tes3.setPlayerControlState{ enabled = true}
+    tes3.player.data.jopDisablePlayerControls = true
 end
+
+--On load, enable controls if they are disabled
+--This covers case where you auto-saved while painting
+event.register("loaded", function()
+    if tes3.player.data.jopDisablePlayerControls then
+        common.enablePlayerControls()
+    end
+end)
 
 function common.isLuaFile(file) return file:sub(-4, -1) == ".lua" end
 function common.isInitFile(file) return file == "init.lua" end

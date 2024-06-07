@@ -6,6 +6,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@class JOP.ArtStyle.shader
 ---@field id string The id of the shader
 ---@field shaderId string The id of the shader file
+---@field pausedOnly boolean Whether the shader should only be applied when painting is paused. For high performance shaders that don't need to be applied every frame
 
 ---@class JOP.ArtStyle.control
 ---@field id string The id of the control
@@ -15,7 +16,8 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field sliderDefault number The default value for the slider
 ---@field shaderMin number The minimum value for the shader variable
 ---@field shaderMax number The maximum value for the shader variable
----@field calculate? fun(skillLevel: number): number A function that returns the value to be used for the shader variable
+---@field defaultValue? number If set, this value will be reset when the photomenu is closed
+---@field calculate? fun(skillLevel: number, artStyle: JOP.ArtStyle): number A function that returns the value to be used for the shader variable
 
 ---@class JOP.ArtStyle.data
 ---@field name string The name of the art style
@@ -26,6 +28,9 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field animAlphaTexture string? The texture used to control the alpha during painting animation
 ---@field paintType string The type of palette to use for this art style
 ---@field requiresEasel boolean? Whether the art style requires an easel to be painted on
+---@field maxDetailSkill number The skill level required to paint with maximum detail
+---@field minBrushSize? number The minimum detail level for this art style
+---@field maxBrushSize? number The maximum detail level for this art style
 
 ---@class JOP.ArtStyle
 ---@field name string The name of the art style
@@ -35,6 +40,9 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field valueModifier number The value modifier for the painting
 ---@field animAlphaTexture string The texture used to control the alpha during painting animation
 ---@field requiresEasel boolean? Whether the art style requires an easel to be painted on
+---@field maxDetailSkill number The skill level required to paint with maximum detail
+---@field minBrushSize? number The minimum detail level for this art style
+---@field maxBrushSize? number The maximum detail level for this art style
 ---@field paintType JOP.PaintType? The brush type to use for this art style
 ---@field brushType JOP.BrushType? The brush type to use for this art style
 local ArtStyle = {

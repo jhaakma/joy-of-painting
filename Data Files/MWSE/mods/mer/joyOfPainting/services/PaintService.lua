@@ -80,10 +80,6 @@ function PaintService.getPaintingIconPath(texture)
     return "jop\\p\\" .. texture
 end
 
-function PaintService.getSketchTexture()
-    return config.locations.sketchTexture
-end
-
 function PaintService.getPaintingDimensions(canvasId, maxHeight)
     logger:debug("Getting painting dimensions for %s. Max height: %s",
         canvasId, maxHeight)

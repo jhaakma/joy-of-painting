@@ -205,7 +205,6 @@ float4 BlurNormals(float2 UVCoord : TEXCOORD0, uniform float2 OffsetMask) : COLO
 float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 {
 	// depth blend masks
-	float immask = tex2D(sDepthFrame, Tex).r;
 	float4 ce = smoothstep(forge, backgro, tex2D(sDepthFrame, Tex).r);
 
 	ce.a = 0.0f;
@@ -250,15 +249,10 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 
 
 	edges = saturate(edges + distmask);
-	//edges = saturate(edges + (1-ce.r));
-	//return hatch.rrrr;
 
 
-	float4 canvas = dot(image.rrrr, float3(0.5,0.3,0.1));
-	//return canvas;
-
-	float3 final = lerp(sky.rgb , image.rgb * empty.rgb, ce.r) * edges.rgb * edges.rgb;
-	final = lerp(image.rgb, empty.rgb, pow(lum, 1./2.2)) * pow(edges,2.2);
+	float3 final = lerp(sky.rgb , image.rgb, ce.r) * edges.rgb * edges.rgb;
+	//final = lerp(image.rgb, empty.rgb, pow(lum, 1./2.2)) * pow(edges,2.2);
 
 	final = 1.0 - (1.0 - final) * (1.0 - image);
 	return float4(final.rgb,1);
@@ -269,7 +263,7 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 }
 
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "final";  >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "scene"; int priorityAdjust = 1000;  >
 {
 	pass p0 { PixelShader = compile ps_3_0 edgedetecting(); }
 	//pass p1 { PixelShader = compile ps_3_0 BlurNormals( OffsetMaskH ); }

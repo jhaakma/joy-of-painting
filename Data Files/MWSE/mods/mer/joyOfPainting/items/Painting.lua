@@ -17,7 +17,7 @@ local meshService = require("mer.joyOfPainting.services.MeshService")
 ---@field reference tes3reference
 ---@field data table
 ---@field item JOP.tes3itemChildren
----@field dataHolder tes3itemData?
+---@field dataHolder tes3itemData|tes3reference
 local Painting = {
     classname = "Painting",
 }
@@ -105,7 +105,6 @@ function Painting:new(e)
     painting.data = setmetatable({}, {
         __index = function(_, k)
             if painting.reference then
-                logger:trace("Getting data field %s from reference %s", k, painting.reference.id)
                 if not painting.reference.supportsLuaData then
                     return nil
                 end
@@ -120,8 +119,14 @@ function Painting:new(e)
             return painting.dataHolder.data.joyOfPainting[k]
         end,
         __newindex = function(_, k, v)
-            if e.reference and not e.reference.supportsLuaData then
-                return
+            if painting.reference then
+                logger:debug("Setting data field %s from reference %s", k, painting.reference.id)
+                if not painting.reference.supportsLuaData then
+                    logger:warn("Reference %s does not support lua data", painting.reference.id)
+                    return
+                end
+            else
+                logger:debug("Setting data field %s from item %s", k, painting.item.id)
             end
 
             if not (
@@ -241,7 +246,9 @@ function Painting:getCanvasConfig()
     ---@type JOP.Canvas
     local canvasConfig = config.canvases[self.data.canvasId]
     if not canvasConfig then
-        return config.canvases[self.item.id:lower()]
+        local id = self.item.id:lower()
+        logger:debug("No canvas config found for %s, checking item id", id)
+        return config.canvases[id]
     end
     return canvasConfig
 end
@@ -292,6 +299,12 @@ function Painting:rotate()
         logger:error("Tried to rotate a canvas that has no rotated Id")
     end
     logger:debug("Rotating canvas from %s to %s", self.item.id, rotatedId)
+
+    tes3.playSound{
+        reference = self.reference or tes3.player,
+        sound = "Item Misc Up",
+    }
+
     if self.reference then
         --delete current reference and replace with rotated version
         local newRef = tes3.createReference{
@@ -304,6 +317,8 @@ function Painting:rotate()
         self.reference:delete()
         self.reference = newRef
         self.item = newRef.object
+        self.dataHolder = newRef
+        return newRef
     else
         --Remove old item from inventory and add rotated version
         tes3.addItem{
@@ -320,11 +335,8 @@ function Painting:rotate()
             reference = tes3.player,
             playSound = false,
         }
+        self.item = tes3.getObject(rotatedId)
     end
-    tes3.playSound{
-        reference = self.reference,
-        sound = "Item Misc Up",
-    }
 end
 
 function Painting:resetPaintTime()
@@ -407,12 +419,22 @@ function Painting:calculateValue()
     return value
 end
 
+---@return tes3item|tes3weapon
+function Painting:getPaintingObject()
+    if self.data.canvasId then
+        return tes3.getObject(self.data.canvasId)
+    end
+    if self.reference then
+        return self.reference.object
+    end
+    return self.item
+end
+
 --Creates a new misc item with the paintingTexture as the ID and the path to the icon
 function Painting:createPaintingObject()
     assert(self.data.paintingTexture ~= nil, "No painting texture set")
     logger:debug("artstyle name: ", self.data.artStyle.name)
-    local canvasObj = tes3.getObject(self.data.canvasId or self.reference.object.id:lower())
-    logger:debug("EnchantCapacity = %s", canvasObj.enchantCapacity)
+    local canvasObj = self:getPaintingObject()
 
     ---@type tes3.createObject.params
     local objParams = {

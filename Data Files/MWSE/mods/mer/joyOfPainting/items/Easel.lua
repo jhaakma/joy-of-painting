@@ -165,7 +165,6 @@ end
 
 ---Start painting
 function Easel:paint(artStyle)
-    self.data.artStyle = artStyle
     self.reference.sceneNode.appCulled = true
     assert(self:getCanvasConfig(), "No canvas config found for canvas " .. self.data.canvasId)
     if self:getCanvasConfig() then
@@ -196,6 +195,7 @@ function Easel:paint(artStyle)
                 end,
                 finalCallback = function(e)
                     logger:debug("Creating new object for painting %s", e.paintingName)
+                    self.data.artStyle = artStyle
                     local newPaintingObject = self.painting:createPaintingObject()
                     self.data.paintingId = newPaintingObject.id
                     self.data.canvasId = self.data.canvasId

@@ -90,13 +90,14 @@ config.subject = {
     MINIMUM_VISIBILITY = 0.1,
 }
 
+
 --Configs for how thick ink is based on skill
 config.ink = {
     THICKNESS_MIN = 0.0005,
-    THICKNESS_MAX = 0.0045,
-    SKILL_MIN = 10,
-    SKILL_MAX = 60,
+    THICKNESS_MAX = 0.0035,
 }
+
+
 
 local root = io.popen("cd"):read()
 --File locations
@@ -108,7 +109,6 @@ do
     config.locations.iconsDir = config.locations.dataFiles .. "Icons\\jop\\"
     config.locations.paintingIconsDir = config.locations.iconsDir .. "p\\"
     config.locations.frameIconsDir = config.locations.iconsDir .. "f\\"
-    config.locations.sketchTexture = config.locations.dataFiles .. "Textures\\jop\\pencil_tile.png"
 end
 
 --Registered objects
@@ -123,6 +123,7 @@ config.easels = {}
 config.miscEasels = {}
 ---@type table<string, JOP.ArtStyle.data>
 config.artStyles = {}
+---@type table<string, JOP.ArtStyle.control>
 config.controls = {}
 ---@type table<string, JOP.PaintType>
 config.paintTypes = {}

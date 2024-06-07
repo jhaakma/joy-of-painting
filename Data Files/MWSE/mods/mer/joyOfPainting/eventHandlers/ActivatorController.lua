@@ -41,7 +41,7 @@ local function onEquip(e)
     for _, activator in pairs(Activator.activators) do
         if activator.isActivatorItem(onActivateParams) then
             activator.onActivate(onActivateParams)
-            return
+            return true
         end
     end
 end

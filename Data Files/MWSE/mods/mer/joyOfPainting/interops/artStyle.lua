@@ -16,8 +16,14 @@ local shaders = {
     { id = "vignette", shaderId = "jop_vignette" },
     { id = "watercolor", shaderId = "jop_watercolor" },
     { id = "window", shaderId = "jop_window" },
+    { id = "detail", shaderId = "jop_kuwahara" },
+    { id = "splash", shaderId = "jop_splash" },
+    { id = "distort", shaderId = "jop_distort" },
+    { id = "fogColor", shaderId = "jop_fog_color" },
+    { id = "fogBW", shaderId = "jop_fog_bw" },
 }
 
+---@type JOP.ArtStyle.control[]
 local controls = {
     {
         id = "brightness",
@@ -36,6 +42,55 @@ local controls = {
         sliderDefault = 50,
         shaderMin = 0.1,
         shaderMax = 1.9,
+    },
+    {
+        id = "canvasStrength",
+        uniform = "canvas_strength",
+        shader = "jop_splash",
+        name = "Canvas Strength",
+        sliderDefault = 50,
+        shaderMin = 0.0,
+        shaderMax = 1.0,
+        ---@param artStyle JOP.ArtStyle
+        calculate = function(_, artStyle)
+            if artStyle.paintType.id == "watercolor" then
+                return 0.6
+            else
+                return 0.7
+            end
+        end
+    },
+    {
+        id = "distortionStrength",
+        uniform = "distortion_strength",
+        shader = "jop_distort",
+        name = "Distortion Strength",
+        sliderDefault = 50,
+        shaderMin = 0.0,
+        shaderMax = 1.0,
+        calculate = function(paintingSkill, artStyle)
+            paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
+            return math.remap(paintingSkill,
+                config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
+                0.010, 0.0
+            )
+        end
+    },
+    {
+        id = "brushSize",
+        uniform = "KernelSize",
+        shader = "jop_kuwahara",
+        name = "Detail",
+        sliderDefault = 50,
+        shaderMin = 1,
+        shaderMax = 15,
+        calculate = function(paintingSkill, artStyle)
+            paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
+            return math.remap(paintingSkill,
+                config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
+                (artStyle.maxBrushSize or 1), (artStyle.minBrushSize or 1)
+            )
+        end
     },
     {
         id = "contrast",
@@ -64,18 +119,28 @@ local controls = {
         sliderDefault = 50,
         shaderMin = config.ink.THICKNESS_MIN,
         shaderMax = config.ink.THICKNESS_MAX,
-        calculate = function(paintingSkill)
-            paintingSkill = math.clamp(paintingSkill, config.ink.SKILL_MIN, config.ink.SKILL_MAX)
+        calculate = function(paintingSkill, artStyle)
+            paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
             return math.remap(paintingSkill,
-                config.ink.SKILL_MIN, config.ink.SKILL_MAX,
-                config.ink.THICKNESS_MAX, config.ink.THICKNESS_MIN
+                config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
+                artStyle.maxBrushSize, artStyle.minBrushSize
             )
         end
     },
     {
-        id = "distance",
+        id = "distanceBW",
         uniform = "distance",
-        shader = "jop_adjuster",
+        shader = "jop_fog_bw",
+        name = "Fog",
+        sliderDefault = 100,
+        shaderMin = 8,
+        shaderMax = 250,
+    },
+
+    {
+        id = "distanceColor",
+        uniform = "distance",
+        shader = "jop_fog_color",
         name = "Fog",
         sliderDefault = 100,
         shaderMin = 8,
@@ -93,29 +158,39 @@ local controls = {
     {
         id = "bgColor",
         uniform = "bgColor",
-        shader = "jop_adjuster",
+        shader = "jop_fog_bw",
         name = "Fog Color",
+        sliderDefault = 50,
+        shaderMin = 0.05,
+        shaderMax = 1,
+        defaultValue = -1.0,
+    },
+    {
+        id = "bgRed",
+        uniform = "bgRed",
+        shader = "jop_fog_color",
+        name = "Fog Color: Red",
         sliderDefault = 50,
         shaderMin = 0.05,
         shaderMax = 1,
     },
     {
-        id = "blackWhiteContrast",
-        uniform = "contrast",
-        shader = "jop_blackwhite",
-        name = "Contrast",
+        id = "bgGreen",
+        uniform = "bgGreen",
+        shader = "jop_fog_color",
+        name = "Fog Color: Green",
         sliderDefault = 50,
-        shaderMin = -1.1,
-        shaderMax = 1.5,
+        shaderMin = 0.05,
+        shaderMax = 1,
     },
     {
-        id = "blackWhiteBrightness",
-        uniform = "brightness",
-        shader = "jop_blackwhite",
-        name = "Brightness",
+        id = "bgBlue",
+        uniform = "bgBlue",
+        shader = "jop_fog_color",
+        name = "Fog Color: Blue",
         sliderDefault = 50,
-        shaderMin = -0.5,
-        shaderMax = 0.5,
+        shaderMin = 0.05,
+        shaderMax = 1,
     },
     {
         id = "threshold",
@@ -124,7 +199,7 @@ local controls = {
         name = "Threshold",
         sliderDefault = 50,
         shaderMin = 0.01,
-        shaderMax = 1,
+        shaderMax = 1.9,
     }
 }
 
@@ -138,22 +213,13 @@ local artStyles = {
 
             local skill = SkillService.skills.painting.current
             logger:debug("Painting skill is %d", skill)
-            local detailLevel = math.clamp(math.remap(skill,
-                config.skillPaintEffect.MIN_SKILL, 40,
-                10, 1
-            ), 10, 1)
-            logger:debug("Charcoal Sketch detail level is %d", detailLevel)
             return function(next)
                 image.magick:new("createCharoalSketch")
                 :magick()
                 :formatDDS()
                 :param(image.screenshotPath)
                 :trim()
-                :blur(detailLevel)
-                :paint(detailLevel)
-                :sketch()
-                :brightnessContrast(-30, 80)
-                :removeWhite(90)
+                :removeWhite(50)
                 :resizeHard(savedWidth, savedHeight)
                 :gravity("center")
                 :compositeClone(common.getCanvasTexture(image.canvasConfig.canvasTexture),
@@ -166,17 +232,22 @@ local artStyles = {
         end,
         shaders = {
             "blackAndWhite",
+            "detail",
             "adjuster",
+            "fogBW",
+            "charcoal",
         },
         controls = {
-            "blackWhiteBrightness",
-            "blackWhiteContrast",
             "threshold",
-            "distance",
+            "distanceBW",
+            "brushSize",
             "bgColor",
         },
         valueModifier = 1,
         paintType = "charcoal",
+        maxDetailSkill = 30,
+        minBrushSize = 1,
+        maxBrushSize = 10,
     },
     {
         name = "Ink Sketch",
@@ -184,11 +255,6 @@ local artStyles = {
             local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
             local skill = SkillService.skills.painting.current
             logger:debug("Painting skill is %d", skill)
-            local detailLevel = math.clamp(math.remap(skill,
-                config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
-                8, 1
-            ), 8, 1)
-            logger:debug("Ink Sketch detail level is %d", detailLevel)
             return function(next)
                 image.magick:new("createInkSketch")
                 :magick()
@@ -197,9 +263,7 @@ local artStyles = {
                 :trim()
                 :autoGamma()
                 :removeWhite(70)
-                --:paint(detailLevel)
                 :resizeHard(savedWidth, savedHeight)
-                --:blur(detailLevel)
                 :gravity("center")
                 :compositeClone(common.getCanvasTexture(image.canvasConfig.canvasTexture),
                     savedWidth, savedHeight, image.canvasConfig.baseRotation)
@@ -220,6 +284,9 @@ local artStyles = {
         },
         valueModifier = 1.5,
         paintType = "ink",
+        maxDetailSkill = 40,
+        minBrushSize = config.ink.THICKNESS_MIN,
+        maxBrushSize = config.ink.THICKNESS_MAX,
     },
     {
         name = "Watercolor Painting",
@@ -227,22 +294,13 @@ local artStyles = {
             local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
             local skill = SkillService.skills.painting.current
             logger:debug("Painting skill is %d", skill)
-            local detailLevel = math.clamp(math.remap(skill,
-                config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
-                10, 3
-            ), 10, 3)
-            logger:debug("Watercolor Painting detail level is %d", detailLevel)
             return function(next)
                 image.magick:new("Watercolor Painting")
                 :magick()
                 :formatDDS()
                 :param(image.screenshotPath)
                 :trim()
-                --:autoGamma()
-                :blur(detailLevel)
-                :paint(detailLevel)
                 :resizeHard(savedWidth, savedHeight)
-                --:gravity("center")
                 :compositeClone(common.getCanvasTexture(image.canvasConfig.canvasTexture),
                     savedWidth, savedHeight, image.canvasConfig.baseRotation)
                 :repage()
@@ -252,22 +310,32 @@ local artStyles = {
             end
         end,
         shaders = {
+            "detail",
             "watercolor",
+            "splash",
+            "distort",
             "adjuster",
+            "fogColor",
         },
         controls = {
             "brightness",
             "contrast",
-            "saturation",
-            "distance",
-            "bgColor",
+            "distanceColor",
+            "bgRed",
+            "bgGreen",
+            "bgBlue",
+            "canvasStrength",
+            "brushSize",
+            "distortionStrength",
         },
         valueModifier = 4,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
         paintType = "watercolor",
         --requiresEasel = true,
+        maxDetailSkill = 50,
+        minBrushSize = 8,
+        maxBrushSize = 15,
     },
-
     {
         name = "Oil Painting",
         ---@param image JOP.Image
@@ -275,20 +343,12 @@ local artStyles = {
             local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
             local skill = SkillService.skills.painting.current
             logger:debug("Painting skill is %d", skill)
-            local detailLevel = math.clamp(math.remap(skill,
-                config.skillPaintEffect.MIN_SKILL, config.skillPaintEffect.MAX_SKILL,
-                10, 0
-            ), 10,0)
-            logger:debug("Oil Painting detail level is %d", detailLevel)
             return function(next)
                 image.magick:new("Oil Painting")
                 :magick()
                 :formatDDS()
                 :param(image.screenshotPath)
                 :trim()
-                --:autoGamma()
-                :blur(detailLevel)
-                :paint(detailLevel)
                 :resizeHard(savedWidth, savedHeight)
                 :repage()
                 :param(image.savedPaintingPath)
@@ -297,19 +357,31 @@ local artStyles = {
             end
         end,
         shaders = {
+            "detail",
             "oil",
+            "splash",
+            "distort",
             "adjuster",
+            "fogColor",
         },
         controls = {
             "brightness",
             "contrast",
-            "distance",
-            "bgColor",
+            "distanceColor",
+            "bgRed",
+            "bgGreen",
+            "bgBlue",
+            "brushSize",
+            "canvasStrength",
+            "distortionStrength",
         },
         valueModifier = 9,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
         paintType = "oil",
         requiresEasel = true,
+        maxDetailSkill = 60,
+        minBrushSize = 3,
+        maxBrushSize = 10,
     },
 }
 event.register(tes3.event.initialized, function()
