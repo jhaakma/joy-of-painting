@@ -355,6 +355,35 @@ function PhotoMenu:createCloseButton(parent)
     end)
 end
 
+---@param parent tes3uiElement
+function PhotoMenu:createHelpText(parent)
+    logger:debug("Creating help text button")
+    local border = parent:createThinBorder {
+        id = "JOP.HelpTextButton",
+    }
+    border.autoHeight = true
+    border.autoWidth = true
+    border.absolutePosAlignX = 1.0
+    border.absolutePosAlignY = 0.0
+    border.borderAllSides = 10
+    border.paddingAllSides = 5
+    border.paddingLeft = 10
+    border.paddingRight = 10
+    local text = border:createLabel {
+        text = "?",
+        color = tes3ui.getPalette("header_color"),
+        font = 2
+    }
+    if self.artStyle.helpText then
+        local function onHelp()
+            local tooltip = tes3ui.createTooltipMenu()
+            tooltip:createLabel{ text = self.artStyle.helpText }
+        end
+        border:register("help", onHelp)
+        text:register("help", onHelp)
+    end
+end
+
 function PhotoMenu:setAspectRatio()
     local frameSize = config.frameSizes[self.getCanvasConfig().frameSize]
     if not frameSize then
@@ -442,12 +471,13 @@ function PhotoMenu:createMenu()
         id = self.menuID,
         fixedFrame = true
     }
-    menu.minWidth = 400
+    menu.minWidth = 410
     menu.absolutePosAlignX = 0.02
     menu.absolutePosAlignY = 0.5
     self.menu = menu
 
     self:createHeader(menu)
+    self:createHelpText(menu)
     self.zoomSlider:create(menu)
     self:createShaderControls(menu)
     self:createResetButton(menu)

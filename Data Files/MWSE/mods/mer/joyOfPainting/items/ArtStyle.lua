@@ -31,6 +31,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field maxDetailSkill number The skill level required to paint with maximum detail
 ---@field minBrushSize? number The minimum detail level for this art style
 ---@field maxBrushSize? number The maximum detail level for this art style
+---@field helpText? string The help text to display in the painting menu. This should explain how to get best results for this artstyle
 
 ---@class JOP.ArtStyle
 ---@field name string The name of the art style
@@ -45,6 +46,8 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field maxBrushSize? number The maximum detail level for this art style
 ---@field paintType JOP.PaintType? The brush type to use for this art style
 ---@field brushType JOP.BrushType? The brush type to use for this art style
+---@field helpText? string The help text to display in the painting menu. This should explain how to get best results for this artstyle
+
 local ArtStyle = {
     classname = "ArtStyle"
 }

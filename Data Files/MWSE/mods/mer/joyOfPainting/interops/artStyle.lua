@@ -39,6 +39,7 @@ local controls = {
         uniform = "contrast",
         shader = "jop_ink",
         name = "Detail",
+
         sliderDefault = 50,
         shaderMin = 0.1,
         shaderMax = 1.9,
@@ -248,6 +249,11 @@ local artStyles = {
         maxDetailSkill = 30,
         minBrushSize = 1,
         maxBrushSize = 10,
+        helpText = [[
+Charcoal drawings work best with high contrast images against an empty background.
+
+Use the fog setting to remove background elements and the threshold to adjust the contrast.
+]]
     },
     {
         name = "Ink Sketch",
@@ -287,6 +293,11 @@ local artStyles = {
         maxDetailSkill = 40,
         minBrushSize = config.ink.THICKNESS_MIN,
         maxBrushSize = config.ink.THICKNESS_MAX,
+        helpText = [[
+Ink sketches are good for images with defined shapes.
+
+Use the detail setting to adjust how dense the lines are, and the fog setting to remove background elements.
+]]
     },
     {
         name = "Watercolor Painting",
@@ -335,6 +346,11 @@ local artStyles = {
         maxDetailSkill = 50,
         minBrushSize = 5,
         maxBrushSize = 15,
+        helpText = [[
+Watercolor paintings have a limited color palette and thick brush strokes. They are good for making abstract and impressionist paintings.
+
+Try replacing the background with the fog setting and changing the fog color to get interesting color combinations.
+]]
     },
     {
         name = "Oil Painting",
@@ -382,6 +398,11 @@ local artStyles = {
         maxDetailSkill = 60,
         minBrushSize = 3,
         maxBrushSize = 10,
+        helpText = [[
+Oil paintings require high skill before they start looking detailed.common
+
+Reduce contrast for a more matte look, or increase contrast to create more defined paint lines.
+]]
     },
 }
 event.register(tes3.event.initialized, function()
