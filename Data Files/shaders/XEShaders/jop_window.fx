@@ -6,7 +6,9 @@ static const float screen_width = rcpres.x;
 static const float screen_height = rcpres.y;
 
 texture lastshader;
-sampler2D s0 = sampler_state { texture = <lastshader>; addressu = clamp; };
+texture lastpass;
+sampler2D sLastShader = sampler_state { texture = <lastshader>; addressu = clamp; };
+sampler2D sLastPass = sampler_state { texture = <lastpass>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
 
 float4 add_window(float2 tex: TEXCOORD0) : COLOR0
 {
@@ -45,12 +47,24 @@ float4 add_window(float2 tex: TEXCOORD0) : COLOR0
     return float4(0, 0, 0, 1);
   } else {
     // If the pixel is inside the rectangle, render it normally
-    return tex2D(s0, tex);
+    return tex2D(sLastPass, tex);
   }
 }
+
+float4 clamp_levels(float2 tex: TEXCOORD0) : COLOR0{
+    //Clamp brightness
+    float4 color = tex2D(sLastShader, tex);
+    float min = 0.01;
+    float max = 0.9;
+    color.rgb = color.rgb * (max - min) + min;
+    return color;
+}
+
+
 
 //Priority adjusted to 100,000,000 above final because this REALLY can not be overwritten without breaking the mod
 technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 100000000; >
 {
-	pass p0 { PixelShader = compile ps_3_0 add_window(); }
+    pass p0 { PixelShader = compile ps_3_0 clamp_levels(); }
+	pass p1 { PixelShader = compile ps_3_0 add_window(); }
 }

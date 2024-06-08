@@ -19,8 +19,7 @@ float4 main(float2 Tex : TEXCOORD0) : COLOR0 {
     color.rgb += brightness;
     color.rgb *= contrast;
 
-
-    float2 adjustedTex = float2(Tex.x * rcpres.y / rcpres.x, Tex.y);
+    float2 adjustedTex = float2(Tex.x * rcpres.y / rcpres.x, Tex.y) * 2.0;
     float4 pencil = tex2D(sScrollTex, adjustedTex);
 
     // Color dodge effect approximation
