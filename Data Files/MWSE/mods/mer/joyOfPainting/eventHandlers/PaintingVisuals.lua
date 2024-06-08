@@ -3,10 +3,10 @@
 ]]
 local Painting = require("mer.joyOfPainting.items.Painting")
 local Easel = require("mer.joyOfPainting.items.Easel")
-local Frame = require("mer.joyOfPainting.items.Frame")
 local ReferenceManager = require("mer.joyOfPainting.services.ReferenceManager")
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("PaintingVisuals")
+
 
 ReferenceManager.registerReferenceController{
     id = "painting",

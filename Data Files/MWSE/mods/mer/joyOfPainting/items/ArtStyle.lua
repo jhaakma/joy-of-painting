@@ -14,6 +14,8 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field shader string The shader to use for this control
 ---@field name string The name of the control (shown in menu)
 ---@field sliderDefault number The default value for the slider
+---@field sliderMin number? The minimum value for the slider
+---@field sliderMax number? The maximum value for the slider
 ---@field shaderMin number The minimum value for the shader variable
 ---@field shaderMax number The maximum value for the shader variable
 ---@field defaultValue? number If set, this value will be reset when the photomenu is closed

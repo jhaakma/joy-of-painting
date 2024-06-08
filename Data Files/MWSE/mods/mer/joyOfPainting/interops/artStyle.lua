@@ -201,6 +201,17 @@ local controls = {
         sliderDefault = 50,
         shaderMin = 0.01,
         shaderMax = 1.9,
+    },
+    {
+        id = "watercolorLut",
+        uniform = "selectedLut",
+        shader = "jop_watercolor",
+        name = "Color Palette",
+        sliderDefault = 1,
+        sliderMin = 1,
+        sliderMax = 7,
+        shaderMin = 1,
+        shaderMax = 7,
     }
 }
 
@@ -329,6 +340,7 @@ Use the detail setting to adjust how dense the lines are, and the fog setting to
             "fogColor",
         },
         controls = {
+            "watercolorLut",
             "brightness",
             "contrast",
             "distanceColor",
@@ -399,7 +411,7 @@ Try replacing the background with the fog setting and changing the fog color to 
         minBrushSize = 3,
         maxBrushSize = 10,
         helpText = [[
-Oil paintings require high skill before they start looking detailed.common
+Oil paintings require high skill before they start looking detailed.
 
 Reduce contrast for a more matte look, or increase contrast to create more defined paint lines.
 ]]

@@ -223,7 +223,9 @@ function PhotoMenu:setShaderValue(control)
         local paintingSkill = SkillService.getPaintingSkillLevel()
         shaderValue = control.calculate(paintingSkill, self.artStyle)
     else
-        shaderValue = math.remap(config.persistent[control.id], 0, 100, control.shaderMin, control.shaderMax)
+        local sliderMin = control.sliderMin or 0
+        local sliderMax = control.sliderMax or 100
+        shaderValue = math.remap(config.persistent[control.id], sliderMin, sliderMax, control.shaderMin, control.shaderMax)
     end
 
     logger:debug("Setting %s to %s", control.id, shaderValue)
@@ -235,13 +237,17 @@ end
 function PhotoMenu:createControlSlider(parent, control)
     logger:debug("Creating slider for %s", control.id)
     config.persistent[control.id] = config.persistent[control.id] or control.sliderDefault
+
+    local sliderMin = control.sliderMin or 0
+    local sliderMax = control.sliderMax or 100
+
     local slider = mwse.mcm.createSlider(parent, {
         label = control.name .. ": %s",
         current = control.sliderDefault,
-        min = 0,
-        max = 100,
+        min = sliderMin,
+        max = sliderMax,
         step = 1,
-        jump = 10,
+        jump = math.ceil(sliderMax / 10),
         variable = mwse.mcm.createTableVariable {
             id = control.id,
             table = config.persistent
@@ -294,9 +300,13 @@ function PhotoMenu:createRotateButton(parent)
         return
     end
     logger:debug("Creating rotate button")
+    local canvasId = self.getCanvasConfig().canvasId
+    logger:debug("Canvas ID: %s", canvasId)
+    local canvasName = tes3.getObject(canvasId).name
+    logger:debug("Canvas Name: %s", canvasName)
     local button = parent:createButton {
         id = "JOP.RotateButton",
-        text = "Rotate " .. tes3.getObject(self.getCanvasConfig().canvasId).name
+        text = "Rotate " .. canvasName
     }
     button:register("mouseClick", function(e)
         self:close()
@@ -456,6 +466,13 @@ function PhotoMenu:registerIOEvents()
     timer.frame.delayOneFrame(function()
         event.register("mouseButtonDown", hideMenuOnRightClick)
     end)
+
+    -- local function unload()
+    --     logger:debug("Unloading Photo Menu")
+    --     self:unregisterIOEvents()
+    --     event.unregister("load", unload)
+    -- end
+    -- event.register("load", unload)
 end
 
 function PhotoMenu:unregisterIOEvents()
