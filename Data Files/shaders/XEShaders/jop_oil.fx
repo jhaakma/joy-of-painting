@@ -263,7 +263,7 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 }
 
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "scene"; int priorityAdjust = 1000;  >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "scene"; int priorityAdjust = 10000;  >
 {
 	pass p0 { PixelShader = compile ps_3_0 edgedetecting(); }
 	//pass p1 { PixelShader = compile ps_3_0 BlurNormals( OffsetMaskH ); }

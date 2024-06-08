@@ -54,7 +54,7 @@ local controls = {
         ---@param artStyle JOP.ArtStyle
         calculate = function(_, artStyle)
             if artStyle.paintType.id == "watercolor" then
-                return 0.6
+                return 0.5
             else
                 return 0.7
             end
@@ -72,7 +72,7 @@ local controls = {
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
             return math.remap(paintingSkill,
                 config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
-                0.010, 0.0
+                0.008, 0.0
             )
         end
     },
@@ -333,7 +333,7 @@ local artStyles = {
         paintType = "watercolor",
         --requiresEasel = true,
         maxDetailSkill = 50,
-        minBrushSize = 8,
+        minBrushSize = 5,
         maxBrushSize = 15,
     },
     {

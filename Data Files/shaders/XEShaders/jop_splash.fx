@@ -1,4 +1,4 @@
-texture tex1 < string src="jop/overlay_2k.tga"; >;
+texture tex1 < string src="jop/emptytexscroll.tga"; >;
 texture lastshader;
 float time;
 extern float canvas_strength = 0.8;
@@ -16,7 +16,6 @@ float4 main(float2 Tex : TEXCOORD0) : COLOR0
     float lum = sqrt(dot(image.rgb * image.rgb, float3(0.29, 0.58, 0.114)));
 
     // Blend the image with the scroll texture based on luminosity
-
     float4 final = lerp(image, scrollTex, lum * canvas_strength);
 
     return final;

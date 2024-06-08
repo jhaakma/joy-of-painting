@@ -154,11 +154,15 @@ float3 ClutFunc( float3 colorIN, sampler2D LutSampler )
 float4 lut(in float2 tex:TEXCOORD0): COLOR0
 {
 	float4 scene = tex2D(sLastPass,tex);
+    // increase brightness by 25%
+    scene.rgb = scene.rgb + 0.1;
+    scene.rgb = scene.rgb * 1.1;
+    scene.rgb = saturate(scene.rgb);
 	scene.rgb =  ClutFunc(scene.rgb, sLutTex);
 	return scene;
 }
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "scene"; int priorityAdjust = 4500; >
 {
     pass p0 { PixelShader = compile ps_3_0 main(); }
     pass p1 { PixelShader = compile ps_3_0 lut(); }
