@@ -129,18 +129,14 @@ function Painting:new(e)
                 logger:debug("Setting data field %s from item %s", k, painting.item.id)
             end
 
-            if not (
-                painting.dataHolder
-                and painting.dataHolder.data
-                and painting.dataHolder.data.joyOfPainting
-            ) then
-                if not painting.reference then
-                    --create itemData
-                    painting.dataHolder = tes3.addItemData{
-                        to = tes3.player,
-                        item = painting.item,
-                    }
-                end
+            --If we didn't previous have itemData added to the item, add it now
+            if not painting.dataHolder then
+                painting.dataHolder = tes3.addItemData{
+                    to = tes3.player,
+                    item = painting.item,
+                }
+            end
+            if not painting.dataHolder.data.joyOfPainting then
                 painting.dataHolder.data.joyOfPainting = {}
             end
             painting.dataHolder.data.joyOfPainting[k] = v
@@ -314,7 +310,11 @@ function Painting:rotate()
             cell = self.reference.cell,
             scale = self.reference.scale,
         }
-        self.reference:delete()
+        local oldRef = self.reference
+        oldRef:disable()
+        timer.delayOneFrame(function()
+            oldRef:delete()
+        end)
         self.reference = newRef
         self.item = newRef.object
         self.dataHolder = newRef
