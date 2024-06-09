@@ -207,18 +207,6 @@ local controls = {
         shaderMin = 1,
         shaderMax = 9,
     },
-
-    {
-        id = "splashBlend",
-        uniform = "blend_type",
-        shader = "jop_splash",
-        name = "Blend Type",
-        sliderDefault = 1,
-        sliderMin = 1,
-        sliderMax = 5,
-        shaderMin = 1,
-        shaderMax = 5,
-    }
 }
 
 ---@type JOP.ArtStyle.data[]
@@ -356,7 +344,6 @@ Use the detail setting to adjust how dense the lines are, and the fog setting to
             "canvasStrength",
             "brushSize",
             "distortionStrength",
-            "splashBlend",
         },
         valueModifier = 4,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
