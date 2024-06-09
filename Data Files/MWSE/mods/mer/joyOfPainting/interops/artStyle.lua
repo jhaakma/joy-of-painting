@@ -39,7 +39,6 @@ local controls = {
         uniform = "contrast",
         shader = "jop_ink",
         name = "Detail",
-
         sliderDefault = 50,
         shaderMin = 0.1,
         shaderMax = 1.9,
@@ -52,13 +51,8 @@ local controls = {
         sliderDefault = 50,
         shaderMin = 0.0,
         shaderMax = 1.0,
-        ---@param artStyle JOP.ArtStyle
-        calculate = function(_, artStyle)
-            if artStyle.paintType.id == "watercolor" then
-                return 0.5
-            else
-                return 0.7
-            end
+        calculate = function()
+            return 0.7
         end
     },
     {
@@ -209,9 +203,21 @@ local controls = {
         name = "Color Palette",
         sliderDefault = 1,
         sliderMin = 1,
-        sliderMax = 7,
+        sliderMax = 9,
         shaderMin = 1,
-        shaderMax = 7,
+        shaderMax = 9,
+    },
+
+    {
+        id = "splashBlend",
+        uniform = "blend_type",
+        shader = "jop_splash",
+        name = "Blend Type",
+        sliderDefault = 1,
+        sliderMin = 1,
+        sliderMax = 5,
+        shaderMin = 1,
+        shaderMax = 5,
     }
 }
 
@@ -350,6 +356,7 @@ Use the detail setting to adjust how dense the lines are, and the fog setting to
             "canvasStrength",
             "brushSize",
             "distortionStrength",
+            "splashBlend",
         },
         valueModifier = 4,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",

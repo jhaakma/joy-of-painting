@@ -2,7 +2,7 @@
 #define SensitivityUpper 10
 #define SensitivityLower 10
 #define Saturation 1.0
-extern float inkThickness = 0.001;
+extern float inkThickness = 0.0005;
 extern float Brightness = 0.2;
 extern float distance = 250;
 extern float maxDistance = 250-1;
@@ -71,7 +71,7 @@ float4 edge_detect(float2 tex : TEXCOORD0) : COLOR
 }
 
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "atmosphere"; >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "scene"; int priorityAdjust = 7000;>
 {
 	pass p0 { PixelShader = compile ps_3_0 brightness(); }
     pass p1 { PixelShader = compile ps_3_0 edge_detect(); }

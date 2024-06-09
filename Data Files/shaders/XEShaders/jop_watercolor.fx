@@ -20,6 +20,8 @@ texture tex4 < string src="jop/luts/quantized_64.tga"; >;
 texture tex5 < string src="jop/luts/hueShifted.tga"; >;
 texture tex6 < string src="jop/luts/hueShift2.tga"; >;
 texture tex7 < string src="jop/luts/radioactive.tga"; >;
+texture tex8 < string src="jop/luts/blackandwhite.tga"; >;
+texture tex9 < string src="jop/luts/neutral.tga"; >;
 
 
 sampler sLastShader = sampler_state { texture=<lastshader>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
@@ -31,8 +33,8 @@ sampler sLutTex4 = sampler_state { texture = <tex4>; addressu = wrap; addressv =
 sampler sLutTex5 = sampler_state { texture = <tex5>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
 sampler sLutTex6 = sampler_state { texture = <tex6>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
 sampler sLutTex7 = sampler_state { texture = <tex7>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
-// sampler sLutTex8 = sampler_state { texture = <tex8>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
-
+sampler sLutTex8 = sampler_state { texture = <tex8>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
+sampler sLutTex9 = sampler_state { texture = <tex9>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
 
 #define PI acos(-1)
 
@@ -173,9 +175,9 @@ float4 lut(in float2 tex:TEXCOORD0): COLOR0
 {
     float4 scene = tex2D(sLastPass,tex);
     // increase brightness by 25%
-    scene.rgb = scene.rgb + 0.1;
-    scene.rgb = scene.rgb * 1.1;
-    scene.rgb = saturate(scene.rgb);
+    // scene.rgb = scene.rgb + 0.1;
+    // scene.rgb = scene.rgb * 1.1;
+    // scene.rgb = saturate(scene.rgb);
     // apply the selected LUT
     scene.rgb = lerp(scene.rgb, ClutFunc(scene.rgb, sLutTex1), selectedLut == 1);
     scene.rgb = lerp(scene.rgb, ClutFunc(scene.rgb, sLutTex2), selectedLut == 2);
@@ -184,11 +186,12 @@ float4 lut(in float2 tex:TEXCOORD0): COLOR0
     scene.rgb = lerp(scene.rgb, ClutFunc(scene.rgb, sLutTex5), selectedLut == 5);
     scene.rgb = lerp(scene.rgb, ClutFunc(scene.rgb, sLutTex6), selectedLut == 6);
     scene.rgb = lerp(scene.rgb, ClutFunc(scene.rgb, sLutTex7), selectedLut == 7);
-    // scene.rgb = lerp(scene.rgb, ClutFunc(scene.rgb, sLutTex8), selectedLut == 8);
+    scene.rgb = lerp(scene.rgb, ClutFunc(scene.rgb, sLutTex8), selectedLut == 8);
+    scene.rgb = lerp(scene.rgb, ClutFunc(scene.rgb, sLutTex9), selectedLut == 9);
     return scene;
 }
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "scene"; int priorityAdjust = 4500; >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "scene"; int priorityAdjust = 5500; >
 {
     pass p0 { PixelShader = compile ps_3_0 main(); }
     pass p1 { PixelShader = compile ps_3_0 lut(); }
