@@ -23,6 +23,7 @@ local Image = {}
 Image.blocked = false
 
 local Magick = require("mer.joyOfPainting.services.ImageMagick.Magick")
+local PaintService = require("mer.joyOfPainting.services.PaintService")
 local config = require("mer.joyOfPainting.config")
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("Image")
@@ -118,7 +119,7 @@ end
 function Image:createIcon(callback)
     logger:debug("[createIcon] Creating icon %s with width: %s height: %s, frameSize = %s",
         self.paintingPath, self.iconSize, self.iconSize, self.canvasConfig.frameSize)
-    local aspectRatio = config.frameSizes[self.canvasConfig.frameSize].aspectRatio
+    local aspectRatio = PaintService.getAspectRatio(self.canvasConfig)
     local iconWidth, iconHeight
     local iconInnerSize = self.iconSize - self.iconBorder * 2
     if self.canvasConfig.textureWidth > self.canvasConfig.textureHeight then

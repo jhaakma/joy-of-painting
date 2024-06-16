@@ -63,7 +63,7 @@ float4 clamp_levels(float2 tex: TEXCOORD0) : COLOR0{
 
 
 //Priority adjusted to 100,000,000 above final because this REALLY can not be overwritten without breaking the mod
-technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 100000000; >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 10000; >
 {
     pass p0 { PixelShader = compile ps_3_0 clamp_levels(); }
 	pass p1 { PixelShader = compile ps_3_0 add_window(); }

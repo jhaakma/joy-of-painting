@@ -6,7 +6,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@class JOP.ArtStyle.shader
 ---@field id string The id of the shader
 ---@field shaderId string The id of the shader file
----@field pausedOnly boolean Whether the shader should only be applied when painting is paused. For high performance shaders that don't need to be applied every frame
+---@field defaultControls string[]? A list of control ids that are enabled by default when this shader is active
 
 ---@class JOP.ArtStyle.control
 ---@field id string The id of the control
@@ -19,7 +19,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field shaderMin number The minimum value for the shader variable
 ---@field shaderMax number The maximum value for the shader variable
 ---@field defaultValue? number If set, this value will be reset when the photomenu is closed
----@field calculate? fun(skillLevel: number, artStyle: JOP.ArtStyle): number A function that returns the value to be used for the shader variable
+---@field calculate? fun(skillLevel: number, artStyle: JOP.ArtStyle, canvas: JOP.Canvas): number A function that returns the value to be used for the shader variable
 
 ---@class JOP.ArtStyle.data
 ---@field name string The name of the art style
@@ -38,7 +38,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@class JOP.ArtStyle
 ---@field name string The name of the art style
 ---@field magickCommand function A function that returns a Magick command to execute
----@field shaders string[] A list of shaders to apply to the painting
+---@field shaders JOP.ArtStyle.shader[] A list of shaders to apply to the painting
 ---@field controls string[] A list of controls to use for this art style
 ---@field valueModifier number The value modifier for the painting
 ---@field animAlphaTexture string The texture used to control the alpha during painting animation
@@ -49,7 +49,6 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field paintType JOP.PaintType? The brush type to use for this art style
 ---@field brushType JOP.BrushType? The brush type to use for this art style
 ---@field helpText? string The help text to display in the painting menu. This should explain how to get best results for this artstyle
-
 local ArtStyle = {
     classname = "ArtStyle"
 }
@@ -82,12 +81,12 @@ function ArtStyle.registerShader(e)
     logger:assert(type(e.id) == "string", "id must be a string")
     logger:assert(type(e.shaderId) == "string", "shaderId must be a string")
     logger:debug("Registering shader %s", e.id)
-    config.shaders[e.id] = e.shaderId
+    config.shaders[e.id] = e
 end
 
 ---@param data JOP.ArtStyle.data
 function ArtStyle:new(data)
-    local artStyle = setmetatable(table.copy(data), self)
+    local artStyle = setmetatable(table.deepcopy(data), self)
     local shaders = data.shaders
     artStyle.shaders = {}
     for _, shader in ipairs(shaders) do

@@ -22,9 +22,10 @@ local alwaysOnShaders
 
 
 
+
 ---@class JOP.PhotoMenu
 ---@field artStyle JOP.ArtStyle
----@field getCanvasConfig function
+---@field getCanvasConfig fun():JOP.Canvas
 ---@field doRotate function
 ---@field painting JOP.Painting
 ---@field captureCallback function
@@ -32,8 +33,11 @@ local alwaysOnShaders
 ---@field cancelCallback function
 ---@field finalCallback function
 ---@field isLooking boolean? default false
+---@field shaders JOP.ArtStyle.shader[]?
+---@field controls string[]?
 local PhotoMenu = {
     shaders = nil,
+    controls = nil,
     isLooking = false
 }
 PhotoMenu.menuID = "TJOP.PhotoMenu"
@@ -42,27 +46,67 @@ local function getpaintingTexture()
     return GUID.generate() .. ".dds"
 end
 
+---@class JOP.PhotoMenu.newParams : JOP.PhotoMenu
+---@field artStyle JOP.ArtStyle.data
 
+---comment
+---@param photoMenuParams JOP.PhotoMenu.newParams
+---@return any
 function PhotoMenu:new(photoMenuParams)
     alwaysOnShaders = {
         config.shaders.window,
     }
     logger:debug("Creating new PhotoMenu")
+    ---@type JOP.PhotoMenu
     local o = setmetatable(photoMenuParams, self)
     self.__index = self
-    o.shaders = {}
     o.artStyle = ArtStyle:new(photoMenuParams.artStyle)
 
-    --add always on shaders
+    --Add controls
+    o.controls = {}
+    for _, control in ipairs(o.artStyle.controls) do
+        table.insert(o.controls, control)
+    end
+
+    --add shaders
+    o.shaders = {}
     for _, shader in ipairs(alwaysOnShaders) do
         table.insert(o.shaders, shader)
     end
-    if photoMenuParams.artStyle and photoMenuParams.artStyle.shaders then
+    if o.artStyle and o.artStyle.shaders then
         logger:debug("artstyle has shaders")
-        for _, shader in ipairs(photoMenuParams.artStyle.shaders) do
+        for _, shader in ipairs(o.artStyle.shaders) do
+            logger:debug("Adding shader %s", shader.id)
             table.insert(o.shaders, shader)
+            --Insert always on controls
+            if shader.defaultControls then
+                for _, control in ipairs(shader.defaultControls) do
+                    table.insert(o.controls, control)
+                end
+            end
         end
     end
+
+    --Using lfs, create a link from the canvas texture to jop/composite_tex.dds
+    local canvasConfig = o.getCanvasConfig()
+    local compositeTexPath = "Data Files\\Textures\\jop\\composite_tex.dds"
+    --Delete the current compositeTexPath file if it exists
+    if lfs.attributes(compositeTexPath) then
+        logger:debug("Deleting existing composite texture")
+        local success, errReason = os.remove( tes3.installDirectory .. "\\" .. compositeTexPath)
+        if not success then
+            logger:error("Failed to delete composite texture: %s", errReason)
+        end
+    end
+
+    local canvasTexPath = common.getCanvasTexture(canvasConfig.canvasTexture)
+    logger:debug("Creating composite texture link from %s to %s", canvasTexPath, compositeTexPath)
+    local success, errorReason = lfs.link(canvasTexPath, compositeTexPath)
+    if not success then
+        logger:error("Failed to create composite texture link: %s", errorReason)
+    end
+    --reload the composite shader
+    ShaderService.reload("jop_composite")
 
     return o
 end
@@ -86,7 +130,7 @@ function PhotoMenu:getImageBuilder()
             if config.mcm.enableSubjectCapture then
                 local occlusionTester = OcclusionTester.new{
                     logger = occlusionTesterLogger,
-                    viewportAspectResolution = config.frameSizes[self.getCanvasConfig().frameSize].aspectRatio,
+                    viewportAspectResolution = PaintService.getAspectRatio(self.getCanvasConfig()),
                     viewportScale = 0.8
                 }
                 local subjectService = SubjectService.new{
@@ -218,10 +262,11 @@ end
 
 ---@param control JOP.ArtStyle.control
 function PhotoMenu:setShaderValue(control)
+    local canvasConfig = self.getCanvasConfig()
     local shaderValue
     if control.calculate then
         local paintingSkill = SkillService.getPaintingSkillLevel()
-        shaderValue = control.calculate(paintingSkill, self.artStyle)
+        shaderValue = control.calculate(paintingSkill, self.artStyle, canvasConfig)
     else
         local sliderMin = control.sliderMin or 0
         local sliderMax = control.sliderMax or 100
@@ -275,12 +320,14 @@ end
 function PhotoMenu:createShaderControls(parent)
     local controlsBlock = self:getControlsBlock()
         or self:createControlsBlock(parent)
-    if not self.artStyle.controls then
+    if not self.controls then
         logger:debug("ArtStyle %s has no controls", self.artStyle.name)
         return
     end
     logger:debug("Creating shader controls")
-    local controls = self.artStyle.controls
+    local controls = self.controls
+
+
     for _, controlName in ipairs(controls) do
         local control = config.controls[controlName]
         if not control then
@@ -320,17 +367,14 @@ end
 function PhotoMenu:resetControls()
     logger:debug("Resetting controls")
     for _, shader in ipairs(self.shaders) do
-        logger:debug("- shader %s", shader)
+        logger:debug("- shader %s", shader.id)
     end
 
-    ---@param control JOP.ArtStyle.control
-    for _, control in pairs(config.controls) do
+    for _, controlId in pairs(self.controls) do
+        local control = config.controls[controlId]
         logger:debug("Control %s for shader %s", control.id, control.shader )
-        if table.find(self.shaders, control.shader)then
-            logger:debug("ShaderService is active, Resetting %s", control.id)
-            config.persistent[control.id] = control.sliderDefault
-            self:setShaderValue(control)
-        end
+        config.persistent[control.id] = control.sliderDefault
+        self:setShaderValue(control)
     end
     local controlsBlock = self:getControlsBlock()
     if controlsBlock then
@@ -401,7 +445,7 @@ function PhotoMenu:setAspectRatio()
         return
     end
     ShaderService.setUniform(
-        config.shaders.window,
+        config.shaders.window.shaderId,
         "aspectRatio",
         frameSize.aspectRatio
     )
@@ -428,17 +472,17 @@ end
 
 function PhotoMenu:enableShaders()
     logger:debug("Enabling shaders")
-    for _, shaderId in ipairs(self.shaders) do
-        logger:debug("- shader: %s", shaderId)
-        ShaderService.enable(shaderId)
+    for _, shader in ipairs(self.shaders) do
+        logger:debug("- shader: %s", shader.shaderId)
+        ShaderService.enable(shader.shaderId)
     end
 end
 
 function PhotoMenu:disableShaders()
     logger:debug("Disabling shaders")
-    for _, shaderId in ipairs(self.shaders) do
-        logger:debug("- shader: %s", shaderId)
-        ShaderService.disable(shaderId)
+    for _, shader in ipairs(self.shaders) do
+        logger:debug("- shader: %s", shader.shaderId)
+        ShaderService.disable(shader.shaderId)
     end
 end
 
@@ -525,7 +569,7 @@ function PhotoMenu:hideMenu()
 end
 
 function PhotoMenu:resetControlDefaults()
-    for _, controlId in pairs(self.artStyle.controls) do
+    for _, controlId in pairs(self.controls) do
         local control = config.controls[controlId]
         if control.defaultValue then
             logger:debug("Resetting %s to %s", control.id, control.defaultValue)

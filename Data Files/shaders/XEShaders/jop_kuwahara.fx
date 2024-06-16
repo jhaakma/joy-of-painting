@@ -93,7 +93,7 @@ float4 paint(float2 tex : TEXCOORD0) : COLOR
     return float4(col, 1.0);
 }
 
-technique T0 < string MGEinterface = "MGE XE 0"; string category = "scene"; int priorityAdjust = 3000;   >
+technique T0 < string MGEinterface = "MGE XE 0"; string category = "final"; int priorityAdjust = 25;   >
 {
     pass { PixelShader = compile ps_3_0 paint(); }
 }

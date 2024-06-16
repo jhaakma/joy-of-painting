@@ -4,6 +4,8 @@ local logger = common.createLogger("PaintService")
 
 local PaintService = {}
 
+---@param texture string
+---@return niSourceTexture?
 function PaintService.createTexture(texture)
     local path = PaintService.getPaintingTexturePath(texture)
     if not tes3.getFileExists(path) then
@@ -13,6 +15,8 @@ function PaintService.createTexture(texture)
     return niSourceTexture.createFromPath(path, false)
 end
 
+---@param texture string
+---@return niSourceTexture
 function PaintService.createIcon(texture)
     local path = "Icons\\" .. PaintService.getPaintingIconPath(texture)
     logger:debug("Creating icon from path %s", path)
@@ -20,14 +24,25 @@ function PaintService.createIcon(texture)
 end
 
 ---Returns the path of the given texture file, relative to the Data Files directory
+---@param texture string
+---@return string
 function PaintService.getPaintingTexturePath(texture)
     --Check the file exists
     local path = "Textures\\jop\\p\\" .. texture
     return path
 end
 
+
+---@param canvasConfig JOP.Canvas
+---@return number
+function PaintService.getAspectRatio(canvasConfig)
+    return config.frameSizes[canvasConfig.frameSize].aspectRatio
+end
+
+---@param image JOP.Image
+---@return number, number
 function PaintService.getSavedPaintingDimensions(image)
-    local aspectRatio = config.frameSizes[image.canvasConfig.frameSize].aspectRatio
+    local aspectRatio = PaintService.getAspectRatio(image.canvasConfig)
     local savedImageSize = config.mcm.savedPaintingSize
 
     local width
@@ -42,6 +57,8 @@ function PaintService.getSavedPaintingDimensions(image)
     return width, height
 end
 
+---@param artStyle JOP.ArtStyle
+---@return number
 function PaintService.getSavedPaintingIndex(artStyle)
     local index = config.mcm.savedPaintingIndexes[artStyle.name]
     if not index then
@@ -52,6 +69,8 @@ function PaintService.getSavedPaintingIndex(artStyle)
     return index
 end
 
+---@param artStyle JOP.ArtStyle
+---@return number
 function PaintService.incrementSavedPaintingIndex(artStyle)
     local index = PaintService.getSavedPaintingIndex(artStyle)
     local nextIndex = index + 1
@@ -76,10 +95,15 @@ function PaintService.getSavedPaintingPath(artStyle)
 end
 
 
+---@param texture string
+---@return string
 function PaintService.getPaintingIconPath(texture)
     return "jop\\p\\" .. texture
 end
 
+---@param canvasId string
+---@param maxHeight number
+---@return {width:number, height:number}?
 function PaintService.getPaintingDimensions(canvasId, maxHeight)
     logger:debug("Getting painting dimensions for %s. Max height: %s",
         canvasId, maxHeight)

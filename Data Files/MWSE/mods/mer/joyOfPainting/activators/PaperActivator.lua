@@ -249,24 +249,18 @@ Activator.registerActivator{
     onActivate = function(e)
         if e.target then
             activate(e)
-        else
+        elseif tes3ui.menuMode() then
             equip(e)
         end
     end,
     isActivatorItem = function(e)
-        -- if e.target and tes3ui.menuMode() then
-        --     logger:debug("Menu mode, skip")
-        --     return false
-        -- end
-        -- --For now, only activate paper when its in the world
-        -- if not e.target then return false end
         local painting = Painting:new{
             reference = e.target,
             item = e.item,
             itemData = e.itemData,
         }
         local canvasConfig = painting:getCanvasConfig()
-        if canvasConfig and not canvasConfig.requiresEasel then
+        if canvasConfig and not canvasConfig.requiresEasel and not painting:hasPaintingData() then
             return true
         end
         return false

@@ -1,5 +1,7 @@
 //vtastek's Splash
 
+extern float hatchStrength = 0.3;
+
 float time;
 float2 rcpres;
 float3 sunvec;
@@ -177,28 +179,6 @@ float4 edgedetecting( float2 tex : TEXCOORD0  ) : COLOR0
 }
 
 
-float4 BlurNormals(float2 UVCoord : TEXCOORD0, uniform float2 OffsetMask) : COLOR0
-{
-
-	float WeightSum = 0.12 * saturate(1 - Params.x);
-	float4 oColor = tex2D(sLastPass,UVCoord);
-	float4 finalColor = oColor * WeightSum;
-	float depth = readDepth(UVCoord);
-
-	for (int i = 0; i < cKernelSize; i++)
-	{
-		float2 uvOff = (BlurOffsets[i] * OffsetMask) * Params.y;
-		float4 Color = tex2D(sLastPass, UVCoord + uvOff);
-		float weight = saturate(dot(Color.xyz * 2 - 1, oColor.xyz * 2 - 1) - Params.x);
-		finalColor += BlurWeights[i] * weight * Color;
-		WeightSum += BlurWeights[i] * weight;
-	}
-
-	finalColor /= WeightSum;
-	return float4(finalColor.rgb, oColor.a);
-
-}
-
 
 float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 {
@@ -210,17 +190,18 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 	// hatch2 is single color from green channel to match
 	float4 image = tex2D(sLastShader,Tex);
 	float4 hatch = tex2D(sHatchTex,Tex + float2(fmod(time * 0.3 * sign(sin(time*12)),0.44), fmod(time * 0.4 * sign(sin(time*11)),0.33)));
-	float4 hatch2 = tex2D(sHatchTex,Tex);// + fmod(time * 0.3 * sign(sin(time*100)),0.5));
+	float4 hatch2 = tex2D(sHatchTex,Tex + fmod(time * 0.3 * sign(sin(time*100)),0.5));
 
 	//shade data
 	float obbright = max(0.0,dot(tex2D(sLastPass, Tex).rgb, -sunvec));
 	obbright = lerp(1,obbright.xxx, sunvis);
 	obbright = tex2D(sLastPass, Tex).rgb;
 
-	float lum = sqrt(dot(image * image, float3(0.29, 0.58, 0.114)));
-	obbright = smoothstep(0.04, 0.05, lum.xxxx);
 
-	float4 sky = image * saturate((1-ce.r));
+	float lum = sqrt(dot(image * image, float3(0.29, 0.58, 0.114)));
+	obbright = smoothstep(0.04, hatchStrength, lum.xxxx);
+
+	float4 sky = image;
 	float3 edges = tex2D(sLastPass,Tex + float2(0.0, 0.0)).a/2;
 
 	edges += tex2D(sLastPass,Tex + float2( 0.5, 0.5) * (rcpres.y)).a/8;
@@ -235,17 +216,14 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 
 	edges = saturate(edges + distmask);
 
-	float3 final = lerp(sky.rgb , image.rgb, ce.r) * edges.rgb * edges.rgb;
+	float3 final = image.rgb * edges.rgb * edges.rgb;
 
 	final = 1.0 - (1.0 - final) * (1.0 - image);
 	return float4(final.rgb,1);
 }
 
-
-technique T0 < string MGEinterface="MGE XE 0"; string category = "scene"; int priorityAdjust = 10000;  >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 90;  >
 {
 	pass p0 { PixelShader = compile ps_3_0 edgedetecting(); }
-	//pass p1 { PixelShader = compile ps_3_0 BlurNormals( OffsetMaskH ); }
-	//pass p2	{ PixelShader = compile ps_3_0 BlurNormals( OffsetMaskV ); }
 	pass p3 { PixelShader = compile ps_3_0 splashblend(); }
 }

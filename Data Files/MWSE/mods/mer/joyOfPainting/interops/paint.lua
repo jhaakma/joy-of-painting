@@ -47,6 +47,14 @@ local paletteItems = {
         paintType = "oil",
         uses = 10,
         paintValue = 40,
+    },
+    {
+        id = "jop_color_pencils_01",
+        paintType = "pencil",
+        uses = 20,
+        paintValue = 30,
+        fullByDefault = true,
+        breaks = true,
     }
 }
 
@@ -70,6 +78,11 @@ local paintTypes = {
         id = "oil",
         name = "Oil Paint",
         brushType = "brush",
+    },
+    {
+        id = "pencil",
+        name = "Color Pencil",
+        brushType = nil,
     }
 }
 event.register(tes3.event.initialized, function()

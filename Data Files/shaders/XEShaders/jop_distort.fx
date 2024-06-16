@@ -24,7 +24,7 @@ float4 main(float2 Tex : TEXCOORD0) : COLOR0
     return final;
 }
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "scene"; int priorityAdjust = 2000;  >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 20;  >
 {
     pass p0
     {

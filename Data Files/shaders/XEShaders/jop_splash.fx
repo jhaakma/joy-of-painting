@@ -13,17 +13,17 @@ float4 main(float2 Tex : TEXCOORD0) : COLOR0
     float4 scrollTex = tex2D(sOverlayImage, scrollUV);
 
     // Calculate the brightness of the scroll texture
-    float brightness = dot(scrollTex.rgb, float3(0.299, 0.587, 0.114));
+    //float brightness = dot(scrollTex.rgb, float3(0.299, 0.587, 0.114));
 
     // Sample the input image
     float4 image = tex2D(sImage, Tex);
 
     // Use the brightness to lighten or darken the image
-    float4 final = image * (1.0 + (brightness - 0.5) * canvas_strength);
+    float4 final = image + ((scrollTex - 0.5) * canvas_strength);
 
     return final;
 }
-technique T0 < string MGEinterface="MGE XE 0"; string category = "final";  int priorityAdjust = 1000; >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final";  int priorityAdjust = 150; >
 {
     pass p0
     {

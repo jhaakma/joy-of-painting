@@ -57,6 +57,7 @@ config.merchantPaintingSupplies = {
     jop_dye_red = 10,
     jop_dye_yellow = 10,
     jop_dye_blue = 10,
+    jop_color_pencils_01 = 10,
     misc_inkwell = 10,
     misc_quill = 4,
     ['sc_paper plain'] = 25,
@@ -94,7 +95,7 @@ config.subject = {
 --Configs for how thick ink is based on skill
 config.ink = {
     THICKNESS_MIN = 0.0005,
-    THICKNESS_MAX = 0.0035,
+    THICKNESS_MAX = 0.0030,
 }
 
 
@@ -144,7 +145,7 @@ config.paperMolds = {}
 config.paperPulps = {}
 ---@type table<string, JOP.Tapestry.data>
 config.tapestries = {}
----@type table<string, string>
+---@type table<string, JOP.ArtStyle.shader>
 config.shaders = {}
 ---@type table<string, JOP.Subject>
 config.subjects = {}

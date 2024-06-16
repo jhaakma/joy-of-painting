@@ -133,6 +133,10 @@ local function registerMCM()
                             local id = obj.id:lower()
                             npcs[id] = true
                         end
+                        if obj.aiConfig.bartersMiscItems then
+                            local id = obj.id:lower()
+                            npcs[id] = true
+                        end
                     end
                     local npcsList = {}
                     for npc, _ in pairs(npcs) do
