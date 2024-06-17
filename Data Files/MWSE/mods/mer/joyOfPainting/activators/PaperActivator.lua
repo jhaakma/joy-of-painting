@@ -24,7 +24,7 @@ local function inventoryPaint(painting, artstyle)
                     painting.data.location = tes3.player.cell.displayName
                 end,
                 doRotate = function(photoMenu)
-                    painting:rotate()
+                    painting:rotate("scroll")
                     painting = Painting:new{
                         item = painting.item,
                         itemData = painting.dataHolder,
@@ -95,7 +95,7 @@ local function paperPaint(painting, artstyle)
                     return painting:getCanvasConfig()
                 end,
                 doRotate = function(photoMenu)
-                    local newRef = painting:rotate()
+                    local newRef = painting:rotate("scroll")
                     painting = Painting:new{
                         reference = newRef
                     }
@@ -186,7 +186,7 @@ local function equip(e)
             {
                 text = "Rotate",
                 callback = function()
-                    painting:rotate()
+                    painting:rotate("scroll")
                 end,
                 showRequirements = function()
                     return painting:getRotatedId() ~= nil
@@ -228,7 +228,7 @@ local function activate(e)
             {
                 text = "Rotate",
                 callback = function()
-                    painting:rotate()
+                    painting:rotate("scroll")
                 end,
                 showRequirements = function()
                     return painting:getRotatedId() ~= nil

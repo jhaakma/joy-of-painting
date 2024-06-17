@@ -289,16 +289,20 @@ function Painting:getRotatedId()
     return canvasConfig and canvasConfig.rotatedId
 end
 
-function Painting:rotate()
+---comment
+---@param sound string?
+---@return tes3reference
+function Painting:rotate(sound)
     local rotatedId = self:getRotatedId()
     if not rotatedId then
         logger:error("Tried to rotate a canvas that has no rotated Id")
     end
     logger:debug("Rotating canvas from %s to %s", self.item.id, rotatedId)
 
+    sound = sound or "Item Misc Up"
     tes3.playSound{
-        reference = self.reference or tes3.player,
-        sound = "Item Misc Up",
+        reference = tes3.player,
+        sound = sound,
     }
 
     if self.reference then
