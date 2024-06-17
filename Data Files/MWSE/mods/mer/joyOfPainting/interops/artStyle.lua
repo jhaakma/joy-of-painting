@@ -77,7 +77,6 @@ local controls = {
         shaderMin = 0,
         shaderMax = 1,
         calculate = function(_, _, canvas)
-            logger:warn("Canvas rotation is %s", canvas.baseRotation)
             return canvas.baseRotation == 90 and 1 or 0
         end
     },
@@ -364,27 +363,6 @@ local controls = {
 local artStyles = {
     {
         name = "Charcoal Drawing",
-        ---@param image JOP.Image
-        magickCommand = function(image)
-            local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
-
-            local skill = SkillService.skills.painting.current
-            logger:debug("Painting skill is %d", skill)
-            return function(next)
-                image.magick:new("createCharoalSketch")
-                :magick()
-                :formatDDS()
-                :param(image.screenshotPath)
-                :trim()
-                :resizeHard(savedWidth, savedHeight)
-                :compositeClone(common.getCanvasTexture(image.canvasConfig.canvasTexture),
-                    savedWidth, savedHeight, image.canvasConfig.baseRotation)
-                :repage()
-                :param(image.savedPaintingPath)
-                :execute(next)
-                return true
-            end
-        end,
         shaders = {
             "adjuster",
             "greyscale",
@@ -412,25 +390,6 @@ Use the fog setting to remove background elements and the threshold to adjust th
     },
     {
         name = "Ink Sketch",
-        magickCommand = function(image)
-            local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
-            local skill = SkillService.skills.painting.current
-            logger:debug("Painting skill is %d", skill)
-            return function(next)
-                image.magick:new("createInkSketch")
-                :magick()
-                :formatDDS()
-                :param(image.screenshotPath)
-                :trim()
-                :resizeHard(savedWidth, savedHeight)
-                :compositeClone(common.getCanvasTexture(image.canvasConfig.canvasTexture),
-                    savedWidth, savedHeight, image.canvasConfig.baseRotation)
-                :repage()
-                :param(image.savedPaintingPath)
-                :execute(next)
-                return true
-            end
-        end,
         shaders = {
             "ink",
             "adjuster",
@@ -456,25 +415,6 @@ Use the detail setting to adjust how dense the lines are, and the fog setting to
     },
     {
         name = "Watercolor Painting",
-        magickCommand = function(image)
-            local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
-            local skill = SkillService.skills.painting.current
-            logger:debug("Painting skill is %d", skill)
-            return function(next)
-                image.magick:new("Watercolor Painting")
-                :magick()
-                :formatDDS()
-                :param(image.screenshotPath)
-                :trim()
-                :resizeHard(savedWidth, savedHeight)
-                :compositeClone(common.getCanvasTexture(image.canvasConfig.canvasTexture),
-                    savedWidth, savedHeight, image.canvasConfig.baseRotation)
-                :repage()
-                :param(image.savedPaintingPath)
-                :execute(next)
-                return true
-            end
-        end,
         shaders = {
             "detail",
             "watercolor",
@@ -507,24 +447,6 @@ Try replacing the background with the fog setting and changing the fog color to 
     },
     {
         name = "Oil Painting",
-        ---@param image JOP.Image
-        magickCommand = function(image)
-            local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
-            local skill = SkillService.skills.painting.current
-            logger:debug("Painting skill is %d", skill)
-            return function(next)
-                image.magick:new("Oil Painting")
-                :magick()
-                :formatDDS()
-                :param(image.screenshotPath)
-                :trim()
-                :resizeHard(savedWidth, savedHeight)
-                :repage()
-                :param(image.savedPaintingPath)
-                :execute(next)
-                return true
-            end
-        end,
         shaders = {
             "detail",
             "oil",
@@ -556,28 +478,6 @@ Reduce contrast for a more matte look, or increase contrast to create more defin
     },
     {
         name = "Pencil Drawing",
-        ---@param image JOP.Image
-        magickCommand = function(image)
-            local savedWidth, savedHeight = PaintService.getSavedPaintingDimensions(image)
-            local skill = SkillService.skills.painting.current
-            logger:debug("Painting skill is %d", skill)
-            return function(next)
-                image.magick:new("Pencil Drawing")
-                :magick()
-                :formatDDS()
-                :param(image.screenshotPath)
-                :trim()
-                --:autoGamma()
-                --:removeWhite(50)
-                :resizeHard(savedWidth, savedHeight)
-                :compositeClone(common.getCanvasTexture(image.canvasConfig.canvasTexture),
-                    savedWidth, savedHeight, image.canvasConfig.baseRotation)
-                :repage()
-                :param(image.savedPaintingPath)
-                :execute(next)
-                return true
-            end
-        end,
         shaders = {
             "detail",
             "oil",

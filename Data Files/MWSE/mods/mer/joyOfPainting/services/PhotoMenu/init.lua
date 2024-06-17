@@ -3,7 +3,7 @@
     adjusting Zoom etc
 ]]
 
-local ImageBuilder = require("mer.joyOfPainting.services.ImageMagick.ImageBuilder")
+local ImageBuilder = require("mer.joyOfPainting.services.Image.ImageBuilder")
 local ShaderService = require("mer.joyOfPainting.services.ShaderService")
 local config = require("mer.joyOfPainting.config")
 local common = require("mer.joyOfPainting.common")
@@ -19,8 +19,6 @@ local SubjectService = require("mer.joyOfPainting.services.subjectCapture.Subjec
 local ZoomSlider = require("mer.joyOfPainting.services.PhotoMenu.ZoomSlider")
 
 local alwaysOnShaders
-
-
 
 
 ---@class JOP.PhotoMenu
@@ -206,7 +204,6 @@ function PhotoMenu:getImageBuilder()
                 logger:debug("Successfully captured painting.")
             end
         end)
-        :registerArtStyle(self.artStyle)
     return builder
 end
 
@@ -221,12 +218,11 @@ function PhotoMenu:capture()
     builder:start()
         :calculateSubjectResults()
         :takeScreenshot()
-        [self.artStyle.name](builder)
+        :createWallpaper()
         :incrementSavedPaintingIndex()
         :createPaintingTexture()
         :createIcon()
         :deleteScreenshot()
-        :calculateAverageColor()
         :startPainting()
         :finish()
         :doCaptureCallback()

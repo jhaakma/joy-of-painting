@@ -12,10 +12,10 @@ local LINKS_LIST = {
         text = "Wiki",
         url = "https://github.com/jhaakma/joy-of-painting/wiki"
     },
-    -- {
-    --     text = "Nexus",
-    --     url = "https://www.nexusmods.com/morrowind/mods/51366"
-    -- },
+    {
+        text = "Nexus",
+        url = "https://www.nexusmods.com/morrowind/mods/53036"
+    },
     {
         text = "Buy me a coffee",
         url = "https://ko-fi.com/merlord"
@@ -24,8 +24,12 @@ local LINKS_LIST = {
 local CREDITS_LIST = {
     {
         text = "Made by Merlord",
-        url = "https://www.nexusmods.com/users/3040468?tab=user+files",
+        url = "https://next.nexusmods.com/profile/Merlord/mods",
     },
+    {
+        text = "ImageLib by Greatness7",
+        url = "https://next.nexusmods.com/profile/Greatness7/mods",
+    }
 }
 
 local function addSideBar(component)

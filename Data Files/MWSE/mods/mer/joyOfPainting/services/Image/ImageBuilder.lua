@@ -1,6 +1,6 @@
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("ImageBuilder")
-local Image = require("mer.joyOfPainting.services.ImageMagick.Image")
+local Image = require("mer.joyOfPainting.services.Image.Image")
 
 local ImageBuilder = {}
 
@@ -75,11 +75,6 @@ function ImageBuilder:registerStep(name, command)
     return self
 end
 
----@param artStyle JOP.ArtStyle
-function ImageBuilder:registerArtStyle(artStyle)
-    self:registerStep(artStyle.name, artStyle.magickCommand(self.image))
-    return self
-end
 
 function ImageBuilder:build(buildCallback)
     logger:debug("Building image")

@@ -23,7 +23,6 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 
 ---@class JOP.ArtStyle.data
 ---@field name string The name of the art style
----@field magickCommand fun(image: JOP.Image): function A function that returns a Magick command to execute
 ---@field shaders string[] A list of shaders to apply to the painting
 ---@field controls string[] A list of controls to use for this art style
 ---@field valueModifier number The value modifier for the painting
@@ -37,7 +36,6 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 
 ---@class JOP.ArtStyle
 ---@field name string The name of the art style
----@field magickCommand function A function that returns a Magick command to execute
 ---@field shaders JOP.ArtStyle.shader[] A list of shaders to apply to the painting
 ---@field controls string[] A list of controls to use for this art style
 ---@field valueModifier number The value modifier for the painting
@@ -57,7 +55,6 @@ ArtStyle.__index = ArtStyle
 ---@param e JOP.ArtStyle.data
 function ArtStyle.registerArtStyle(e)
     logger:assert(type(e.name) == "string", "name must be a string")
-    logger:assert(type(e.magickCommand) == "function", "magickCommand must be a function")
     logger:assert(type(e.shaders) == "table", "shaders must be a table")
     logger:assert(type(e.valueModifier) == "number", "valueModifier must be a number")
     logger:debug("Registering art style %s", e.name)
