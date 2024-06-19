@@ -87,6 +87,7 @@ function Image:createPaintingTexture(next)
     local image = imageLib.Image.fromPath(self.savedPaintingPath)
     local canvasTexturePath = common.getCanvasTexture(self.canvasConfig.canvasTexture)
     local canvasImage = imageLib.Image.fromPath(canvasTexturePath)
+    canvasImage:resizeHard(self.canvasConfig.textureWidth, self.canvasConfig.textureHeight)
     --Apply as many rotations as needed
     if self.canvasConfig.baseRotation and self.canvasConfig.baseRotation > 0 then
         local rotations = math.floor(self.canvasConfig.baseRotation / 90)

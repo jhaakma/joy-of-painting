@@ -17,6 +17,7 @@ local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 local OcclusionTester = require("mer.joyOfPainting.services.subjectCapture.OcclusionTester")
 local SubjectService = require("mer.joyOfPainting.services.subjectCapture.SubjectService")
 local ZoomSlider = require("mer.joyOfPainting.services.PhotoMenu.ZoomSlider")
+local ImageLib = require("imagelib")
 
 local alwaysOnShaders
 
@@ -99,10 +100,8 @@ function PhotoMenu:new(photoMenuParams)
 
     local canvasTexPath = common.getCanvasTexture(canvasConfig.canvasTexture)
     logger:debug("Creating composite texture link from %s to %s", canvasTexPath, compositeTexPath)
-    local success, errorReason = lfs.link(canvasTexPath, compositeTexPath)
-    if not success then
-        logger:error("Failed to create composite texture link: %s", errorReason)
-    end
+
+    ImageLib.Image.fromPath(canvasTexPath):save(compositeTexPath)
     --reload the composite shader
     ShaderService.reload("jop_composite")
 
