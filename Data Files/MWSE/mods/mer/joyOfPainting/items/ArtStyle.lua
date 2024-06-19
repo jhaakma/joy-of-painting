@@ -16,8 +16,8 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field sliderDefault number The default value for the slider
 ---@field sliderMin number? The minimum value for the slider
 ---@field sliderMax number? The maximum value for the slider
----@field shaderMin number The minimum value for the shader variable
----@field shaderMax number The maximum value for the shader variable
+---@field shaderMin number? The minimum value for the shader variable
+---@field shaderMax number? The maximum value for the shader variable
 ---@field defaultValue? number If set, this value will be reset when the photomenu is closed
 ---@field calculate? fun(skillLevel: number, artStyle: JOP.ArtStyle, canvas: JOP.Canvas): number A function that returns the value to be used for the shader variable
 
@@ -67,8 +67,6 @@ function ArtStyle.registerControl(e)
     logger:assert(type(e.shader) == "string", "shader must be a string")
     logger:assert(type(e.name) == "string", "name must be a string")
     logger:assert(type(e.sliderDefault) == "number", "sliderDefault must be a number")
-    logger:assert(type(e.shaderMin) == "number", "shaderMin must be a number")
-    logger:assert(type(e.shaderMax) == "number", "shaderMax must be a number")
     logger:debug("Registering control %s", e.id)
     config.controls[e.id] = table.copy(e, {})
 end

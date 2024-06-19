@@ -36,10 +36,47 @@ local shaders = {
             "compositeBlacken",
         }
     },
+    {
+        id = "hatch",
+        shaderId = "jop_hatch",
+        defaultControls = { "hatchSize" }
+    }
 }
 
 ---@type JOP.ArtStyle.control[]
 local controls = {
+    {
+        id = "maxDistance",
+        uniform = "maxDistance",
+        shader = "jop_outline",
+        name = "Max Distance",
+        sliderDefault = 50,
+        shaderMin = 100,
+        shaderMax = 200000,
+    },
+    {
+        id = "outlineThickness",
+        uniform = "outlineThickness",
+        shader = "jop_outline",
+        name = "Outline Thickness",
+        sliderDefault = 40,
+        shaderMin = 1,
+        shaderMax = 10,
+    },
+    {
+        id = "hatchSize",
+        uniform = "hatchSize",
+        shader = "jop_hatch",
+        name = "Hatch Size",
+        sliderDefault = 50,
+        calculate = function(paintingSkill, artStyle)
+            paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
+            return math.remap(paintingSkill,
+                config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
+                0.20, 0.10
+            )
+        end
+    },
     {
         id = "compositeBlacken",
         uniform = "doBlackenImage",
@@ -391,14 +428,15 @@ Use the fog setting to remove background elements and the threshold to adjust th
     {
         name = "Ink Sketch",
         shaders = {
-            "ink",
             "adjuster",
             "composite",
             "detail",
+            "outline",
+            "hatch",
         },
         controls = {
-            "detail",
-            "inkThickness",
+            "brightness",
+            "contrast",
             "charcoalCompositeStrength",
             "compositeFogDistance",
         },
