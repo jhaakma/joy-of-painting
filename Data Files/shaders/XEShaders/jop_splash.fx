@@ -9,7 +9,7 @@ sampler sOverlayImage = sampler_state { texture=<tex1>; minfilter = linear; magf
 float4 main(float2 Tex : TEXCOORD0) : COLOR0
 {
     // Sample the scroll texture
-    float2 scrollUV = float2(Tex.x + sin(time) * 0.1, Tex.y + cos(time) * 0.1);
+    float2 scrollUV = float2(Tex.x + sin(time) * 0.05, Tex.y + cos(time) * 0.05);
     float4 scrollTex = tex2D(sOverlayImage, scrollUV);
 
     // Calculate the brightness of the scroll texture

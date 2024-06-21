@@ -2,7 +2,7 @@ local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("ZoomSlider")
 local config = require("mer.joyOfPainting.config")
 
-local useMGEZoom = false
+local useMGEZoom = true
 
 ---@class JOP.PhotoMenu.ZoomSlider
 local ZoomSlider = {}
@@ -13,7 +13,7 @@ function ZoomSlider:new(photoMenu)
     local o = {}
     setmetatable(o, self)
     self.photoMenu = photoMenu
-    self.camera = tes3.worldController.worldCamera.cameraData
+    --self.camera = tes3.worldController.worldCamera.cameraData
     self.__index = self
     return o
 end
@@ -43,7 +43,7 @@ end
 
 function ZoomSlider:updateZoom()
     if useMGEZoom then
-        mge.camera.zoom = config.persistent.zoom
+        mge.camera.zoom = config.persistent.zoom / 100
     else
         local zoom = (config.persistent.zoom / 100)
         local x = math.tan((math.pi / 360) * mge.camera.fov)
@@ -74,7 +74,9 @@ end
 function ZoomSlider:restore()
     mge.render.pauseRenderingInMenus = self.previousPauseRenderingInMenus
     mge.camera.zoomEnable = self.previousZoomState
-    if not useMGEZoom then
+    if useMGEZoom then
+        mge.camera.zoom = 1
+    else
         self.camera.fov = self.previousFov
     end
 end

@@ -40,6 +40,10 @@ local shaders = {
         id = "hatch",
         shaderId = "jop_hatch",
         defaultControls = { "hatchSize" }
+    },
+    {
+        id = "mottle",
+        shaderId = "jop_mottle",
     }
 }
 
@@ -456,7 +460,7 @@ Use the detail setting to adjust how dense the lines are, and the fog setting to
         shaders = {
             "detail",
             "watercolor",
-            "splash",
+            "mottle",
             "distort",
             "adjuster",
             "fogColor",
