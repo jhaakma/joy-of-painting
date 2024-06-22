@@ -12,7 +12,7 @@ sampler s1 = sampler_state { texture=<depthframe>; addressu = clamp; addressv = 
 
 float readDepth(float2 tex)
 {
-	float depth = pow(tex2D(s1, tex).r,1);
+	float depth = tex2D(s1, tex);
 	return depth;
 }
 

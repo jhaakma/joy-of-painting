@@ -13,7 +13,6 @@ local shaders = {
     { id = "blackAndWhite", shaderId = "jop_blackwhite" },
     { id = "ink", shaderId = "jop_ink" },
     { id = "oil", shaderId = "jop_oil" },
-    { id = "vignette", shaderId = "jop_vignette" },
     { id = "watercolor", shaderId = "jop_watercolor" },
     { id = "window", shaderId = "jop_window" },
     { id = "detail", shaderId = "jop_kuwahara", defaultControls = {"brushSize"} },
@@ -36,15 +35,9 @@ local shaders = {
             "compositeBlacken",
         }
     },
-    {
-        id = "hatch",
-        shaderId = "jop_hatch",
-        defaultControls = { "hatchSize" }
-    },
-    {
-        id = "mottle",
-        shaderId = "jop_mottle",
-    }
+    { id = "hatch", shaderId = "jop_hatch", defaultControls = { "hatchSize" } },
+    { id = "mottle", shaderId = "jop_mottle" },
+    { id = "quantize", shaderId = "jop_quantize" },
 }
 
 ---@type JOP.ArtStyle.control[]
@@ -397,6 +390,17 @@ local controls = {
                 0.8, 0.2
             )
         end
+    },
+    {
+        id = "vignette",
+        uniform = "vignetteStrength",
+        shader = "jop_composite",
+        name = "Vignette",
+        sliderDefault = 0,
+        sliderMin = 0,
+        sliderMax = 1,
+        shaderMin = 0.0,
+        shaderMax = 1.0,
     }
 }
 
@@ -422,7 +426,7 @@ local artStyles = {
         paintType = "charcoal",
         maxDetailSkill = 30,
         minBrushSize = 3,
-        maxBrushSize = 15,
+        maxBrushSize = 12,
         helpText = [[
 Charcoal drawings work best with high contrast images against an empty background.
 
@@ -448,7 +452,7 @@ Use the fog setting to remove background elements and the threshold to adjust th
         paintType = "ink",
         maxDetailSkill = 40,
         minBrushSize = 2,
-        maxBrushSize = 15,
+        maxBrushSize = 12,
         helpText = [[
 Ink sketches are good for images with defined shapes.
 
@@ -464,10 +468,12 @@ Use the detail setting to adjust how dense the lines are, and the fog setting to
             "distort",
             "adjuster",
             "fogColor",
-            "composite"
+            "composite",
+            "quantize",
         },
         controls = {
             "watercolorLut",
+            "vignette",
             "brightness",
             "contrast",
             "canvasStrengthWatercolor",
@@ -480,7 +486,7 @@ Use the detail setting to adjust how dense the lines are, and the fog setting to
         --requiresEasel = true,
         maxDetailSkill = 50,
         minBrushSize = 6,
-        maxBrushSize = 15,
+        maxBrushSize = 12,
         helpText = [[
 Watercolor paintings have a limited color palette and thick brush strokes. They are good for making abstract and impressionist paintings.
 
@@ -511,7 +517,7 @@ Try replacing the background with the fog setting and changing the fog color to 
         requiresEasel = true,
         maxDetailSkill = 60,
         minBrushSize = 3,
-        maxBrushSize = 15,
+        maxBrushSize = 12,
         helpText = [[
 Oil paintings require high skill before they start looking detailed.
 
@@ -542,7 +548,7 @@ Reduce contrast for a more matte look, or increase contrast to create more defin
         paintType = "pencil",
         maxDetailSkill = 55,
         minBrushSize = 2,
-        maxBrushSize = 15,
+        maxBrushSize = 12,
         helpText = [[
 The bright areas of the pencil drawing will be replaced with the background. Keep this in mind when preparing your scene, use the contrast/brightness settings to make sure any parts of the image you want to remain are below 50% brightness.
 ]]

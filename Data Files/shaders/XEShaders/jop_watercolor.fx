@@ -10,19 +10,18 @@ float2 rcpres;
 extern int selectedLut = 1;
 
 texture lastshader;
-texture depthframe;
 texture lastpass;
 
 
-texture tex1 < string src="jop/luts/saturated.tga"; >;
-texture tex2 < string src="jop/luts/neutral.tga"; >;
+texture tex1 < string src="jop/luts/neutral.tga"; >;
+texture tex2 < string src="jop/luts/saturated.tga"; >;
 texture tex3 < string src="jop/luts/desaturated.tga"; >;
 texture tex4 < string src="jop/luts/warm.tga"; >;
 texture tex5 < string src="jop/luts/cold.tga"; >;
-texture tex6 < string src="jop/luts/quantized_64.tga"; >;
-texture tex7 < string src="jop/luts/hueShifted.tga"; >;
-texture tex8 < string src="jop/luts/hueShift2.tga"; >;
-texture tex9 < string src="jop/luts/blackandwhite.tga"; >;
+texture tex6 < string src="jop/luts/hueShifted_1.tga"; >;
+texture tex7 < string src="jop/luts/hueShifted_2.tga"; >;
+texture tex8 < string src="jop/luts/hueShifted_3.tga"; >;
+texture tex9 < string src="jop/luts/sepia.tga"; >;
 texture tex10 < string src="jop/luts/radioactive.tga"; >;
 
 sampler sLastShader = sampler_state { texture=<lastshader>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
