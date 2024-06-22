@@ -3,7 +3,7 @@ texture lastshader;
 sampler s0 = sampler_state { texture = <lastshader>; magfilter = point; minfilter = point; };
 
 float2 rcpres;
-extern float KernelSize = 15;
+extern float KernelSize = 12;
 
 struct Region
 {
@@ -43,22 +43,22 @@ Region calcRegion(int2 lower, int2 upper, int samples, float2 uv, int xStart, in
 
 Region calcRegionA(int2 lower, int2 upper, int samples, float2 uv)
 {
-    return calcRegion(lower, upper, samples, uv, -20, 0, -20, 0);
+    return calcRegion(lower, upper, samples, uv, -15, 0, -15, 0);
 }
 
 Region calcRegionB(int2 lower, int2 upper, int samples, float2 uv)
 {
-    return calcRegion(lower, upper, samples, uv, 0, 20, -20, 0);
+    return calcRegion(lower, upper, samples, uv, 0, 15, -15, 0);
 }
 
 Region calcRegionC(int2 lower, int2 upper, int samples, float2 uv)
 {
-    return calcRegion(lower, upper, samples, uv, -20, 0, 0, 20);
+    return calcRegion(lower, upper, samples, uv, -15, 0, 0, 15);
 }
 
 Region calcRegionD(int2 lower, int2 upper, int samples, float2 uv)
 {
-    return calcRegion(lower, upper, samples, uv, 0, 20, 0, 20);
+    return calcRegion(lower, upper, samples, uv, 0, 15, 0, 15);
 }
 
 
