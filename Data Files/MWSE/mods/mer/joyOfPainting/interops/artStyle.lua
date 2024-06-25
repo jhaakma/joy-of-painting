@@ -17,7 +17,7 @@ local shaders = {
     { id = "window", shaderId = "jop_window" },
     { id = "detail", shaderId = "jop_kuwahara", defaultControls = {"brushSize"} },
     { id = "splash", shaderId = "jop_splash" },
-    { id = "distort", shaderId = "jop_distort" },
+    { id = "distort", shaderId = "jop_distort", defaultControls = {"distortionStrength"} },
     { id = "fogColor", shaderId = "jop_fog_color",
         defaultControls = {
             "distanceColor",
@@ -70,7 +70,7 @@ local controls = {
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
             return math.remap(paintingSkill,
                 config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
-                0.20, 0.10
+                0.15, 0.08
             )
         end
     },
@@ -115,11 +115,11 @@ local controls = {
         end
     },
     {
-        id = "compositeStrength",
+        id = "transparency",
         uniform = "compositeStrength",
         shader = "jop_composite",
         name = "Transparency",
-        sliderDefault = 0,
+        sliderDefault = 50,
         shaderMin = 0.0,
         shaderMax = 2.0,
     },
@@ -133,6 +133,18 @@ local controls = {
         shaderMax = 3.0,
         calculate = function(_)
             return 3
+        end
+    },
+    {
+        id = "inkCompositeStrength",
+        uniform = "compositeStrength",
+        shader = "jop_composite",
+        name = "Transparency",
+        sliderDefault = 0,
+        shaderMin = 0.0,
+        shaderMax = 3.0,
+        calculate = function(_)
+            return 1
         end
     },
     {
@@ -185,7 +197,7 @@ local controls = {
     },
     {
         id = "distortionStrength",
-        uniform = "distortion_strength",
+        uniform = "strength",
         shader = "jop_distort",
         name = "Distortion Strength",
         sliderDefault = 50,
@@ -193,10 +205,11 @@ local controls = {
         shaderMax = 1.0,
         calculate = function(paintingSkill, artStyle)
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
-            return math.remap(paintingSkill,
-                config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
-                0.008, 0.0
-            )
+            local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
+            return math.max(0, math.remap(paintingSkill,
+                config.skillPaintEffect.MIN_SKILL, max,
+                0.02, 0.0
+            ))
         end
     },
     {
@@ -368,7 +381,7 @@ local controls = {
         uniform = "pencil_strength",
         shader = "jop_charcoal",
         name = "Pencil Strength",
-        sliderDefault = 20,
+        sliderDefault = 0,
         shaderMin = 0.1,
         shaderMax = 0.9,
         calculate = function()
@@ -393,14 +406,14 @@ local controls = {
     },
     {
         id = "vignette",
-        uniform = "vignetteStrength",
+        uniform = "maskIndex",
         shader = "jop_composite",
-        name = "Vignette",
+        name = "Splash Pattern",
         sliderDefault = 0,
         sliderMin = 0,
-        sliderMax = 1,
+        sliderMax = 3,
         shaderMin = 0.0,
-        shaderMax = 1.0,
+        shaderMax = 3.0,
     }
 }
 
@@ -411,6 +424,7 @@ local artStyles = {
         shaders = {
             "adjuster",
             "greyscale",
+            "distort",
             "detail",
             "adjuster",
             "pencil",
@@ -436,16 +450,16 @@ Use the fog setting to remove background elements and the threshold to adjust th
     {
         name = "Ink Sketch",
         shaders = {
+            "ink",
             "adjuster",
             "composite",
-            "detail",
             "outline",
             "hatch",
         },
         controls = {
             "brightness",
             "contrast",
-            "charcoalCompositeStrength",
+            "inkCompositeStrength",
             "compositeFogDistance",
         },
         valueModifier = 1.5,
@@ -454,9 +468,35 @@ Use the fog setting to remove background elements and the threshold to adjust th
         minBrushSize = 2,
         maxBrushSize = 12,
         helpText = [[
-Ink sketches are good for images with defined shapes.
-
-Use the detail setting to adjust how dense the lines are, and the fog setting to remove background elements.
+Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
+]]
+    },
+    {
+        name = "Pencil Drawing",
+        shaders = {
+            "detail",
+            "oil",
+            "adjuster",
+            "pencil",
+            "outline",
+            "composite",
+        },
+        controls = {
+            "brightness",
+            "contrast",
+            "hatchStrength",
+            "pencilStrength",
+            "pencilScale",
+            "transparency",
+            "compositeFogDistance",
+        },
+        valueModifier = 3,
+        paintType = "pencil",
+        maxDetailSkill = 55,
+        minBrushSize = 2,
+        maxBrushSize = 12,
+        helpText = [[
+The bright areas of the pencil drawing will be replaced with the background. Keep this in mind when preparing your scene, use the contrast/brightness settings to make sure any parts of the image you want to remain are below 50% brightness.
 ]]
     },
     {
@@ -477,7 +517,6 @@ Use the detail setting to adjust how dense the lines are, and the fog setting to
             "brightness",
             "contrast",
             "canvasStrengthWatercolor",
-            "distortionStrength",
             "mildTransparency",
         },
         valueModifier = 4,
@@ -485,6 +524,7 @@ Use the detail setting to adjust how dense the lines are, and the fog setting to
         paintType = "watercolor",
         --requiresEasel = true,
         maxDetailSkill = 50,
+        maxDistortSkill = 40,
         minBrushSize = 6,
         maxBrushSize = 12,
         helpText = [[
@@ -501,21 +541,23 @@ Try replacing the background with the fog setting and changing the fog color to 
             "splash",
             "distort",
             "adjuster",
+            "composite",
             "fogColor",
         },
         controls = {
+            "vignette",
             "brightness",
             "contrast",
             "canvasStrengthOil",
             "distortionStrength",
             "hatchStrength",
-            "mildTransparency",
         },
         valueModifier = 9,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
         paintType = "oil",
         requiresEasel = true,
         maxDetailSkill = 60,
+        maxDistortSkill = 50,
         minBrushSize = 3,
         maxBrushSize = 12,
         helpText = [[
@@ -524,35 +566,6 @@ Oil paintings require high skill before they start looking detailed.
 Reduce contrast for a more matte look, or increase contrast to create more defined paint lines.
 ]]
     },
-    {
-        name = "Pencil Drawing",
-        shaders = {
-            "detail",
-            "oil",
-            "adjuster",
-            "pencil",
-            "outline",
-            "composite",
-        },
-        controls = {
-            "brightness",
-            "contrast",
-            "distortionStrength",
-            "hatchStrength",
-            "pencilStrength",
-            "pencilScale",
-            "compositeStrength",
-            "compositeFogDistance",
-        },
-        valueModifier = 3,
-        paintType = "pencil",
-        maxDetailSkill = 55,
-        minBrushSize = 2,
-        maxBrushSize = 12,
-        helpText = [[
-The bright areas of the pencil drawing will be replaced with the background. Keep this in mind when preparing your scene, use the contrast/brightness settings to make sure any parts of the image you want to remain are below 50% brightness.
-]]
-    }
 }
 event.register(tes3.event.initialized, function()
 for _, shader in ipairs(shaders) do

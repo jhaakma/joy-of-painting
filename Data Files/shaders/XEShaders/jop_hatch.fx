@@ -1,4 +1,4 @@
-extern float hatchStrength = 3.0;
+extern float hatchStrength = 4.0;
 extern float hatchSize = 0.15;
 
 #define PI 3.1415926535897932384626433832795
@@ -46,6 +46,7 @@ float3 toView(float2 tex)
 }
 
 
+
 float getNormal(in float2 tex : TEXCOORD0)
 {
     float3 pos = toView(tex);
@@ -65,6 +66,31 @@ float getNormal(in float2 tex : TEXCOORD0)
     float3 normal = normalize(cross(dy, dx));
 
     return normal;
+}
+
+
+float3 getSmoothedNormal(in float2 tex : TEXCOORD0)
+{
+    float3 originalNormal = getNormal(tex);
+    float2 offsets[8] = {
+        float2(-1, -1),
+        float2(-1, 0),
+        float2(-1, 1),
+        float2(0, -1),
+        float2(0, 1),
+        float2(1, -1),
+        float2(1, 0),
+        float2(1, 1),
+    };
+    float3 sumNormals = originalNormal;
+    for (int i = 0; i < 8; ++i)
+    {
+        float2 neighborTex = tex + rcpres * offsets[i];
+        float3 neighborNormal = getNormal(neighborTex);
+        sumNormals += neighborNormal;
+    }
+    float3 averagedNormal = sumNormals / 9.0; // Original normal + neighbors
+    return normalize(averagedNormal);
 }
 
 /***********************************************************
@@ -134,7 +160,7 @@ float4 hatch(float2 tex : TEXCOORD0) : COLOR0
 
     float3 color = tex2D(sLastShader, tex).rgb;
 
-    float3 normal = getNormal(tex);
+    float3 normal = getSmoothedNormal(tex);
 
     // Adjust UV coordinates based on the normal
     float2 adjustedUV = tex;

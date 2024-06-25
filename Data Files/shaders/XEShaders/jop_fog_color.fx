@@ -34,7 +34,7 @@ float4 main(float2 tex: TEXCOORD0) : COLOR0
   return color;
 }
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "final";>
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 60;>
 {
 	pass p0 { PixelShader = compile ps_3_0 main(); }
 }

@@ -30,6 +30,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field paintType string The type of palette to use for this art style
 ---@field requiresEasel boolean? Whether the art style requires an easel to be painted on
 ---@field maxDetailSkill number The skill level required to paint with maximum detail
+---@field maxDistortSkill? number The skill level required to paint with minimum distortion
 ---@field minBrushSize? number The minimum detail level for this art style
 ---@field maxBrushSize? number The maximum detail level for this art style
 ---@field helpText? string The help text to display in the painting menu. This should explain how to get best results for this artstyle
@@ -42,6 +43,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field animAlphaTexture string The texture used to control the alpha during painting animation
 ---@field requiresEasel boolean? Whether the art style requires an easel to be painted on
 ---@field maxDetailSkill number The skill level required to paint with maximum detail
+---@field maxDistortSkill? number The skill level required to paint with minimum distortion
 ---@field minBrushSize? number The minimum detail level for this art style
 ---@field maxBrushSize? number The maximum detail level for this art style
 ---@field paintType JOP.PaintType? The brush type to use for this art style

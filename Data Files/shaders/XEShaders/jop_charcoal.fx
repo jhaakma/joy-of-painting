@@ -24,7 +24,7 @@ float4 main(float2 Tex : TEXCOORD0) : COLOR0 {
     return lerp(color, result, pencil_strength);
 }
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 30; >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 80; >
 {
 	pass p0
     {
