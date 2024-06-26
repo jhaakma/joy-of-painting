@@ -2,8 +2,9 @@ texture lastshader;
 
 sampler s0 = sampler_state { texture = <lastshader>; magfilter = point; minfilter = point; };
 
+float PI = 3.14159265359;
 float2 rcpres;
-extern float KernelSize = 12;
+extern float radius = 12;
 
 struct Region
 {
@@ -12,67 +13,56 @@ struct Region
 };
 
 
-Region calcRegion(int2 lower, int2 upper, int samples, float2 uv, int xStart, int xEnd, int yStart, int yEnd)
+float gaussian(float sigma, float pos) {
+    return (1.0f / sqrt(2.0f * PI * sigma * sigma)) * exp(-(pos * pos) / (2.0f * sigma * sigma));
+}
+
+Region calcRegion(float2 uv, int xStart, int xEnd, int yStart, int yEnd)
 {
     Region r;
     float3 sum = 0.0;
     float3 squareSum = 0.0;
+    float totalWeight = 0.0;
 
+    int samples = 0;
+    [loop]
     for (int x = xStart; x <= xEnd; x++)
     {
+        [loop]
         for (int y = yStart; y <= yEnd; y++)
         {
-            float within_kernel = step(lower.x, x) * step(lower.y, y) * step(x, upper.x) * step(y, upper.y);
+            float within_kernel = step(length(float2(x, y)), radius);
             if (within_kernel == 1) {
                 float2 offset = float2(rcpres.x * x, rcpres.y * y);
                 float3 tex = tex2D(s0, uv + offset);
 
-                sum += tex;
-                squareSum += tex * tex;
+                float weight = gaussian(radius, length(float2(x, y)));
+                sum += tex * weight;
+                squareSum += tex * tex * weight;
+                totalWeight += weight;
+                samples++;
             }
         }
     }
 
-    r.mean = sum / samples;
-    float3 variance = abs((squareSum / samples) - (r.mean * r.mean));
+    r.mean = sum / totalWeight;
+    float3 variance = abs((squareSum / totalWeight) - (r.mean * r.mean));
     r.variance = length(variance);
 
     return r;
 }
 
-
-Region calcRegionA(int2 lower, int2 upper, int samples, float2 uv)
-{
-    return calcRegion(lower, upper, samples, uv, -15, 0, -15, 0);
-}
-
-Region calcRegionB(int2 lower, int2 upper, int samples, float2 uv)
-{
-    return calcRegion(lower, upper, samples, uv, 0, 15, -15, 0);
-}
-
-Region calcRegionC(int2 lower, int2 upper, int samples, float2 uv)
-{
-    return calcRegion(lower, upper, samples, uv, -15, 0, 0, 15);
-}
-
-Region calcRegionD(int2 lower, int2 upper, int samples, float2 uv)
-{
-    return calcRegion(lower, upper, samples, uv, 0, 15, 0, 15);
-}
-
-
 float4 paint(float2 tex : TEXCOORD0) : COLOR
 {
-    int upper = (KernelSize - 1) / 2;
+    int upper = (radius*2 - 1) / 2;
     int lower = -upper;
 
     int samples = (upper + 1) * (upper + 1);
 
-    Region regionA = calcRegionA(int2(lower, lower), int2(0, 0), samples, tex);
-    Region regionB = calcRegionB(int2(0, lower), int2(upper, 0), samples, tex);
-    Region regionC = calcRegionC(int2(lower, 0), int2(0, upper), samples, tex);
-    Region regionD = calcRegionD(int2(0, 0), int2(upper, upper), samples, tex);
+    Region regionA = calcRegion(tex, -12, 0, -12, 0);
+    Region regionB = calcRegion(tex, 0, 12, -12, 0);
+    Region regionC = calcRegion(tex, -12, 0, 0, 12);
+    Region regionD = calcRegion(tex, 0, 12, 0, 12);
 
     float3 col = regionA.mean;
     float minVar = regionA.variance;

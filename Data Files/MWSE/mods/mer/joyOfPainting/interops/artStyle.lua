@@ -214,7 +214,7 @@ local controls = {
     },
     {
         id = "brushSize",
-        uniform = "KernelSize",
+        uniform = "radius",
         shader = "jop_kuwahara",
         name = "Detail",
         sliderDefault = 50,
@@ -525,7 +525,7 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
         --requiresEasel = true,
         maxDetailSkill = 50,
         maxDistortSkill = 40,
-        minBrushSize = 6,
+        minBrushSize = 3,
         maxBrushSize = 12,
         helpText = [[
 Watercolor paintings have a limited color palette and thick brush strokes. They are good for making abstract and impressionist paintings.
@@ -558,7 +558,7 @@ Try replacing the background with the fog setting and changing the fog color to 
         requiresEasel = true,
         maxDetailSkill = 60,
         maxDistortSkill = 50,
-        minBrushSize = 3,
+        minBrushSize = 2,
         maxBrushSize = 12,
         helpText = [[
 Oil paintings require high skill before they start looking detailed.
