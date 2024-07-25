@@ -1,5 +1,5 @@
 extern float hatchStrength = 4.0;
-extern float hatchSize = 0.15;
+extern float hatchSize = 0.25;
 
 #define PI 3.1415926535897932384626433832795
 
@@ -46,52 +46,49 @@ float3 toView(float2 tex)
 }
 
 
-
-float getNormal(in float2 tex : TEXCOORD0)
+float3 getNormal(in float2 tex : TEXCOORD0)
 {
     float3 pos = toView(tex);
     float water = pos.z * eyevec.z - pos.y * xylength + eyepos.z;
 
     if(pos.z <= 0 || pos.z > sky || (water - waterlevel) < 0)
-        return float4(0.5, 0.5, 1, 1);
+        return float3(0.5, 0.5, 1);
 
-    float3 left = pos - toView(tex + rcpres * float2(-1, 0));
-    float3 right = toView(tex + rcpres * float2(1, 0)) - pos;
-    float3 up = pos - toView(tex + rcpres * float2(0, -1));
-    float3 down = toView(tex + rcpres * float2(0, 1)) - pos;
+    float depth = tex2Dlod(sDepthFrame, float4(tex, 0, 0)).x;
 
-    float3 dx = length(left) < length(right) ? left : right;
-    float3 dy = length(up) < length(down) ? up : down;
+    float3 depthL = pos - toView(tex + float2(-rcpres.x, 0));
+    float3 depthR = toView(tex + float2(rcpres.x, 0)) - pos;
+    float3 depthU = pos - toView(tex + float2(0, -rcpres.y));
+    float3 depthD = toView(tex + float2(0, rcpres.y)) - pos;
 
-    float3 normal = normalize(cross(dy, dx));
+    float4 H;
+    H.x = tex2Dlod(sDepthFrame, float4(tex - float2(rcpres.x, 0), 0, 0)).x;
+    H.y = tex2Dlod(sDepthFrame, float4(tex + float2(rcpres.x, 0), 0, 0)).x;
+    H.z = tex2Dlod(sDepthFrame, float4(tex - float2(2 * rcpres.x, 0), 0, 0)).x;
+    H.w = tex2Dlod(sDepthFrame, float4(tex + float2(2 * rcpres.x, 0), 0, 0)).x;
+    float2 he = abs(H.xy * H.zw * rcp(2 * H.zw - H.xy) - depth);
+    float3 hDeriv;
+    if (he.x > he.y)
+        hDeriv = depthR;
+    else
+        hDeriv = depthL;
 
-    return normal;
+    float4 V;
+    V.x = tex2Dlod(sDepthFrame, float4(tex - float2(0, rcpres.y), 0, 0)).x;
+    V.y = tex2Dlod(sDepthFrame, float4(tex + float2(0, rcpres.y), 0, 0)).x;
+    V.z = tex2Dlod(sDepthFrame, float4(tex - float2(0, 2 * rcpres.y), 0, 0)).x;
+    V.w = tex2Dlod(sDepthFrame, float4(tex + float2(0, 2 * rcpres.y), 0, 0)).x;
+    float2 ve = abs(V.xy * V.zw * rcp(2 * V.zw - V.xy) - depth);
+    float3 vDeriv;
+    if (ve.x > ve.y)
+        vDeriv = depthU;
+    else
+        vDeriv = depthD;
+
+    return cross(hDeriv, vDeriv).xyz;
 }
 
 
-float3 getSmoothedNormal(in float2 tex : TEXCOORD0)
-{
-    float3 originalNormal = getNormal(tex);
-    float2 offsets[8] = {
-        float2(-1, -1),
-        float2(-1, 0),
-        float2(-1, 1),
-        float2(0, -1),
-        float2(0, 1),
-        float2(1, -1),
-        float2(1, 0),
-        float2(1, 1),
-    };
-    float3 sumNormals = originalNormal;
-    for (int i = 0; i < 8; ++i)
-    {
-        float2 neighborTex = tex + rcpres * offsets[i];
-        float3 neighborNormal = getNormal(neighborTex);
-        sumNormals += neighborNormal;
-    }
-    float3 averagedNormal = sumNormals / 9.0; // Original normal + neighbors
-    return normalize(averagedNormal);
-}
 
 /***********************************************************
 *  Hatch shader
@@ -131,36 +128,38 @@ float3 Hatching(float2 _uv, half _intensity)
     return hatching;
 }
 
-
 float2 rotateUvByNormal(float2 uv, float3 normal)
 {
-    // Step 1: Calculate rotation axis and angle
-    float3 upVector = float3(0, 1, 0);
-    float3 rotationAxis = cross(upVector, normal);
-    float angle = acos(dot(normalize(upVector), normalize(normal)));
+    //Normal: r = right, u = up, f = forward
+    float3 r = float3(1, 0, 0);
+    float3 u = float3(0, 1, 0);
+    float3 f = float3(0, 0, 1);
 
-    // Step 2: Create rotation matrix
-    float c = cos(angle);
-    float s = sin(angle);
-    float t = 1.0 - c;
-    float x = rotationAxis.x, y = rotationAxis.y, z = rotationAxis.z;
-    float3x3 rotationMatrix = float3x3(
-        t*x*x + c,    t*x*y - s*z,  t*x*z + s*y,
-        t*x*y + s*z,  t*y*y + c,    t*y*z - s*x,
-        t*x*z - s*y,  t*y*z + s*x,  t*z*z + c
-    );
+    //Calculate the rotation matrix
+    float3x3 rotationMatrix = float3x3(r, u, f);
 
-    // Step 3: Apply rotation to the hatch pattern
-    float2 rotatedHatchPosition = mul(rotationMatrix, uv);
-    return rotatedHatchPosition;
+    // Rotate the normal
+    normal = mul(normal, rotationMatrix);
+
+    // Calculate the angle between the normal and the forward vector
+    float angle = acos(dot(normal, float3(0, 0, 1)));
+
+    // Calculate cos(angle) and sin(angle) simultaneously
+    float cosAngle, sinAngle;
+    sincos(angle, sinAngle, cosAngle);
+
+    // Rotate the UV coordinates by the angle
+    float2 rotatedUV = float2(cosAngle * uv.x - sinAngle * uv.y, sinAngle * uv.x + cosAngle * uv.y);
+    // Rotate by a further 15 degrees
+    rotatedUV = float2(cos(PI/6) * rotatedUV.x - sin(PI/6) * rotatedUV.y, sin(PI/6) * rotatedUV.x + cos(PI/6) * rotatedUV.y);
+
+    return rotatedUV;
 }
 
 float4 hatch(float2 tex : TEXCOORD0) : COLOR0
 {
-
     float3 color = tex2D(sLastShader, tex).rgb;
-
-    float3 normal = getSmoothedNormal(tex);
+    float3 normal = getNormal(tex);
 
     // Adjust UV coordinates based on the normal
     float2 adjustedUV = tex;
@@ -173,7 +172,7 @@ float4 hatch(float2 tex : TEXCOORD0) : COLOR0
     // Use adjusted UV for hatching
     float3 hatching = Hatching(adjustedUV, luminosity);
 
-    return float4(hatching, 1);
+    return float4(hatching , 1);
 }
 
 

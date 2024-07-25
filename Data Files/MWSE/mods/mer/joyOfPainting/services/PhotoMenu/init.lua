@@ -5,6 +5,8 @@
 
 local ImageBuilder = require("mer.joyOfPainting.services.Image.ImageBuilder")
 local ShaderService = require("mer.joyOfPainting.services.ShaderService")
+local Subject = require("mer.joyOfPainting.items.Subject")
+local Painting = require("mer.joyOfPainting.items.Painting")
 local config = require("mer.joyOfPainting.config")
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("PhotoMenu")
@@ -34,6 +36,8 @@ local alwaysOnShaders
 ---@field isLooking boolean? default false
 ---@field shaders JOP.ArtStyle.shader[]?
 ---@field controls string[]?
+---@field subjects table<string, JOP.SubjectService.Result>
+---@field location JOP.Painting.location
 local PhotoMenu = {
     shaders = nil,
     controls = nil,
@@ -47,6 +51,9 @@ end
 
 ---@class JOP.PhotoMenu.newParams : JOP.PhotoMenu
 ---@field artStyle JOP.ArtStyle.data
+
+
+
 
 ---comment
 ---@param photoMenuParams JOP.PhotoMenu.newParams
@@ -73,7 +80,7 @@ function PhotoMenu:new(photoMenuParams)
         table.insert(o.shaders, shader)
     end
     if o.artStyle and o.artStyle.shaders then
-        logger:debug("artstyle has shaders")
+        logger:debug("artStyle has shaders")
         for _, shader in ipairs(o.artStyle.shaders) do
             logger:debug("Adding shader %s", shader.id)
             table.insert(o.shaders, shader)
@@ -124,20 +131,23 @@ function PhotoMenu:getImageBuilder()
 
     local builder = ImageBuilder:new(imageData)
         :registerStep("calculateSubjectResults", function(next)
-            if config.mcm.enableSubjectCapture then
-                local occlusionTester = OcclusionTester.new{
-                    logger = occlusionTesterLogger,
-                    viewportAspectResolution = PaintService.getAspectRatio(self.getCanvasConfig()),
-                    viewportScale = 0.8
-                }
-                local subjectService = SubjectService.new{
-                    occlusionTester = occlusionTester,
-                }
-                local subjects = subjectService:getSubjects()
-                self.subjects = subjects
-                timer.frame.delayOneFrame(next)
-                return true
-            end
+            local occlusionTester = OcclusionTester.new{
+                logger = occlusionTesterLogger,
+                viewportAspectResolution = PaintService.getAspectRatio(self.getCanvasConfig()),
+                viewportScale = 0.8
+            }
+            local subjectService = SubjectService.new{
+                occlusionTester = occlusionTester,
+            }
+            local subjects = subjectService:getSubjects()
+            self.subjects = subjects
+            self.location = {
+                cellId = tes3.player.cell.id,
+                cellName = tes3.player.cell.displayName,
+                position = tes3.player.position:copy(),
+            }
+            timer.frame.delayOneFrame(next)
+            return true
         end)
         :registerStep("doCaptureCallback", function()
             if self.captureCallback then
@@ -145,6 +155,7 @@ function PhotoMenu:getImageBuilder()
                 self.captureCallback({
                     paintingTexture = paintingTexture,
                     subjects = self.subjects,
+                    location = self.location
                 })
             end
         end)
@@ -180,10 +191,11 @@ function PhotoMenu:getImageBuilder()
             SkillService.progressSkillFromPainting()
         end)
         :registerStep("namePainting", function(next)
-            self.paintingName = "Untitled"
+            self.paintingName = self:getDefaultPaintingName()
             UIHelper.openPaintingMenu{
                 dataHolder = self,
                 paintingTexture = paintingTexture,
+                tooltipText = Painting.createTooltipText(self.location, self.subjects),
                 canvasId = self.getCanvasConfig().canvasId,
                 callback = next,
                 cancelCallback = self.cancelCallback,
@@ -195,7 +207,7 @@ function PhotoMenu:getImageBuilder()
             if self.finalCallback then
                 logger:debug("Calling finalCallback")
                 if self.paintingName == nil or self.paintingName == "" then
-                    self.paintingName = "Untitled"
+                    self.paintingName = self:getDefaultPaintingName()
                 end
                 self.finalCallback{
                     paintingName = self.paintingName
@@ -205,6 +217,39 @@ function PhotoMenu:getImageBuilder()
         end)
     return builder
 end
+
+function PhotoMenu:getDefaultPaintingName()
+    local paintingName = "Untitled"
+    if self.subjects then
+        --name painting after subject with largest presence
+        local maxPresence = 0
+        ---@type JOP.SubjectService.Result
+        local maxResult
+        for _, result in pairs(self.subjects) do
+            logger:debug("Subject %s: presence: %s", result.objectId, result.presence)
+            if result.presence > maxPresence then
+                maxPresence = result.presence
+                maxResult = result
+            end
+        end
+        if maxResult then
+            logger:debug("Max presence: %s", maxPresence)
+            for subjectId in pairs(maxResult.subjectIds) do
+                local subject = Subject.getSubject(subjectId)
+                if subject then
+                    logger:debug("Setting name from subject %s", subject.id)
+                    paintingName = subject.getName{
+                        objectId = maxResult.objectId
+                    }
+                    break
+                end
+            end
+        end
+    end
+    logger:debug("Default painting name: %s", paintingName)
+    return paintingName
+end
+
 
 --[[
     Captures the current scene and saves it to a painting

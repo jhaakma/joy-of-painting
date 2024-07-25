@@ -1,5 +1,6 @@
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("main")
+local Interop = require("mer.joyOfPainting")
 
 require("mer.joyOfPainting.mcm")
 
@@ -18,6 +19,16 @@ initAll("eventHandlers")
 logger:debug("Initialising Interops")
 initAll("interops")
 
+--Add Interop to dialogue environments
+event.register(tes3.event.dialogueEnvironmentCreated, function(e)
+    local env = e.environment
+    env.JoyOfPainting = Interop
+end)
+
+--Add Interop to UIEXP sandbox
+event.register("UIEXP:sandboxConsole", function(e)
+    e.sandbox.jop = Interop
+end)
 
 event.register(tes3.event.initialized, function()
     logger:debug("Initialising activators")

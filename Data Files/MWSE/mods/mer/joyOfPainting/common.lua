@@ -5,7 +5,14 @@ local config = require("mer.joyOfPainting.config")
 local MWSELogger = require("logging.logger")
 local CraftingFramework = require("CraftingFramework")
 
-common.inspect = require("inspect")
+local inspect = include("inspect")
+common.inspect = function(root, any)
+
+    if inspect then
+        return inspect.inspect(root, any)
+    end
+    return "[inspect not installed]"
+end
 
 ---@type table<string, mwseLogger>
 common.loggers = {}

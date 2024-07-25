@@ -10,18 +10,19 @@ local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
 local Activator = require("mer.joyOfPainting.services.AnimatedActivator")
 
 ---@param painting JOP.Painting
----@param artstyle JOP.ArtStyle
-local function inventoryPaint(painting, artstyle)
+---@param artStyle JOP.ArtStyle
+local function inventoryPaint(painting, artStyle)
     if painting:getCanvasConfig() then
         timer.delayOneFrame(function()
             PhotoMenu:new{
                 getCanvasConfig = function()
                     return painting:getCanvasConfig()
                 end,
-                artStyle = config.artStyles[artstyle.name],
+                artStyle = config.artStyles[artStyle.name],
                 captureCallback = function(e)
                     painting.data.paintingTexture = e.paintingTexture
-                    painting.data.location = tes3.player.cell.displayName
+                    painting.data.location = e.location
+                    painting.data.subjects = e.subjects
                 end,
                 doRotate = function(photoMenu)
                     painting:rotate("scroll")
@@ -37,7 +38,7 @@ local function inventoryPaint(painting, artstyle)
                 end,
                 finalCallback = function(e)
                     logger:debug("Creating new object for painting %s", e.paintingName)
-                    painting.data.artStyle = artstyle.name
+                    painting.data.artStyle = artStyle.name
                     local newPaintingObject = painting:createPaintingObject()
                     tes3.removeItem{
                         reference = tes3.player,
@@ -85,8 +86,8 @@ end
 
 
 ---@param painting JOP.Painting
----@param artstyle JOP.ArtStyle
-local function paperPaint(painting, artstyle)
+---@param artStyle JOP.ArtStyle
+local function paperPaint(painting, artStyle)
 
     if painting:getCanvasConfig() then
         timer.delayOneFrame(function()
@@ -101,11 +102,12 @@ local function paperPaint(painting, artstyle)
                     }
                     photoMenu.painting = painting
                 end,
-                artStyle = config.artStyles[artstyle.name],
+                artStyle = config.artStyles[artStyle.name],
                 captureCallback = function(e)
                     --set paintingTexture before creating object
                     painting.data.paintingTexture = e.paintingTexture
-                    painting.data.location = tes3.player.cell.displayName
+                    painting.data.location = e.location
+                    painting.data.subjects = e.subjects
                     painting:doPaintAnim()
                 end,
                 cancelCallback = function()
@@ -119,7 +121,7 @@ local function paperPaint(painting, artstyle)
                 end,
                 finalCallback = function(e)
                     logger:debug("Creating new object for painting %s", e.paintingName)
-                    painting.data.artStyle = artstyle.name
+                    painting.data.artStyle = artStyle.name
                     local newPaintingObject = painting:createPaintingObject()
                     local newPaper = tes3.createReference{
                         object = newPaintingObject,

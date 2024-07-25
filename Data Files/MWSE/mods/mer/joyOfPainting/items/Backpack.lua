@@ -71,12 +71,8 @@ function BackpackService.loadMesh(mesh)
 end
 
 function BackpackService.adjustBodyWeight(ref, node)
-    local weight = ref.object.race.weight.male
-    local height = ref.object.race.height.male
-    if ref.object.female then
-        weight = ref.object.race.weight.female
-        height = ref.object.race.height.female
-    end
+    local height = ref.object.race.height[ref.object.female and "female" or "male"]
+    local weight = ref.object.race.weight[ref.object.female and "female" or "male"]
 
     --scale by weight, but only so much
     local heightScale = math.min(1, height)

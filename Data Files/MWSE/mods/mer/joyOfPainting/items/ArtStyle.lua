@@ -33,7 +33,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field maxDistortSkill? number The skill level required to paint with minimum distortion
 ---@field minBrushSize? number The minimum detail level for this art style
 ---@field maxBrushSize? number The maximum detail level for this art style
----@field helpText? string The help text to display in the painting menu. This should explain how to get best results for this artstyle
+---@field helpText? string The help text to display in the painting menu. This should explain how to get best results for this artStyle
 
 ---@class JOP.ArtStyle
 ---@field name string The name of the art style
@@ -48,7 +48,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field maxBrushSize? number The maximum detail level for this art style
 ---@field paintType JOP.PaintType? The brush type to use for this art style
 ---@field brushType JOP.BrushType? The brush type to use for this art style
----@field helpText? string The help text to display in the painting menu. This should explain how to get best results for this artstyle
+---@field helpText? string The help text to display in the painting menu. This should explain how to get best results for this artStyle
 local ArtStyle = {
     classname = "ArtStyle"
 }

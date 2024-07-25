@@ -124,6 +124,8 @@ end
 ---@field visibility number The ratio of active pixels that are not occluded.
 ---@field framing number The ratio of active pixels that are on the edge of the scene.
 
+---@param id string
+---@return JOP.OcclusionTester.PixelDiagnostics
 function OcclusionTester:getPixelDiagnostics(id)
     local totalActiveData = self:getPixelCounts({ visibleOnly = false })
     self:dumpDebug(id .. "_total")
@@ -147,7 +149,6 @@ function OcclusionTester:enable()
     end
     if mge.camera.zoomEnable then
         self.logger:warn("MGE Zoom is enabled during Occlusion testing")
-        mge.camera.zoom = 1
     end
 end
 
@@ -179,7 +180,7 @@ function OcclusionTester:dumpDebug(subjectId)
         self.logger:warn("Dumping debug image for %s", subjectId)
         local plane = tes3.loadMesh("jop\\debug_plane.nif")
         plane.texturingProperty.maps[1].texture = self.pixelData:createSourceTexture()
-        plane:saveBinary(string.format("data files\\meshes\\jop\\debug\\%s.nif", subjectId))
+        plane:saveBinary(string.format("data files\\meshes\\_debug\\%s.nif", subjectId))
     end
 end
 

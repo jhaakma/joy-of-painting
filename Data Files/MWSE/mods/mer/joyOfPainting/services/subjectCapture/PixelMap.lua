@@ -39,7 +39,6 @@ ffi.cdef [[
 ---@field pixels table The array of pixels
 ---@field width number The width of the pixelData
 ---@field height number The height of the pixelData
----@field totalViewportPixels number The total number of pixels in the pixelData
 ---@field viewportWidth number The width of the viewport
 ---@field viewportHeight number The height of the viewport
 ---@field xOffset number The x offset of the viewport
@@ -76,25 +75,31 @@ function PixelMap:calculateViewport(aspectRatio, viewportScale)
     logger:debug("imageRatio: %f", imageRatio)
 
     local viewportWidth, viewportHeight
-    if (aspectRatio * screenRatio > screenRatio ) then
+    if (aspectRatio > screenRatio ) then
         logger:debug("Screen is wider than the given width and height")
         -- If the screen is wider than the given width and height,
         -- the rectangle should stretch to the width of the screen
         viewportWidth = self.width
         viewportHeight = self.width / imageRatio / aspectRatio * screenRatio
     else
-        --Todo
+
         logger:debug("Screen is taller than the given width and height")
         -- If the screen is taller than the given width and height,
         -- the rectangle should stretch to the height of the screen
         viewportWidth = self.height * imageRatio * aspectRatio / screenRatio
         viewportHeight = self.height
     end
+    --Scale down according to MGE XE zoom
+    local zoom = mge.camera.zoom
+    logger:debug("Zoom: %f", zoom)
+    if zoom > 1 then
+        viewportWidth = viewportWidth / zoom
+        viewportHeight = viewportHeight / zoom
+    end
+
     --Scale down by the viewport ratio
     self.viewportWidth = math.floor(viewportWidth * viewportScale)
     self.viewportHeight = math.floor(viewportHeight * viewportScale)
-    self.totalViewportPixels = self.viewportWidth * self.viewportHeight
-    self.totalEdgePixels = (self.viewportWidth * 2) + (self.viewportHeight * 2) - 4
     self.xOffset = math.floor((self.width - self.viewportWidth) / 2)
     self.yOffset = math.floor((self.height - self.viewportHeight) / 2)
     logger:debug("Viewport size: w=%d x h=%d", self.viewportWidth, self.viewportHeight)
@@ -124,6 +129,15 @@ function PixelMap:isActivePixel(pixel)
     return pixel.b >= 128
 end
 
+function PixelMap:getTotalViewportPixels()
+    return self.viewportWidth * self.viewportHeight
+end
+
+function PixelMap:getTotalEdgePixels()
+    return (self.viewportWidth * 2) + (self.viewportHeight * 2) - 4
+end
+
+
 ---@class JOP.PixelMap.countPixels.data
 ---@field active number The number of active pixels
 ---@field total number The total number of pixels in the viewport
@@ -139,8 +153,6 @@ function PixelMap:getPixelCountData()
         for x = 0, self.viewportWidth -1 do
             local pixel = self:getPixel(x, y)
             local isActive = self:isActivePixel(pixel)
-
-
             if isActive then
                 activeCount = activeCount + 1
             else
@@ -157,9 +169,9 @@ function PixelMap:getPixelCountData()
     logger:debug("Active pixels: %d", activeCount)
     return {
         active = activeCount,
-        total = self.totalViewportPixels,
+        total = self:getTotalViewportPixels(),
         activeEdges = activeEdges,
-        totalEdges = self.totalEdgePixels,
+        totalEdges = self:getTotalEdgePixels(),
     }
 end
 

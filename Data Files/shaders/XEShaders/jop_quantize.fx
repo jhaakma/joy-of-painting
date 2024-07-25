@@ -10,11 +10,14 @@ float4 main(float2 uv : TEXCOORD) : SV_Target {
     // Calculate the original luminosity
     float luminosity = dot(texColor.rgb, float3(0.299, 0.587, 0.114));
     // Quantize luminosity into a fixed number of levels
-    float quantizedLuminosity = floor(luminosity * luminosityLevels) / (luminosityLevels-1);
+    float offset = 1.0 / (2.0 * luminosityLevels);
+    float quantizedLuminosity = floor(luminosity * luminosityLevels) / (luminosityLevels-1) - offset;
+
     // Adjust the color's brightness to match the quantized luminosity
     // Keeping the color's hue and saturation unchanged
     float3 adjustedColor = texColor.rgb * (quantizedLuminosity / luminosity);
-    // Return the adjusted color with the original alpha
+
+    // Return the dynamically adjusted color with the original alpha
     return float4(adjustedColor, texColor.a);
 }
 

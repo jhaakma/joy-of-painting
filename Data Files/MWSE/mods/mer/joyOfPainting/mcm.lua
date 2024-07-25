@@ -103,6 +103,7 @@ local function registerMCM()
         restartRequired = true,
     }
 
+
     page:createDropdown{
         label = "Log Level",
         description = "Set the logging level for all JoyOfPainting Loggers.",

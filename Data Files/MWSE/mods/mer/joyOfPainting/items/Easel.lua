@@ -8,16 +8,14 @@ local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 local Activator = require("mer.joyOfPainting.services.AnimatedActivator")
 local Frame = require("mer.joyOfPainting.items.Frame")
 
----@class JOP.CanvasData
----@field canvasId string|nil The id of the original canvas object
----@field paintingId string|nil The id of the generated painting object
----@field paintingTexture string|nil The path to the painting texture
+---@class JOP.CanvasData : JOP.Painting.data
 ---@field textureWidth number|nil The width of the painting texture
 ---@field textureHeight number|nil The height of the painting texture
----@field artStyle JOP.ArtStyle The art style the canvas was painted with
+---@field opened boolean|nil
 
 -- Easel class
 ---@class JOP.Easel
+---@field data JOP.CanvasData
 local Easel = {
     classname = "Easel",
     ---@type string
@@ -164,6 +162,7 @@ function Easel:getCanvasConfig()
 end
 
 ---Start painting
+---@param artStyle string
 function Easel:paint(artStyle)
     self.reference.sceneNode.appCulled = true
     assert(self:getCanvasConfig(), "No canvas config found for canvas " .. self.data.canvasId)
@@ -174,14 +173,14 @@ function Easel:paint(artStyle)
                     return self:getCanvasConfig()
                 end,
                 artStyle = config.artStyles[artStyle],
-                doRotate = function(photoMenu)
+                doRotate = function(_)
                     self:rotateCanvas()
                 end,
                 captureCallback = function(e)
                     --set paintingTexture before creating object
                     self.data.subjects = e.subjects
                     self.data.paintingTexture = e.paintingTexture
-                    self.data.location = tes3.player.cell.displayName
+                    self.data.location = e.location
                     self.painting:doPaintAnim()
                     self.reference.sceneNode.appCulled = false
                 end,
@@ -550,6 +549,7 @@ function Easel.getActivationButtons()
         {
             text = "Position",
             callback = function(e)
+                ---@diagnostic disable-next-line
                 common.positioner{
                     reference = e.reference,
                 }
