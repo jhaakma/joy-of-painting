@@ -87,7 +87,7 @@ config.skillProgress = {
 }
 ---Configs for subject mechanics
 config.subject = {
-    MINIMUM_PRESENCE = 0.01,
+    MINIMUM_PRESENCE = 0.005,
     MINIMUM_VISIBILITY = 0.1,
 }
 

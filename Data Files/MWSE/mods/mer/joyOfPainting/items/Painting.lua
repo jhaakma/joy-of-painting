@@ -18,9 +18,10 @@ local meshService = require("mer.joyOfPainting.services.MeshService")
 ---| '"canvas"'
 
 ---@class JOP.Painting.location
----@field cellId string
----@field cellName string
----@field position tes3vector3
+---@field cellId string?
+---@field regionId string?
+---@field cellName string?
+---@field position tes3vector3?
 
 ---@class JOP.Painting.data
 ---@field canvasId string
@@ -28,7 +29,7 @@ local meshService = require("mer.joyOfPainting.services.MeshService")
 ---@field paintingId string
 ---@field paintingTexture string
 ---@field paintingName string
----@field location JOP.Painting.location
+---@field location JOP.Painting.location | string
 ---@field artStyle string The name of the artStyle
 ---@field subjects table<string, JOP.SubjectService.Result>
 
@@ -132,13 +133,22 @@ function Painting:new(e)
     local painting = setmetatable({}, self)
     logger:assert(e.reference ~= nil or e.item ~= nil,
         "Painting:new() requires either a reference or an item")
+
     painting.reference = e.reference
     painting.item = e.item or e.reference.object
     painting.dataHolder = e.itemData or e.reference
     painting.id = painting.item.id:lower()
+
+    local safeRef
+    if e.reference then
+        safeRef = tes3.makeSafeObjectHandle(e.reference)
+    end
+
     -- reference data
     painting.data = setmetatable({}, {
         __index = function(_, k)
+            if safeRef and not safeRef:valid() then return end
+
             if painting.reference then
                 if not painting.reference.supportsLuaData then
                     return nil
@@ -154,6 +164,7 @@ function Painting:new(e)
             return painting.dataHolder.data.joyOfPainting[k]
         end,
         __newindex = function(_, k, v)
+            if safeRef and not safeRef:valid() then return end
             if painting.reference then
                 logger:debug("Setting data field %s from reference %s", k, painting.reference.id)
                 if not painting.reference.supportsLuaData then
@@ -258,10 +269,10 @@ function Painting:clearCanvas()
 end
 
 ---comment
----@param location JOP.Painting.location
----@param subjects table<string, JOP.SubjectService.Result>
+---@param location string|JOP.Painting.location
+---@param results table<string, JOP.SubjectService.Result>
 ---@return string
-function Painting.createTooltipText(location, subjects)
+function Painting.createTooltipText(location, results)
     --legacy paintings with string location
     if type(location) == "string" then
         location = {
@@ -270,16 +281,11 @@ function Painting.createTooltipText(location, subjects)
     end
 
     local message = string.format("Location: %s", location.cellName)
-    if subjects then
+    if results and table.size(results) > 0 then
         message = message .. "\nSubjects:"
-        for objectId, result in pairs(subjects) do
-            for subjectId in pairs(result.subjectIds) do
-                local subject = Subject.getSubject(subjectId)
-                if subject then
-                    message = string.format("%s\n - %s", message, subject.getName{ objectId = objectId })
-                    break
-                end
-            end
+        local subjectNames = Subject.getSubjectNames(results)
+        for subjectName in pairs(subjectNames) do
+            message = message .. "\n - " .. subjectName
         end
     end
     return message

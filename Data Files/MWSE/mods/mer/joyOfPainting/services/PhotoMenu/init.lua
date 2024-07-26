@@ -28,6 +28,7 @@ local alwaysOnShaders
 ---@field artStyle JOP.ArtStyle
 ---@field getCanvasConfig fun():JOP.Canvas
 ---@field doRotate function
+---@field canvasConfig JOP.Canvas
 ---@field painting JOP.Painting
 ---@field captureCallback function
 ---@field closeCallback function
@@ -66,6 +67,8 @@ function PhotoMenu:new(photoMenuParams)
     ---@type JOP.PhotoMenu
     local o = setmetatable(photoMenuParams, self)
     self.__index = self
+
+    o.canvasConfig = photoMenuParams.getCanvasConfig()
     o.artStyle = ArtStyle:new(photoMenuParams.artStyle)
 
     --Add controls
@@ -94,7 +97,6 @@ function PhotoMenu:new(photoMenuParams)
     end
 
     --Using lfs, create a link from the canvas texture to jop/composite_tex.dds
-    local canvasConfig = o.getCanvasConfig()
     local compositeTexPath = "Data Files\\Textures\\jop\\composite_tex.dds"
     --Delete the current compositeTexPath file if it exists
     if lfs.attributes(compositeTexPath) then
@@ -105,7 +107,7 @@ function PhotoMenu:new(photoMenuParams)
         end
     end
 
-    local canvasTexPath = common.getCanvasTexture(canvasConfig.canvasTexture)
+    local canvasTexPath = common.getCanvasTexture(o.canvasConfig.canvasTexture)
     logger:debug("Creating composite texture link from %s to %s", canvasTexPath, compositeTexPath)
 
     ImageLib.Image.fromPath(canvasTexPath):save(compositeTexPath)
@@ -115,13 +117,37 @@ function PhotoMenu:new(photoMenuParams)
     return o
 end
 
+---@return table<string, JOP.SubjectService.Result>
+function PhotoMenu:calculateSubjectResults()
+    local occlusionTester = OcclusionTester.new{
+        logger = occlusionTesterLogger,
+        viewportAspectResolution = PaintService.getAspectRatio(self.canvasConfig),
+        viewportScale = 0.8
+    }
+    local subjectService = SubjectService.new{
+        occlusionTester = occlusionTester,
+    }
+    local subjects = subjectService:getSubjects()
+    logger:debug("Found %s subjects", table.size(subjects))
+    return subjects
+end
+
+function PhotoMenu:calculateLocation()
+    self.location = {
+        cellId = tes3.player.cell.id:lower(),
+        regionId = tes3.player.cell.region and tes3.player.cell.region.id:lower(),
+        cellName = tes3.player.cell.displayName,
+        position = tes3.player.position:copy(),
+    }
+end
+
 function PhotoMenu:getImageBuilder()
     local paintingTexture = getpaintingTexture()
     logger:debug("Painting name: %s", paintingTexture)
     local imageData = {
         savedPaintingPath = "Data Files\\" .. PaintService.getSavedPaintingPath(self.artStyle),
         paintingPath = "Data Files\\" .. PaintService.getPaintingTexturePath(paintingTexture),
-        canvasConfig = self.getCanvasConfig(),
+        canvasConfig = self.canvasConfig,
         iconSize = 32,
         iconBorder = 3,
         iconPath = config.locations.paintingIconsDir .. paintingTexture,
@@ -131,21 +157,8 @@ function PhotoMenu:getImageBuilder()
 
     local builder = ImageBuilder:new(imageData)
         :registerStep("calculateSubjectResults", function(next)
-            local occlusionTester = OcclusionTester.new{
-                logger = occlusionTesterLogger,
-                viewportAspectResolution = PaintService.getAspectRatio(self.getCanvasConfig()),
-                viewportScale = 0.8
-            }
-            local subjectService = SubjectService.new{
-                occlusionTester = occlusionTester,
-            }
-            local subjects = subjectService:getSubjects()
-            self.subjects = subjects
-            self.location = {
-                cellId = tes3.player.cell.id,
-                cellName = tes3.player.cell.displayName,
-                position = tes3.player.position:copy(),
-            }
+            self.subjects = self:calculateSubjectResults()
+            self:calculateLocation()
             timer.frame.delayOneFrame(next)
             return true
         end)
@@ -171,13 +184,13 @@ function PhotoMenu:getImageBuilder()
             logger:debug("Starting painting")
             self:hideMenu()
             self:finishMenu()
-            tes3.playSound{sound = self.getCanvasConfig().animSound}
+            tes3.playSound{sound = self.canvasConfig.animSound}
         end)
         :registerStep("waitForPaintingAnim", function(next)
             logger:debug("Waiting %G seconds for painting animation to finish",
-                self.getCanvasConfig().animSpeed)
+                self.canvasConfig.animSpeed)
             timer.start{
-                duration = self.getCanvasConfig().animSpeed,
+                duration = self.canvasConfig.animSpeed,
                 type = timer.simulate,
                 callback = next
             }
@@ -196,7 +209,7 @@ function PhotoMenu:getImageBuilder()
                 dataHolder = self,
                 paintingTexture = paintingTexture,
                 tooltipText = Painting.createTooltipText(self.location, self.subjects),
-                canvasId = self.getCanvasConfig().canvasId,
+                canvasId = self.canvasConfig.canvasId,
                 callback = next,
                 cancelCallback = self.cancelCallback,
                 setNameText = "Name " .. self.artStyle.name,
@@ -220,7 +233,7 @@ end
 
 function PhotoMenu:getDefaultPaintingName()
     local paintingName = "Untitled"
-    if self.subjects then
+    if self.subjects and table.size(self.subjects) > 0 then
         --name painting after subject with largest presence
         local maxPresence = 0
         ---@type JOP.SubjectService.Result
@@ -244,6 +257,12 @@ function PhotoMenu:getDefaultPaintingName()
                     break
                 end
             end
+        end
+    else
+        paintingName = self.location.cellName --[[@as string]]
+        if paintingName:find(", ") then
+            --set to after the first comma
+            paintingName = paintingName:match(", (.*)")
         end
     end
     logger:debug("Default painting name: %s", paintingName)
@@ -279,7 +298,7 @@ function PhotoMenu:capture()
         :build()
 end
 
-
+---@param parent tes3uiElement
 function PhotoMenu:createCaptureButtons(parent)
     logger:debug("Creating capture button")
     local paintButton = parent:createButton {
@@ -302,7 +321,7 @@ end
 
 ---@param control JOP.ArtStyle.control
 function PhotoMenu:setShaderValue(control)
-    local canvasConfig = self.getCanvasConfig()
+    local canvasConfig = self.canvasConfig
     local shaderValue
     if control.calculate then
         local paintingSkill = SkillService.getPaintingSkillLevel()
@@ -387,7 +406,7 @@ function PhotoMenu:createRotateButton(parent)
         return
     end
     logger:debug("Creating rotate button")
-    local canvasId = self.getCanvasConfig().canvasId
+    local canvasId = self.canvasConfig.canvasId
     logger:debug("Canvas ID: %s", canvasId)
     local canvasName = tes3.getObject(canvasId).name
     logger:debug("Canvas Name: %s", canvasName)
@@ -397,10 +416,9 @@ function PhotoMenu:createRotateButton(parent)
     }
     button:register("mouseClick", function(e)
         self:close()
-        timer.delayOneFrame(function()timer.delayOneFrame(function()
-            self:doRotate(self)
-            self:open()
-        end)end)
+        self:doRotate(self)
+        self.canvasConfig = self.getCanvasConfig()
+        self:open()
     end)
 end
 
@@ -434,6 +452,28 @@ function PhotoMenu:createResetButton(parent)
     end)
 end
 
+function PhotoMenu:createFindSubjectsButton(parent)
+    logger:debug("Creating find subjects button")
+    local button = parent:createButton {
+        id = "JOP.FindSubjectsButton",
+        text = "Find Subjects"
+    }
+    button:register("mouseClick", function(e)
+        local subjects = self:calculateSubjectResults()
+
+        if table.size(subjects) > 0 then
+            local subjectNames = Subject.getSubjectNames(subjects)
+            local subjectNamesString = "Found subjects:"
+            for name in pairs(subjectNames) do
+                subjectNamesString = string.format("%s\n - %s", subjectNamesString, name)
+            end
+            tes3.messageBox(subjectNamesString)
+        else
+            tes3.messageBox("No subjects found")
+        end
+    end)
+end
+
 function PhotoMenu:createCloseButton(parent)
     logger:debug("Creating close button")
     local button = parent:createButton {
@@ -448,6 +488,7 @@ function PhotoMenu:createCloseButton(parent)
         end
     end)
 end
+
 
 ---@param parent tes3uiElement
 function PhotoMenu:createHelpText(parent)
@@ -479,9 +520,9 @@ function PhotoMenu:createHelpText(parent)
 end
 
 function PhotoMenu:setAspectRatio()
-    local frameSize = config.frameSizes[self.getCanvasConfig().frameSize]
+    local frameSize = config.frameSizes[self.canvasConfig.frameSize]
     if not frameSize then
-        logger:error("Frame Size '%s' is not registered.", self.getCanvasConfig().frameSize)
+        logger:error("Frame Size '%s' is not registered.", self.canvasConfig.frameSize)
         return
     end
     ShaderService.setUniform(
@@ -537,8 +578,10 @@ function PhotoMenu:registerIOEvents()
     hideMenuOnRightClick = function(e)
         if isRightClickPressed(e) then
             if self.isLooking then
-                self.isLooking = false
-                self:createMenu()
+                timer.frame.delayOneFrame(function()
+                    self.isLooking = false
+                    self:createMenu()
+                end)
             else
                 self.isLooking = true
                 self:hideMenu()
@@ -551,12 +594,6 @@ function PhotoMenu:registerIOEvents()
         event.register("mouseButtonDown", hideMenuOnRightClick)
     end)
 
-    -- local function unload()
-    --     logger:debug("Unloading Photo Menu")
-    --     self:unregisterIOEvents()
-    --     event.unregister("load", unload)
-    -- end
-    -- event.register("load", unload)
 end
 
 function PhotoMenu:unregisterIOEvents()
@@ -583,6 +620,7 @@ function PhotoMenu:createMenu()
     self:createShaderControls(menu)
     self:createResetButton(menu)
     self:createRotateButton(menu)
+    self:createFindSubjectsButton(menu)
     self:createCaptureButtons(menu)
     self:createCloseButton(menu)
     self.active = true
@@ -622,10 +660,8 @@ end
 function PhotoMenu:close()
     logger:debug("Closing Photo Menu")
     self:hideMenu()
-    timer.delayOneFrame(function()
-        common.enablePlayerControls()
-        self:finishMenu()
-    end)
+    self:finishMenu()
+    common.enablePlayerControls()
 end
 
 --Reset events, settings, shaders

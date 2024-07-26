@@ -201,6 +201,7 @@ function UIHelper.scrapePaintingMessage(callback)
     }
 end
 
+---@param e { header: string, text: string}
 function UIHelper.createTooltipMenu(e)
     local thisHeader, thisLabel = e.header, e.text
     local tooltip = tes3ui.createTooltipMenu()
@@ -230,7 +231,6 @@ function UIHelper.createTooltipMenu(e)
         descriptionLabel.width = 285
         descriptionLabel.wrapText = true
     end
-
     tooltip:updateLayout()
 end
 

@@ -117,10 +117,27 @@ function Subject.registerSubject(e)
     end
 end
 
+
 function Subject.getSubject(id)
     return config.subjects[id:lower()]
 end
 
+
+---@param results table<string, JOP.SubjectService.Result>
+---@return table<string, boolean>
+function Subject.getSubjectNames(results)
+    local subjectNames = {}
+    for objectId, result in pairs(results) do
+        for subjectId in pairs(result.subjectIds) do
+            local subject = Subject.getSubject(subjectId)
+            if subject then
+                subjectNames[subject.getName{ objectId = objectId }] = true
+                break
+            end
+        end
+    end
+    return subjectNames
+end
 
 
 ---Get a list of subjects this reference is valid for

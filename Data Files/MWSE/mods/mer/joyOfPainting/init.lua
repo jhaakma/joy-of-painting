@@ -16,11 +16,13 @@ Interop.Subject = require("mer.joyOfPainting.items.Subject")
 ---
 
 ---@class JOP.Interop.paintingFilter
+---@field reference tes3reference? (Default: tes3.player) The reference to check for a painting
 ---@field objectId string? If provided, checks for a painting with a subject with the specified objectId
 ---@field subjectIds string[]? If provided, checks for a painting with the specified subjectIds
 ---@field artStyle string? If provided, only checks for paintings with the specified artStyle
 ---@field canvasType "paper"|"canvas" If provided, only checks for paintings with the specified canvasType
----@field reference tes3reference? (Default: tes3.player) The reference to check for a painting
+---@field cellId string? If provided, only checks for paintings in the specified cell
+---@field regionId string? If provided, only checks for paintings in the specified region
 
 
 ---Check if the itemData is a painting
@@ -42,6 +44,46 @@ local function isPainting(item, itemData, e)
         if subjectResults[e.objectId] == nil then
             return false
         end
+    end
+
+    --Check artStyle
+    if e.artStyle then
+        if painting.data.artStyle ~= e.artStyle then
+            return false
+        end
+    end
+
+    --Check canvasType
+    if e.canvasType then
+        if e.canvasType ~= painting:getCanvasType() then
+            return false
+        end
+    end
+
+    --Check cell/region
+    local location = painting.data.location
+    if e.cellId or e.regionId then
+        logger:debug("Checking location")
+        if type(location) == "table" then
+            if e.cellId then
+                logger:debug("Checking cellId %s", e.cellId)
+                if location.cellId ~= e.cellId:lower() then
+                    logger:debug("CellId doesn't match")
+                    return false
+                end
+            end
+            if e.regionId then
+                logger:debug("Checking regionId %s", e.regionId)
+                if location.regionId ~= e.regionId:lower() then
+                    logger:debug("RegionId doesn't match")
+                    return false
+                end
+            end
+        else
+            logger:debug("No location data")
+            return false
+        end
+        logger:debug("Location matches")
     end
 
     --Check subjectIds
@@ -68,20 +110,6 @@ local function isPainting(item, itemData, e)
                 logger:debug("SubjectId not found")
                 return false
             end
-        end
-    end
-
-    --Check artStyle
-    if e.artStyle then
-        if painting.data.artStyle ~= e.artStyle then
-            return false
-        end
-    end
-
-    --Check canvasType
-    if e.canvasType then
-        if e.canvasType ~= painting:getCanvasType() then
-            return false
         end
     end
 
