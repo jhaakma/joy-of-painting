@@ -126,6 +126,8 @@ config.miscEasels = {}
 config.artStyles = {}
 ---@type table<string, JOP.ArtStyle.control>
 config.controls = {}
+---@type table<string, JOP.ArtStyle.colorPicker>
+config.colorPickers = {}
 ---@type table<string, JOP.PaintType>
 config.paintTypes = {}
 ---@type table<string, JOP.PaletteItem>

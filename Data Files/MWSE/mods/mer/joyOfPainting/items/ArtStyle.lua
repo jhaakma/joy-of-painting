@@ -6,7 +6,15 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@class JOP.ArtStyle.shader
 ---@field id string The id of the shader
 ---@field shaderId string The id of the shader file
----@field defaultControls string[]? A list of control ids that are enabled by default when this shader is active
+---@field defaultControls? string[] A list of control ids that are enabled by default when this shader is active
+---@field defaultColorPickers? string[] A list of color picker ids that are enabled by default when this shader is active
+
+---@class JOP.ArtStyle.colorPicker
+---@field id string The id of the color picker
+---@field uniform string The name of the external variable in the shader being manipulated
+---@field shader string The shader to use for this color picker
+---@field name string The name of the color picker (shown in menu)
+---@field defaultValue? tes3vector3 The default value for the color picker
 
 ---@class JOP.ArtStyle.control
 ---@field id string The id of the control
@@ -14,41 +22,33 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field shader string The shader to use for this control
 ---@field name string The name of the control (shown in menu)
 ---@field sliderDefault number The default value for the slider
----@field sliderMin number? The minimum value for the slider
----@field sliderMax number? The maximum value for the slider
----@field shaderMin number? The minimum value for the shader variable
----@field shaderMax number? The maximum value for the shader variable
+---@field sliderMin? number The minimum value for the slider
+---@field sliderMax? number The maximum value for the slider
+---@field shaderMin? number The minimum value for the shader variable
+---@field shaderMax? number The maximum value for the shader variable
 ---@field defaultValue? number If set, this value will be reset when the photomenu is closed
 ---@field calculate? fun(skillLevel: number, artStyle: JOP.ArtStyle, canvas: JOP.Canvas): number A function that returns the value to be used for the shader variable
 
 ---@class JOP.ArtStyle.data
 ---@field name string The name of the art style
 ---@field shaders string[] A list of shaders to apply to the painting
----@field controls string[] A list of controls to use for this art style
 ---@field valueModifier number The value modifier for the painting
----@field animAlphaTexture string? The texture used to control the alpha during painting animation
 ---@field paintType string The type of palette to use for this art style
----@field requiresEasel boolean? Whether the art style requires an easel to be painted on
 ---@field maxDetailSkill number The skill level required to paint with maximum detail
----@field maxDistortSkill? number The skill level required to paint with minimum distortion
+---@field controls? string[] A list of controls to use for this art style
+---@field colorPickers? string[] A list of color pickers to use for this art style
+---@field animAlphaTexture? string The texture used to control the alpha during painting animation
+---@field requiresEasel? boolean Whether the art style requires an easel to be painted on
+---@field maxDistortSkill? number The skill level required to paint with minimum distortion. If not provided, maxDetailSkill will be used
 ---@field minBrushSize? number The minimum detail level for this art style
 ---@field maxBrushSize? number The maximum detail level for this art style
 ---@field helpText? string The help text to display in the painting menu. This should explain how to get best results for this artStyle
 
----@class JOP.ArtStyle
----@field name string The name of the art style
+---@class JOP.ArtStyle : JOP.ArtStyle.data
 ---@field shaders JOP.ArtStyle.shader[] A list of shaders to apply to the painting
----@field controls string[] A list of controls to use for this art style
----@field valueModifier number The value modifier for the painting
 ---@field animAlphaTexture string The texture used to control the alpha during painting animation
----@field requiresEasel boolean? Whether the art style requires an easel to be painted on
----@field maxDetailSkill number The skill level required to paint with maximum detail
----@field maxDistortSkill? number The skill level required to paint with minimum distortion
----@field minBrushSize? number The minimum detail level for this art style
----@field maxBrushSize? number The maximum detail level for this art style
----@field paintType JOP.PaintType? The brush type to use for this art style
----@field brushType JOP.BrushType? The brush type to use for this art style
----@field helpText? string The help text to display in the painting menu. This should explain how to get best results for this artStyle
+---@field paintType JOP.PaintType The brush type to use for this art style
+---@field brushType? JOP.BrushType The brush type to use for this art style
 local ArtStyle = {
     classname = "ArtStyle"
 }
@@ -71,6 +71,17 @@ function ArtStyle.registerControl(e)
     logger:assert(type(e.sliderDefault) == "number", "sliderDefault must be a number")
     logger:debug("Registering control %s", e.id)
     config.controls[e.id] = table.copy(e, {})
+end
+
+---@param e JOP.ArtStyle.colorPicker
+function ArtStyle.registerColorPicker(e)
+    logger:assert(type(e.id) == "string", "id must be a string")
+    logger:assert(type(e.shader) == "string", "shader must be a string")
+    logger:assert(type(e.name) == "string", "name must be a string")
+    logger:assert(type(e.uniform) == "string", "uniform must be a string")
+    e.defaultValue = e.defaultValue or tes3vector3.new(0.5, 0.5, 0.5)
+    logger:debug("Registering color picker %s", e.id)
+    config.colorPickers[e.id] = e
 end
 
 ---@param e JOP.ArtStyle.shader

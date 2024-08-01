@@ -9,7 +9,7 @@ version = "1.8.0"
 assets = [ "TheJoyOfPainting.esp", "Icons\\jop", "Meshes\\jop", "Sound\\jop", "Textures\\jop", "Docs\\JoyOfPainting.md", "MWSE\\mods\\mer\\joyOfPainting", "shaders\\XEshaders\\jop_adjuster.fx", "shaders\\XEshaders\\jop_charcoal.fx", "shaders\\XEshaders\\jop_greyscale.fx", "shaders\\XEshaders\\jop_ink.fx", "shaders\\XEshaders\\jop_oil.fx", "shaders\\XEshaders\\jop_vignette.fx", "shaders\\XEshaders\\jop_watercolor.fx", "shaders\\XEshaders\\jop_window.fx",]
 
 [dependencies.mwse]
-buildnumber = 3011
+buildnumber = 4052
 
 [dependencies.mge-xe]
 version = ">=0.15.0"

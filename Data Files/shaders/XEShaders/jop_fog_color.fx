@@ -2,9 +2,7 @@
 
 extern float distance = 250;
 extern float maxDistance = 250-1;
-extern float bgRed = 0.5;
-extern float bgGreen = 0.5;
-extern float bgBlue = 0.5;
+extern float3 fogColor = {0.5, 0.5, 0.5};
 
 texture lastshader;
 texture lastpass;
@@ -22,16 +20,16 @@ float readDepth(float2 tex)
 
 float4 main(float2 tex: TEXCOORD0) : COLOR0
 {
-  float4 color = tex2D(s0, tex);
+  float3 color = tex2D(s0, tex);
 
   // Cull distant objects
   float depth = readDepth(tex);
   float distance_exp = pow(distance, 2);
   float maxDistance_exp = pow(maxDistance, 2);
   float transitionD = 100 + distance * 10;
-  float4 fogColor = float4(bgRed, bgGreen, bgBlue, 1.0);
+
   color = lerp(color, fogColor, ( smoothstep(distance_exp, distance_exp + transitionD , depth ) * ( step(distance_exp, maxDistance_exp) )) );
-  return color;
+  return float4(color, 1);
 }
 
 technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 60;>

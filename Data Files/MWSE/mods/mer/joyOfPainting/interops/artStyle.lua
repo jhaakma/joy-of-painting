@@ -21,9 +21,9 @@ local shaders = {
     { id = "fogColor", shaderId = "jop_fog_color",
         defaultControls = {
             "distanceColor",
-            "bgRed",
-            "bgGreen",
-            "bgBlue"
+        },
+        defaultColorPickers = {
+            "fogColor"
         }
     },
     { id = "fogBW", shaderId = "jop_fog_bw", defaultControls = { "distanceBW", "bgColor" } },
@@ -293,33 +293,6 @@ local controls = {
         defaultValue = -1.0,
     },
     {
-        id = "bgRed",
-        uniform = "bgRed",
-        shader = "jop_fog_color",
-        name = "Fog Color: Red",
-        sliderDefault = 50,
-        shaderMin = 0.05,
-        shaderMax = 1,
-    },
-    {
-        id = "bgGreen",
-        uniform = "bgGreen",
-        shader = "jop_fog_color",
-        name = "Fog Color: Green",
-        sliderDefault = 50,
-        shaderMin = 0.05,
-        shaderMax = 1,
-    },
-    {
-        id = "bgBlue",
-        uniform = "bgBlue",
-        shader = "jop_fog_color",
-        name = "Fog Color: Blue",
-        sliderDefault = 50,
-        shaderMin = 0.05,
-        shaderMax = 1,
-    },
-    {
         id = "threshold",
         uniform = "threshold",
         shader = "jop_blackwhite",
@@ -351,7 +324,6 @@ local controls = {
             return 0.2
         end
     },
-
     {
         id = "canvasStrengthOil",
         uniform = "canvas_strength",
@@ -415,6 +387,16 @@ local controls = {
         shaderMin = 0.0,
         shaderMax = 3.0,
     }
+}
+
+---@type JOP.ArtStyle.colorPicker[]
+local colorPickers = {
+    {
+        id = "fogColor",
+        shader = "jop_fog_color",
+        name = "Fog Color",
+        uniform = "fogColor",
+    },
 }
 
 ---@type JOP.ArtStyle.data[]
@@ -573,6 +555,9 @@ for _, shader in ipairs(shaders) do
     end
     for _, control in ipairs(controls) do
         JoyOfPainting.ArtStyle.registerControl(control)
+    end
+    for _, colorPicker in ipairs(colorPickers) do
+        JoyOfPainting.ArtStyle.registerColorPicker(colorPicker)
     end
     for _, artStyle in ipairs(artStyles) do
         JoyOfPainting.ArtStyle.registerArtStyle(artStyle)

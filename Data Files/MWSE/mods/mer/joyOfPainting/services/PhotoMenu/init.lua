@@ -37,6 +37,7 @@ local alwaysOnShaders
 ---@field isLooking boolean? default false
 ---@field shaders JOP.ArtStyle.shader[]?
 ---@field controls string[]?
+---@field colorPickers string[]?
 ---@field subjects table<string, JOP.SubjectService.Result>
 ---@field location JOP.Painting.location
 local PhotoMenu = {
@@ -73,8 +74,18 @@ function PhotoMenu:new(photoMenuParams)
 
     --Add controls
     o.controls = {}
-    for _, control in ipairs(o.artStyle.controls) do
-        table.insert(o.controls, control)
+    if o.artStyle and o.artStyle.controls then
+        for _, control in ipairs(o.artStyle.controls) do
+            table.insert(o.controls, control)
+        end
+    end
+
+    --Add color pickers
+    o.colorPickers = {}
+    if o.artStyle and o.artStyle.colorPickers then
+        for _, colorPicker in ipairs(o.artStyle.colorPickers) do
+            table.insert(o.colorPickers, colorPicker)
+        end
     end
 
     --add shaders
@@ -91,6 +102,11 @@ function PhotoMenu:new(photoMenuParams)
             if shader.defaultControls then
                 for _, control in ipairs(shader.defaultControls) do
                     table.insert(o.controls, control)
+                end
+            end
+            if shader.defaultColorPickers then
+                for _, colorPicker in ipairs(shader.defaultColorPickers) do
+                    table.insert(o.colorPickers, colorPicker)
                 end
             end
         end
@@ -376,26 +392,89 @@ function PhotoMenu:createControlsBlock(parent)
     return controlsBlock
 end
 
+---@param parent tes3uiElement
+---@param colorPicker JOP.ArtStyle.colorPicker
+function PhotoMenu:createColorPicker(parent, colorPicker)
+    logger:debug("Creating color picker %s", colorPicker.id)
+
+    local block = parent:createBlock{
+        id = colorPicker.id
+    }
+    block.flowDirection = "top_to_bottom"
+    block.widthProportional = 1.0
+    block.autoHeight = true
+
+    --header
+    block:createLabel {
+        text = colorPicker.name
+    }
+
+    if not config.persistent[colorPicker.id] then
+        config.persistent[colorPicker.id] = colorPicker.defaultValue
+    end
+
+    ---@type tes3uiElement
+    local picker = block:createColorPicker{
+        alpha = false,
+        initialColor = config.persistent[colorPicker.id],
+        showOriginal = false,
+        showDataRow = false,
+        showSaturationSlider = false,
+    }
+
+    local function update()
+        local color = picker.widget.picker:getColor()
+        color = tes3vector3.new(color.r, color.g, color.b)
+        config.persistent[colorPicker.id] = color
+        logger:debug("Setting color %s to %s", colorPicker.id, color)
+        ShaderService.setUniform(colorPicker.shader, colorPicker.uniform, config.persistent[colorPicker.id])
+    end
+
+    local function registerUpdateEvents(element)
+        -- click
+        element:register(tes3.uiEvent.mouseClick, function(e)
+            update()
+        end)
+        -- drag
+        element:register(tes3.uiEvent.mouseRelease, function(e)
+            update()
+        end)
+        for _, child in ipairs(element.children) do
+            registerUpdateEvents(child)
+        end
+    end
+    registerUpdateEvents(picker)
+    update()
+end
+
 function PhotoMenu:createShaderControls(parent)
     local controlsBlock = self:getControlsBlock()
         or self:createControlsBlock(parent)
-    if not self.controls then
-        logger:debug("ArtStyle %s has no controls", self.artStyle.name)
-        return
-    end
-    logger:debug("Creating shader controls")
-    local controls = self.controls
-
-
-    for _, controlName in ipairs(controls) do
-        local control = config.controls[controlName]
-        if not control then
-            logger:error("Control %s not found", controlName)
-        else
-            if not control.calculate then
-                self:createControlSlider(controlsBlock, control)
+    if self.controls then
+        logger:debug("Creating shader controls")
+        local controls = self.controls
+        for _, controlName in ipairs(controls) do
+            local control = config.controls[controlName]
+            if not control then
+                logger:error("Control %s not found", controlName)
+            else
+                if not control.calculate then
+                    self:createControlSlider(controlsBlock, control)
+                end
+                self:setShaderValue(control)
             end
-            self:setShaderValue(control)
+        end
+    end
+    if self.colorPickers then
+        logger:debug("Creating color pickers")
+        for _, colorPickerId in ipairs(self.colorPickers) do
+            local colorPicker = config.colorPickers[colorPickerId]
+            if not colorPicker then
+                logger:error("Color picker %s not found", colorPickerId)
+            else
+                logger:debug("Creating color picker %s", colorPickerId)
+                self:createColorPicker(controlsBlock, colorPicker)
+            end
         end
     end
 end
