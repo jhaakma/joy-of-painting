@@ -60,10 +60,10 @@ end
 ---@param artStyle JOP.ArtStyle
 ---@return number
 function PaintService.getSavedPaintingIndex(artStyle)
-    local index = config.mcm.savedPaintingIndexes[artStyle.name]
+    local index = config.mcm.savedPaintingIndexes[artStyle.id]
     if not index then
         index = 1
-        config.mcm.savedPaintingIndexes[artStyle.name] = index
+        config.mcm.savedPaintingIndexes[artStyle.id] = index
         config:save()
     end
     return index
@@ -77,7 +77,7 @@ function PaintService.incrementSavedPaintingIndex(artStyle)
     if index >= config.mcm.maxSavedPaintings then
         nextIndex = 1
     end
-    config.mcm.savedPaintingIndexes[artStyle.name] = nextIndex
+    config.mcm.savedPaintingIndexes[artStyle.id] = nextIndex
     config:save()
     return nextIndex
 end
@@ -88,10 +88,10 @@ function PaintService.getSavedPaintingPath(artStyle)
     local index = PaintService.getSavedPaintingIndex(artStyle)
     if not index then
         index = 1
-        config.mcm.savedPaintingIndexes[artStyle.name] = index
+        config.mcm.savedPaintingIndexes[artStyle.id] = index
     end
     return string.format("Textures\\jop\\saved\\%s\\%s.png",
-        artStyle.name, index)
+        artStyle.id, index)
 end
 
 

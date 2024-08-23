@@ -443,7 +443,7 @@ function Easel.getActivationButtons()
                 for _, artStyleData in pairs(config.artStyles) do
                     local artStyle = ArtStyle:new(artStyleData)
                     table.insert(buttons, artStyle:getButton(function()
-                        Easel:new(e.reference):paint(artStyle.name)
+                        Easel:new(e.reference):paint(artStyle.id)
                     end))
                 end
                 tes3ui.showMessageMenu{

@@ -18,7 +18,7 @@ local function inventoryPaint(painting, artStyle)
                 getCanvasConfig = function()
                     return painting:getCanvasConfig()
                 end,
-                artStyle = config.artStyles[artStyle.name],
+                artStyle = config.artStyles[artStyle.id],
                 captureCallback = function(e)
                     painting.data.paintingTexture = e.paintingTexture
                     painting.data.location = e.location
@@ -38,7 +38,7 @@ local function inventoryPaint(painting, artStyle)
                 end,
                 finalCallback = function(e)
                     logger:debug("Creating new object for painting %s", e.paintingName)
-                    painting.data.artStyle = artStyle.name
+                    painting.data.artStyle = artStyle.id
                     local newPaintingObject = painting:createPaintingObject()
                     tes3.removeItem{
                         reference = tes3.player,
@@ -102,7 +102,7 @@ local function paperPaint(painting, artStyle)
                     }
                     photoMenu.painting = painting
                 end,
-                artStyle = config.artStyles[artStyle.name],
+                artStyle = config.artStyles[artStyle.id],
                 captureCallback = function(e)
                     --set paintingTexture before creating object
                     painting.data.paintingTexture = e.paintingTexture
@@ -121,7 +121,7 @@ local function paperPaint(painting, artStyle)
                 end,
                 finalCallback = function(e)
                     logger:debug("Creating new object for painting %s", e.paintingName)
-                    painting.data.artStyle = artStyle.name
+                    painting.data.artStyle = artStyle.id
                     local newPaintingObject = painting:createPaintingObject()
                     local newPaper = tes3.createReference{
                         object = newPaintingObject,

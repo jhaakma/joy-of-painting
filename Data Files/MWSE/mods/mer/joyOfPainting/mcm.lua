@@ -38,11 +38,11 @@ local function addSideBar(component)
 
     local linksCategory = component.sidebar:createCategory("Links")
     for _, link in ipairs(LINKS_LIST) do
-        linksCategory:createHyperLink{ text = link.text, url = link.url }
+        linksCategory:createHyperlink{ text = link.text, url = link.url }
     end
     local creditsCategory = component.sidebar:createCategory("Credits")
     for _, credit in ipairs(CREDITS_LIST) do
-        creditsCategory:createHyperLink{ text = credit.text, url = credit.url }
+        creditsCategory:createHyperlink{ text = credit.text, url = credit.url }
     end
 end
 

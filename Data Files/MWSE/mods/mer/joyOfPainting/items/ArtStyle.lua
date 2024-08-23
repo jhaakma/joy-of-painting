@@ -14,7 +14,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field uniform string The name of the external variable in the shader being manipulated
 ---@field shader string The shader to use for this color picker
 ---@field name string The name of the color picker (shown in menu)
----@field defaultValue? tes3vector3 The default value for the color picker
+---@field defaultValue ImagePixel The default value for the color picker
 
 ---@class JOP.ArtStyle.control
 ---@field id string The id of the control
@@ -30,6 +30,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field calculate? fun(skillLevel: number, artStyle: JOP.ArtStyle, canvas: JOP.Canvas): number A function that returns the value to be used for the shader variable
 
 ---@class JOP.ArtStyle.data
+---@field id string The id of the art style
 ---@field name string The name of the art style
 ---@field shaders string[] A list of shaders to apply to the painting
 ---@field valueModifier number The value modifier for the painting
@@ -56,11 +57,14 @@ ArtStyle.__index = ArtStyle
 
 ---@param e JOP.ArtStyle.data
 function ArtStyle.registerArtStyle(e)
-    logger:assert(type(e.name) == "string", "name must be a string")
+    logger:assert(type(e.id) == "string", "name must be a string")
     logger:assert(type(e.shaders) == "table", "shaders must be a table")
     logger:assert(type(e.valueModifier) == "number", "valueModifier must be a number")
+    if not e.name then
+        e.name = e.id
+    end
     logger:debug("Registering art style %s", e.name)
-    config.artStyles[e.name] = e
+    config.artStyles[e.id] = e
 end
 
 ---@param e JOP.ArtStyle.control

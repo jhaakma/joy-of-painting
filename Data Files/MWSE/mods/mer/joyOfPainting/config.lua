@@ -1,7 +1,6 @@
 ---@class JOP.config
 local config = {}
 
---TODO: replace with loadMetadata once available
 if toml.loadMetadata then
     config.metadata = toml.loadMetadata("The Joy of Painting")
 else

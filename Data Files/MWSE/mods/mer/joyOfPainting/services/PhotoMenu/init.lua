@@ -395,7 +395,20 @@ end
 ---@param parent tes3uiElement
 ---@param colorPicker JOP.ArtStyle.colorPicker
 function PhotoMenu:createColorPicker(parent, colorPicker)
-    logger:debug("Creating color picker %s", colorPicker.id)
+
+
+    if not config.persistent[colorPicker.id] then
+        config.persistent[colorPicker.id] = colorPicker.defaultValue
+    end
+
+    local initialColor = config.persistent[colorPicker.id] --[[@as ImagePixel]]
+    --Fix old defaultColors
+    if not(initialColor.r or initialColor.g or initialColor.b) then
+        initialColor = { r = 1, g = 1, b = 1 }
+    end
+
+    logger:debug("Creating color picker %s with intial value {r:%s, g:%s, b:%s}",
+        colorPicker.id, initialColor.r, initialColor.g, initialColor.b)
 
     local block = parent:createBlock{
         id = colorPicker.id
@@ -408,42 +421,27 @@ function PhotoMenu:createColorPicker(parent, colorPicker)
     block:createLabel {
         text = colorPicker.name
     }
-
-    if not config.persistent[colorPicker.id] then
-        config.persistent[colorPicker.id] = colorPicker.defaultValue
-    end
-
     ---@type tes3uiElement
-    local picker = block:createColorPicker{
+    local pickerElement = block:createColorPicker{
+        initialColor = initialColor,-- ImagePixel
         alpha = false,
-        initialColor = config.persistent[colorPicker.id],
-        showOriginal = false,
         showDataRow = false,
         showSaturationSlider = false,
+        showSaturationPicker = false,
+        showPreviews = false,
+        showOriginal = false,
     }
 
     local function update()
-        local color = picker.widget.picker:getColor()
-        color = tes3vector3.new(color.r, color.g, color.b)
+        local picker = pickerElement.widget --[[@as ColorPicker]]
+        local pixel = picker:getColor()
+        local color = tes3vector3.new(pixel.r, pixel.g, pixel.b)
         config.persistent[colorPicker.id] = color
         logger:debug("Setting color %s to %s", colorPicker.id, color)
         ShaderService.setUniform(colorPicker.shader, colorPicker.uniform, config.persistent[colorPicker.id])
     end
+    pickerElement:register("colorChanged", update)
 
-    local function registerUpdateEvents(element)
-        -- click
-        element:register(tes3.uiEvent.mouseClick, function(e)
-            update()
-        end)
-        -- drag
-        element:register(tes3.uiEvent.mouseRelease, function(e)
-            update()
-        end)
-        for _, child in ipairs(element.children) do
-            registerUpdateEvents(child)
-        end
-    end
-    registerUpdateEvents(picker)
     update()
 end
 

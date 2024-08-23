@@ -396,12 +396,14 @@ local colorPickers = {
         shader = "jop_fog_color",
         name = "Fog Color",
         uniform = "fogColor",
+        defaultValue = { r = 1, g = 1, b = 1 },
     },
 }
 
 ---@type JOP.ArtStyle.data[]
 local artStyles = {
     {
+        id = "Charcoal Drawing",
         name = "Charcoal Drawing",
         shaders = {
             "adjuster",
@@ -430,6 +432,7 @@ Use the fog setting to remove background elements and the threshold to adjust th
 ]]
     },
     {
+        id = "Ink Sketch",
         name = "Ink Sketch",
         shaders = {
             "ink",
@@ -454,6 +457,7 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
 ]]
     },
     {
+        id = "Pencil Drawing",
         name = "Pencil Drawing",
         shaders = {
             "detail",
@@ -482,6 +486,7 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
 ]]
     },
     {
+        id = "Watercolor Painting",
         name = "Watercolor Painting",
         shaders = {
             "detail",
@@ -516,6 +521,7 @@ Try replacing the background with the fog setting and changing the fog color to 
 ]]
     },
     {
+        id = "Oil Painting",
         name = "Oil Painting",
         shaders = {
             "detail",
