@@ -163,7 +163,7 @@ local persistentDefault = {
 ---@class JOP.config.MCM
 local mcmDefault = {
     enabled = true,
-    logLevel = "DEBUG", --TODO: Change to INFO before full release
+    logLevel = "INFO",
     savedPaintingIndexes = {},
     ---The maximum number of saved paintings to keep
     maxSavedPaintings = 20,
