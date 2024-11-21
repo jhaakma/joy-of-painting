@@ -412,7 +412,8 @@ local artStyles = {
             "detail",
             "adjuster",
             "pencil",
-            "composite"
+            "composite",
+            "quantize",
         },
         controls = {
             "brightness",
@@ -440,6 +441,7 @@ Use the fog setting to remove background elements and the threshold to adjust th
             "composite",
             "outline",
             "hatch",
+            "quantize",
         },
         controls = {
             "brightness",

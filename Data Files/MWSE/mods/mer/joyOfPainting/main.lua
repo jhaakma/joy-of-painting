@@ -21,14 +21,11 @@ initAll("interops")
 
 --Add Interop to dialogue environments
 event.register(tes3.event.dialogueEnvironmentCreated, function(e)
+    ---@class mwseDialogueEnvironment
     local env = e.environment
     env.JoyOfPainting = Interop
 end)
 
---Add Interop to UIEXP sandbox
-event.register("UIEXP:sandboxConsole", function(e)
-    e.sandbox.jop = Interop
-end)
 
 event.register(tes3.event.initialized, function()
     logger:debug("Initialising activators")

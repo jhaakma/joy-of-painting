@@ -255,7 +255,7 @@ function UIHelper.createPaintingImage(parent, e)
         logger:error("Could not get dimensions for painting %s", e.canvasId)
         return
     end
-    local outerBlock = parent:createRect{ id = "JOP_PaintingImage_block", color = {0.1, 0.1, 0.1}}
+    local outerBlock = parent:createBlock{ id = "JOP_PaintingImage_block"}
     outerBlock.flowDirection = "left_to_right"
     outerBlock.borderAllSides = 6
     outerBlock.autoHeight = true

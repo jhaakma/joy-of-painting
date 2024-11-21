@@ -169,7 +169,7 @@ function Easel:paint(artStyle)
     if self:getCanvasConfig() then
         timer.delayOneFrame(function()
             PhotoMenu:new{
-                getCanvasConfig = function(_)
+                getCanvasConfig = function()
                     return self:getCanvasConfig()
                 end,
                 artStyle = config.artStyles[artStyle],
