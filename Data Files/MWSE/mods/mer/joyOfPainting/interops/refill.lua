@@ -87,8 +87,6 @@ local refills = {
             end,
         }
     },
-
-
     {
         paintType = "oil",
         recipe = OilPaints.getRecipe(),
@@ -144,7 +142,38 @@ local refills = {
                 end
             end,
         }
-    }
+    },
+    --Refill ink pot using a mix of charcoal and resin
+    {
+        paintType = "ink",
+        recipe = {
+            name = "Ink",
+            previewMesh = "misc\\inkwell.nif",
+            id = "jop_ink_refill",
+            description = "Refill the ink pot using an ink made of charcoal and resin.",
+            materials = {
+                {
+                    material = "coal",
+                    count = 1,
+                },
+                {
+                    material = "resin",
+                    count = 1,
+                },
+            },
+            knowledgeRequirement = function()
+                --check that ashfall is installed
+                return tes3.isModActive("Ashfall.esp")
+            end,
+            noResult = true,
+            craftCallback = function(self)
+                local paletteToRefill = Palette.getPaletteToRefill()
+                if paletteToRefill then
+                    paletteToRefill:doRefill()
+                end
+            end
+        }
+    },
 }
 event.register(tes3.event.initialized, function()
     for _, refill in ipairs(refills) do
