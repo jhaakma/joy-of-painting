@@ -47,6 +47,11 @@ function Sketchbook.registerSketchbook(e)
     }
 end
 
+function Sketchbook.isSketchbook(id)
+    return config.sketchbooks[id:lower()] ~= nil
+end
+
+
 ---@param e JOP.Sketchbook.data
 function Sketchbook:new(e)
     assert(e.reference or e.item, "Sketchbook requires either a reference or an item")
@@ -89,6 +94,7 @@ function Sketchbook:new(e)
                 sketchbook.dataHolder.data.joyOfPainting = {
                     sketches = {}
                 }
+                logger:debug("data.joyOfPainting: %s", sketchbook.dataHolder.data.joyOfPainting)
             end
             sketchbook.dataHolder.data.joyOfPainting[k] = v
         end
@@ -111,7 +117,13 @@ function Sketchbook:new(e)
     return sketchbook
 end
 
+---@param e { item: tes3item|tes3misc, itemData: tes3itemData, showMenu: boolean? }
 function Sketchbook:addSketch(e)
+    logger:debug("Adding sketch to sketchbook")
+    if e.showMenu == nil then
+        e.showMenu = true
+    end
+
     local item = e.item
     local itemData = e.itemData
     local painting = Painting:new{
@@ -131,6 +143,11 @@ function Sketchbook:addSketch(e)
 
     --add to sketch list
     self.currentSketchIndex = self.currentSketchIndex + 1
+    if self.data.sketches == nil then
+        logger:debug("Creating sketches array")
+        self.data.sketches = {}
+     end
+    logger:debug("Sketches: %s", self.data.sketches)
     table.insert(self.data.sketches, self.currentSketchIndex, newSketch)
 
     --remove from inventory
@@ -141,7 +158,10 @@ function Sketchbook:addSketch(e)
         playSound = false
     }
     tes3.messageBox('"%s" added to sketchbook.', newSketch.data.paintingName)
-    self:createSketchMenu()
+
+    if e.showMenu then
+        self:createSketchMenu()
+    end
     tes3.playSound{
         sound = "scroll",
         reference = tes3.player
