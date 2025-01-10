@@ -1,6 +1,9 @@
 texture lastshader;
+texture depthframe;
 
 sampler s0 = sampler_state { texture = <lastshader>; magfilter = point; minfilter = point; };
+sampler sDepthFrame = sampler_state { texture=<depthframe>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
+
 
 float PI = 3.14159265359;
 float2 rcpres;
@@ -17,6 +20,13 @@ float gaussian(float sigma, float pos) {
     return (1.0f / sqrt(2.0f * PI * sigma * sigma)) * exp(-(pos * pos) / (2.0f * sigma * sigma));
 }
 
+float readDepth(float2 tex)
+{
+	float depth = pow(tex2D(sDepthFrame, tex).r,1);
+	return depth;
+}
+
+
 Region calcRegion(float2 uv, int xStart, int xEnd, int yStart, int yEnd)
 {
     Region r;
@@ -25,13 +35,19 @@ Region calcRegion(float2 uv, int xStart, int xEnd, int yStart, int yEnd)
     float totalWeight = 0.0;
 
     int samples = 0;
+
+    float depth = saturate(readDepth(uv) / 100000);
+
+    float minRadius = max(1, radius * 0.5);
+    float effectiveRadius = lerp(radius, minRadius, depth);
+
     [loop]
     for (int x = xStart; x <= xEnd; x++)
     {
         [loop]
         for (int y = yStart; y <= yEnd; y++)
         {
-            float within_kernel = step(length(float2(x, y)), radius);
+            float within_kernel = step(length(float2(x, y)), effectiveRadius);
             if (within_kernel == 1) {
                 float2 offset = float2(rcpres.x * x, rcpres.y * y);
                 float3 tex = tex2D(s0, uv + offset);
@@ -52,12 +68,9 @@ Region calcRegion(float2 uv, int xStart, int xEnd, int yStart, int yEnd)
     return r;
 }
 
+
 float4 paint(float2 tex : TEXCOORD0) : COLOR
 {
-    int upper = (radius*2 - 1) / 2;
-    int lower = -upper;
-
-    int samples = (upper + 1) * (upper + 1);
 
     Region regionA = calcRegion(tex, -12, 0, -12, 0);
     Region regionB = calcRegion(tex, 0, 12, -12, 0);
@@ -79,6 +92,9 @@ float4 paint(float2 tex : TEXCOORD0) : COLOR
 
     testVal = step(regionD.variance, minVar);
     col = lerp(col, regionD.mean, testVal);
+
+
+
 
     return float4(col, 1.0);
 }

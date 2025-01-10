@@ -121,7 +121,7 @@ local controls = {
         name = "Transparency",
         sliderDefault = 50,
         shaderMin = 0.0,
-        shaderMax = 2.0,
+        shaderMax = 1.0,
     },
     {
         id = "charcoalCompositeStrength",
@@ -148,15 +148,27 @@ local controls = {
         end
     },
     {
-        id = "mildTransparency",
+        id = "watercolorComposite",
         uniform = "compositeStrength",
         shader = "jop_composite",
         name = "Transparency",
         sliderDefault = 0,
         shaderMin = 0.0,
-        shaderMax = 3.0,
+        shaderMax = 0.0,
         calculate = function(_)
-            return 0.5
+            return 0.3
+        end
+    },
+    {
+        id = "oilComposite",
+        uniform = "compositeStrength",
+        shader = "jop_composite",
+        name = "Transparency",
+        sliderDefault = 0,
+        shaderMin = 0.0,
+        shaderMax = 0.0,
+        calculate = function(_)
+            return 0.2
         end
     },
     {
@@ -185,6 +197,26 @@ local controls = {
         sliderDefault = 50,
         shaderMin = 0.01,
         shaderMax = 2.01,
+    },
+    {
+        id = "saturation",
+        uniform = "saturation",
+        shader = "jop_adjuster",
+        name = "Saturation",
+        sliderDefault = 0,
+        shaderMin = 1.0,
+        shaderMax = 5.0,
+        defaultValue = 1.0,
+    },
+    {
+        id = "hue",
+        uniform = "hue",
+        shader = "jop_adjuster",
+        name = "Hue",
+        sliderDefault = 0,
+        shaderMin = 0.0,
+        shaderMax = 1.0,
+        defaultValue = 0.0,
     },
     {
         id = "detail",
@@ -228,16 +260,6 @@ local controls = {
             )
         end
     },
-    {
-        id = "saturation",
-        uniform = "saturation",
-        shader = "jop_adjuster",
-        name = "Saturation",
-        sliderDefault = 50,
-        shaderMin = 0.5,
-        shaderMax = 1.5,
-    },
-
     {
         id = "inkThickness",
         uniform = "inkThickness",
@@ -413,7 +435,6 @@ local artStyles = {
             "adjuster",
             "pencil",
             "composite",
-            "quantize",
         },
         controls = {
             "brightness",
@@ -441,7 +462,6 @@ Use the fog setting to remove background elements and the threshold to adjust th
             "composite",
             "outline",
             "hatch",
-            "quantize",
         },
         controls = {
             "brightness",
@@ -472,6 +492,7 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
         controls = {
             "brightness",
             "contrast",
+            "saturation",
             "hatchStrength",
             "pencilStrength",
             "pencilScale",
@@ -501,12 +522,14 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
             "quantize",
         },
         controls = {
-            "watercolorLut",
+            --"watercolorLut",
             "vignette",
             "brightness",
             "contrast",
+            "saturation",
+            "hue",
             "canvasStrengthWatercolor",
-            "mildTransparency",
+            "watercolorComposite",
         },
         valueModifier = 4,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
@@ -541,6 +564,7 @@ Try replacing the background with the fog setting and changing the fog color to 
             "canvasStrengthOil",
             "distortionStrength",
             "hatchStrength",
+            "oilComposite",
         },
         valueModifier = 9,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",

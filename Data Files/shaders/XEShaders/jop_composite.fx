@@ -21,11 +21,14 @@ static const float screen_height = rcpres.y;
 texture lastshader;
 texture lastpass;
 texture depthframe;
+
+//The composite texture, representing the canvas under the painting
 texture tex1  < string src="jop/composite_tex.dds"; >;
+//Alpha masks for the vignette effect
 texture tex2 < string src="jop/vignetteAlphaMask.tga"; >;
 texture tex3 < string src="jop/vignetteAlphaMask_2.tga"; >;
 texture tex4 < string src="jop/vignetteAlphaMask_3.tga"; >;
-//texture tex5 < string src="jop/vignetteAlphaMask_4.tga"; >;
+
 sampler2D sLastShader = sampler_state { texture = <lastshader>; addressu = clamp; };
 sampler2D sLastPass = sampler_state { texture = <lastpass>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
 sampler sDepthFrame = sampler_state { texture=<depthframe>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
@@ -41,6 +44,13 @@ float readDepth(float2 tex)
 	return depth;
 }
 
+/**
+* Renders the canvas image on the screen, adjusting for aspect ratio and rotation.
+* @param tex The texture coordinates of the pixel.
+* @param image The canvas image.
+* @param doRotate If true, the canvas window is rotated 90 degrees.
+* @return The color of the pixel.
+*/
 float4 renderCanvas(float2 tex, sampler2D image, bool doRotate = false) : COLOR0
 {
     // Calculate the aspect ratio of the screen
@@ -88,6 +98,22 @@ float4 renderCanvas(float2 tex, sampler2D image, bool doRotate = false) : COLOR0
     }
 }
 
+// Overlay blend mode
+// Combine two images based on brightness
+// For painting < 0.5, multiply the images
+// For painting >= 0.5, screen the images
+float3 overlay(float3 baseVal, float3 blendVal, float blendStrength) {
+        // Multiply for painting < 0.5
+    float3 multiplyVal = 2.0 * baseVal * blendVal;
+
+    // Screen for painting >= 0.5
+    float3 screenVal = 1.0 - 2.0 * (1.0 - baseVal) * (1.0 - blendVal);
+
+    // step(0.5, baseVal) is 0 if baseVal < 0.5, 1 if baseVal >= 0.5
+    float3 result = lerp(multiplyVal, screenVal, step(0.5, blendVal));
+
+    return lerp(baseVal, result, blendStrength*0.25);
+}
 
 //This takes composites the sLastShader onto the result of sLastPass.
 //It renders the sLastShader transparent based on brightness and the compositeStrength.
@@ -96,39 +122,42 @@ float4 renderCanvas(float2 tex, sampler2D image, bool doRotate = false) : COLOR0
 float4 composite(float2 tex : TEXCOORD0) : COLOR0
 {
     float4 image = tex2D(sLastShader, tex);
-    float4 composite = renderCanvas(tex, sComposite, isRotated);
+    float4 canvas = renderCanvas(tex, sComposite, isRotated);
     float4 alphaMask_1 = renderCanvas(tex, sVignetteAlphaMask_1);
     float4 alphaMask_2 = renderCanvas(tex, sVignetteAlphaMask_2);
     float4 alphaMask_3 = renderCanvas(tex, sVignetteAlphaMask_3);
-    //float4 alphaMask_4 = renderCanvas(tex, sVignetteAlphaMask_4);
 
-    // Calculate the brightness of the sLastShader
     float brightness = max(max(image.r, image.g), image.b);
 
     // Calculate the final image based on compositeStrength
-    float4 overlay = lerp(image, float4(0.01,0.01,0.01,image.a), doBlackenImage);
-    float4 result = lerp(overlay, composite, saturate(brightness * compositeStrength));
-    result = lerp(result, composite, (1-alphaMask_1.a) * (maskIndex == 1));
-    result = lerp(result, composite, (1-alphaMask_2.a) * (maskIndex == 2));
-    result = lerp(result, composite, (1-alphaMask_3.a) * (maskIndex == 3));
-    //result = lerp(result, composite, (1-alphaMask_4.a) * (maskIndex == 4));
+
+    // Convert to black for sketches
+    image = lerp(image, float4(0.01,0.01,0.01,image.a), doBlackenImage);
+
+    image = lerp(image, canvas, saturate(brightness * compositeStrength));
+
+    if (!doBlackenImage) {
+        image.rgb = overlay(image.rgb, canvas.rgb, compositeStrength);
+    }
+
+    image = lerp(image, canvas, (1-alphaMask_1.a) * (maskIndex == 1));
+    image = lerp(image, canvas, (1-alphaMask_2.a) * (maskIndex == 2));
+    image = lerp(image, canvas, (1-alphaMask_3.a) * (maskIndex == 3));
+    //image = lerp(image, canvas, (1-alphaMask_4.a) * (maskIndex == 4));
 
     // Cull distant objects
     float depth = readDepth(tex);
     float distance_exp = pow(fogDistance, 2);
     float maxDistance_exp = pow(maxDistance, 2);
     float transitionD = 100 + fogDistance * 10;
-    result = lerp(result, composite, ( smoothstep(distance_exp, distance_exp + transitionD , depth ) * ( step(distance_exp, maxDistance_exp) )) );
+    image = lerp(image, canvas, ( smoothstep(distance_exp, distance_exp + transitionD , depth ) * ( step(distance_exp, maxDistance_exp) )) );
 
-    // Where the composite has alpha, render as black
-    result.rgb = lerp(0.01, result.rgb, composite.a);
+    // Where the canvas has alpha, render as black
+    image.rgb = lerp(0.001, image.rgb, canvas.a);
 
-    return result;
+    return image;
 }
 
-
-
-//priority adjusted to 100,000,000 above final because this REALLY can not be overwritten without breaking the mod
 technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 500; >
 {
     pass p1 { PixelShader = compile ps_3_0 composite(); }

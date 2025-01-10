@@ -1,9 +1,11 @@
 // Number of luminosity levels to quantize into
-extern int luminosityLevels = 12;
+extern int luminosityLevels = 8;
 extern int hueLevels = 12;
 
 texture lastshader;
+texture depthframe;
 sampler2D sLastShader = sampler_state { texture = <lastshader>; addressu = clamp; };
+sampler sDepthFrame = sampler_state { texture=<depthframe>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
 
 float3 RGBToHSL(float3 color)
 {
@@ -90,8 +92,23 @@ float3 HSLToRGB(float3 hsl)
     return rgb;
 }
 
+float readDepth(float2 tex)
+{
+	float depth = pow(tex2D(sDepthFrame, tex).r,1);
+	return depth;
+}
+
+
 
 float4 main(float2 uv : TEXCOORD) : SV_Target {
+
+    float depth = saturate(readDepth(uv) / 100000);
+    float maxLumLevels = max(luminosityLevels, luminosityLevels);
+    float effectiveLumLevels = lerp(luminosityLevels, maxLumLevels, depth);
+
+    float maxHueLevels = max(50, hueLevels);
+    float effectiveHueLevels = lerp(hueLevels, maxHueLevels, depth);
+
     // Sample the texture color
     float4 texColor = tex2D(sLastShader, uv);
 
@@ -100,12 +117,12 @@ float4 main(float2 uv : TEXCOORD) : SV_Target {
 
     // Quantize luminosity
     float luminosity = hsl.z;
-    float offset = 1.0 / (2.0 * luminosityLevels);
-    float quantizedLuminosity = floor(luminosity * luminosityLevels) / (luminosityLevels-1) - offset;
+    float offset = 1.0 / (2.0 * effectiveLumLevels);
+    float quantizedLuminosity = floor(luminosity * effectiveLumLevels) / (effectiveLumLevels-1) - offset;
 
     // Quantize hue
     float hue = hsl.x;
-    float quantizedHue = floor(hsl.x * hueLevels) / hueLevels;
+    float quantizedHue = floor(hsl.x * effectiveHueLevels) / effectiveHueLevels;
 
     // Convert back to RGB
     hsl.z = quantizedLuminosity;

@@ -54,8 +54,8 @@ float4 add_window(float2 tex: TEXCOORD0) : COLOR0
 float4 clamp_levels(float2 tex: TEXCOORD0) : COLOR0{
     //Clamp brightness
     float4 color = tex2D(sLastShader, tex);
-    float min = 0.01;
-    float max = 0.99;
+    float min = 0.001;
+    float max = 0.9;
     color.rgb = color.rgb * (max - min) + min;
     return color;
 }
