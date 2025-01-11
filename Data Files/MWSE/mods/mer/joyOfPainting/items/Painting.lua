@@ -422,15 +422,15 @@ function Painting:rotate(sound)
         return newRef
     else
         --Remove old item from inventory and add rotated version
-        tes3.addItem{
-            item = rotatedId, --[[@as JOP.tes3itemChildren]]
+        tes3.removeItem{
+            item = self.item.id,
             itemData = self.dataHolder,
             count = 1,
             reference = tes3.player,
             playSound = false,
         }
-        tes3.removeItem{
-            item = self.item.id,
+        tes3.addItem{
+            item = rotatedId, --[[@as JOP.tes3itemChildren]]
             itemData = self.dataHolder,
             count = 1,
             reference = tes3.player,
