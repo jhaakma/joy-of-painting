@@ -81,7 +81,7 @@ local function activate(e)
                 end,
                 showRequirements = function()
                     local canvasConfig = painting:getCanvasConfig()
-                    if canvasConfig and not canvasConfig.requiresEasel then
+                    if not (canvasConfig and canvasConfig.requiresEasel) then
                         return true
                     end
                     return false

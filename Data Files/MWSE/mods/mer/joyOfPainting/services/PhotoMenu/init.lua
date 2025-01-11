@@ -24,25 +24,28 @@ local ImageLib = require("imagelib")
 local alwaysOnShaders
 
 
----@class JOP.PhotoMenu
----@field artStyle JOP.ArtStyle
+---@class JOP.PhotoMenu.newParams
+---@field artStyle JOP.ArtStyle.data
 ---@field getCanvasConfig fun():JOP.Canvas
----@field doRotate function
----@field canvasConfig JOP.Canvas
----@field painting JOP.Painting
----@field captureCallback function
----@field closeCallback function
----@field cancelCallback function
----@field finalCallback function
----@field isLooking boolean? default false
----@field shaders JOP.ArtStyle.shader[]?
+---@field doRotate? function
+---@field captureCallback? function
+---@field closeCallback? function
+---@field cancelCallback? function
+---@field finalCallback? function
 ---@field controls string[]?
 ---@field colorPickers string[]?
+
+---@class JOP.PhotoMenu : JOP.PhotoMenu.newParams
+---@field artStyle JOP.ArtStyle
+---@field controls string[]
 ---@field subjects table<string, JOP.SubjectService.Result>
 ---@field location JOP.Painting.location
+---@field canvasConfig JOP.Canvas
+---@field painting JOP.Painting
+---@field shaders JOP.ArtStyle.shader[]?
+---@field isLooking boolean? default false
 local PhotoMenu = {
     shaders = nil,
-    controls = nil,
     isLooking = false
 }
 PhotoMenu.menuID = "TJOP.PhotoMenu"
@@ -50,11 +53,6 @@ PhotoMenu.menuID = "TJOP.PhotoMenu"
 local function getpaintingTexture()
     return GUID.generate() .. ".dds"
 end
-
----@class JOP.PhotoMenu.newParams : JOP.PhotoMenu
----@field artStyle JOP.ArtStyle.data
-
-
 
 
 ---comment
@@ -401,7 +399,7 @@ function PhotoMenu:createColorPicker(parent, colorPicker)
         config.persistent[colorPicker.id] = colorPicker.defaultValue
     end
 
-    local initialColor = config.persistent[colorPicker.id] --[[@as ImagePixel]]
+    local initialColor = config.persistent[colorPicker.id] --[[@as mwseColorTable]]
     --Fix old defaultColors
     if not(initialColor.r or initialColor.g or initialColor.b) then
         initialColor = { r = 1, g = 1, b = 1 }
@@ -433,7 +431,7 @@ function PhotoMenu:createColorPicker(parent, colorPicker)
     }
 
     local function update()
-        local picker = pickerElement.widget --[[@as ColorPicker]]
+        local picker = pickerElement.widget --[[@as tes3uiColorPicker]]
         local pixel = picker:getColor()
         local color = tes3vector3.new(pixel.r, pixel.g, pixel.b)
         config.persistent[colorPicker.id] = color

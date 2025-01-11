@@ -7,6 +7,7 @@ local PhotoMenu = require("mer.joyOfPainting.services.PhotoMenu")
 local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 local Activator = require("mer.joyOfPainting.services.AnimatedActivator")
 local Frame = require("mer.joyOfPainting.items.Frame")
+local CraftingFramework = require("CraftingFramework")
 
 ---@class JOP.CanvasData : JOP.Painting.data
 ---@field textureWidth number|nil The width of the painting texture
@@ -94,7 +95,7 @@ end
 
 
 function Easel:attachCanvasFromInventory(item, itemData)
-    if not tes3.player.object.inventory:contains(item, itemData) then
+    if not CraftingFramework.CarryableContainer.findItemStack{ item = item, itemData = itemData } then
         logger:debug("Player does not have canvas %s", item.id)
         return
     end
@@ -103,7 +104,7 @@ function Easel:attachCanvasFromInventory(item, itemData)
         self:setClamp()
         --Remove the canvas from the player's inventory
         logger:debug("Removing canvas %s from inventory", item.id)
-        tes3.removeItem{
+        CraftingFramework.CarryableContainer.removeItem{
             reference = tes3.player,
             item = item.id,
             itemData = itemData,
@@ -121,7 +122,7 @@ end
 ]]
 function Easel:openAttachCanvasMenu()
     timer.delayOneFrame(function()
-        tes3ui.showInventorySelectMenu{
+        CraftingFramework.InventorySelectMenu.open{
             title = "Select a canvas",
             noResultsText = "No canvases found",
             callback = function(e)
@@ -403,7 +404,7 @@ end
 ---@return boolean
 function Easel.playerHasCanvas()
     ---@param stack tes3itemStack
-    for _, stack in pairs(tes3.player.object.inventory) do
+    for _, stack in pairs(CraftingFramework.CarryableContainer.getFullInventory()) do
         if config.canvases[stack.object.id:lower()] then
             return true
         end

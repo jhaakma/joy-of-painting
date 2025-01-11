@@ -1,6 +1,6 @@
 // Number of luminosity levels to quantize into
-extern int luminosityLevels = 8;
-extern int hueLevels = 12;
+extern int luminosityLevels = 12;
+extern int hueLevels = 20;
 
 texture lastshader;
 texture depthframe;

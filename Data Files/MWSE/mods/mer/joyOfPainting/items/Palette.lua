@@ -123,7 +123,7 @@ function Palette:use()
             if self.reference then
                 self.reference:delete()
             else
-                tes3.removeItem{
+                CraftingFramework.CarryableContainer.removeItem{
                     reference = tes3.player,
                     item = self.item,
                     itemData = self.itemData,

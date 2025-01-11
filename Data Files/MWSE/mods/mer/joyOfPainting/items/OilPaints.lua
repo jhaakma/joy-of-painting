@@ -5,6 +5,7 @@
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("OilPaints")
 local Palette = require("mer.joyOfPainting.items.Palette")
+local CraftingFramework = require("CraftingFramework")
 
 
 ---@class JOP.OilPaints : JOP.ItemInstance
@@ -36,7 +37,7 @@ end
 --Find how many oil paint refills is in the player inventory
 function OilPaints.getPlayerRefills()
     local refills = 0
-    local stack = tes3.player.object.inventory:findItemStack(OilPaints.id)
+    local stack = CraftingFramework.CarryableContainer.findItemStack{ item = OilPaints.id }
     if not stack then
         return refills
     end
@@ -62,8 +63,11 @@ end
 --Find an oil paints in the inventory and reduce its refills by 1
 function OilPaints.reduceRefillsInInventory()
     logger:debug("reduceRefillsInInventory()")
-    local stack = tes3.player.object.inventory:findItemStack(OilPaints.id)
-    logger:assert(stack ~= nil, "Could not find oil paints in inventory")
+    local stack = CraftingFramework.CarryableContainer.findItemStack{ item = OilPaints.id }
+    if not stack then
+        logger:error("Could not find oil paints in inventory")
+        return
+    end
     if stack.variables then
         for _, itemData in ipairs(stack.variables) do
             local oilPaints = OilPaints:new{

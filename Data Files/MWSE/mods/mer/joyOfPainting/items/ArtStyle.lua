@@ -2,6 +2,7 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("ArtStyle")
 local Palette = require("mer.joyOfPainting.items.Palette")
+local CraftingFramework = require("CraftingFramework")
 
 ---@class JOP.ArtStyle.shader
 ---@field id string The id of the shader
@@ -14,7 +15,7 @@ local Palette = require("mer.joyOfPainting.items.Palette")
 ---@field uniform string The name of the external variable in the shader being manipulated
 ---@field shader string The shader to use for this color picker
 ---@field name string The name of the color picker (shown in menu)
----@field defaultValue ImagePixel The default value for the color picker
+---@field defaultValue mwseColorTable The default value for the color picker
 
 ---@class JOP.ArtStyle.control
 ---@field id string The id of the control
@@ -138,9 +139,9 @@ function ArtStyle:playerHasBrush()
         logger:debug("No brush required for this art style")
         return true
     end
-
     for _, brush in pairs(self:getBrushes()) do
-        if tes3.player.object.inventory:contains(brush.id) then
+        local brushCount = CraftingFramework.CarryableContainer.getItemCount{ item = brush.id }
+        if brushCount > 0 then
             logger:debug("Found brush: %s", brush)
             return true
         end
@@ -187,7 +188,7 @@ function ArtStyle:playerHasPaint()
     --Search inventory
     for paletteId, paletteItem in pairs(self:getPalettes()) do
         logger:debug("Checking palette: %s", paletteId)
-        local itemStack = tes3.player.object.inventory:findItemStack(paletteId)
+        local itemStack = CraftingFramework.CarryableContainer.findItemStack{ item = paletteId }
         if itemStack then
             logger:debug("Found palette: %s", paletteId)
             --if no variables, then treat it as full if fullByDefault
@@ -244,7 +245,7 @@ function ArtStyle:usePaint()
     local newStacks = {}
 
     for paletteId, paletteItem in pairs(self:getPalettes()) do
-        local itemStack = tes3.player.object.inventory:findItemStack(paletteId)
+        local itemStack = CraftingFramework.CarryableContainer.findItemStack{ item = paletteId }
         if itemStack then
             if itemStack.variables then
                 for _, itemData in ipairs(itemStack.variables) do

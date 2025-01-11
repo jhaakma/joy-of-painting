@@ -24,7 +24,7 @@ TileDropper.register{
             itemData = e.target.itemData,
         }
         if not sketchbook then return end
-        sketchbook:addSketch{
+        sketchbook:appendSketch{
             item = e.held.item,
             itemData = e.held.itemData,
             showMenu = false

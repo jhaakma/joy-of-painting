@@ -4,6 +4,7 @@ local logger = common.createLogger("FrameActivator")
 local Painting = require("mer.joyOfPainting.items.Painting")
 local Activator = require("mer.joyOfPainting.services.AnimatedActivator")
 local Frame = require("mer.joyOfPainting.items.Frame")
+local CraftingFramework = require("CraftingFramework")
 
 ---@param e equipEventData|activateEventData
 local function activate(e)
@@ -46,7 +47,7 @@ local function activate(e)
                         end
 
                         logger:debug("Add Painting")
-                        tes3ui.showInventorySelectMenu{
+                        CraftingFramework.InventorySelectMenu.open{
                             title = "Select Painting",
                             noResultsText = "You don't have any paintings in your inventory.",
                             filter = function(e2)
@@ -90,7 +91,7 @@ local function activate(e)
                                 painting:attachCanvas(e2.item, e2.itemData)
                                 --Remove the canvas from the player's inventory
                                 logger:debug("Removing canvas %s from inventory", e2.item.id)
-                                tes3.removeItem{
+                                CraftingFramework.CarryableContainer.removeItem{
                                     reference = tes3.player,
                                     item = e2.item.id,
                                     itemData = e2.itemData,

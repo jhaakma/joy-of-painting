@@ -245,6 +245,7 @@ end
 --Display a painting in a UI menu
 ---@param parent tes3uiElement
 ---@param e JOP.UIHelper.viewPainting.params
+---@return { block: tes3uiElement, image: tes3uiElement }?
 function UIHelper.createPaintingImage(parent, e)
     --get dimensions
     local _, maxHeight = tes3ui.getViewportSize()
@@ -284,6 +285,7 @@ function UIHelper.createPaintingImage(parent, e)
                 }
             end)
         end
+        return { block = outerBlock, image = image }
     else
         logger:warn("Painting texture '%s' does not exist", paintingPath)
     end
