@@ -151,7 +151,7 @@ function Sketchbook:addSketch(e)
     table.insert(self.data.sketches, self.currentSketchIndex, newSketch)
 
     --remove from inventory
-    tes3.removeItem{
+    CraftingFramework.CarryableContainer.removeItem{
         item = e.item,
         itemData = itemData,
         reference = tes3.player,
@@ -166,6 +166,13 @@ function Sketchbook:addSketch(e)
         sound = "scroll",
         reference = tes3.player
     }
+end
+
+---Add sketch to the end of the list
+---@param e { item: tes3item|tes3misc, itemData: tes3itemData, showMenu: boolean? }
+function Sketchbook:appendSketch(e)
+    self.currentSketchIndex = #self.data.sketches
+    self:addSketch(e)
 end
 
 ---@return JOP.Sketchbook.sketch
@@ -225,7 +232,7 @@ end
 
 function Sketchbook:selectSketch()
     --selectInventoryMenu filtering on artwork that doesn't require an easel
-    tes3ui.showInventorySelectMenu{
+    CraftingFramework.InventorySelectMenu.open{
         title = "Select a sketch to add to your sketchbook.",
         noResultsText = "No sketches found.",
         filter = function(e)
@@ -252,6 +259,9 @@ function Sketchbook:createBaseMenu()
         id = "JOP_SketchbookMenu",
         fixedFrame = true,
     }
+    local content = menu:getContentElement()
+    content.flowDirection = "top_to_bottom"
+    content.childAlignX = 0.5
     return menu
 end
 
@@ -283,23 +293,33 @@ function Sketchbook:createSubtitle(parent)
    end
 end
 
+---@param parent tes3uiElement
 function Sketchbook:createSketchBlock(parent)
+
+    local block = parent:createBlock{
+        id = "JOP_Sketchbook_SketchBlock",
+    }
+    block.width = 640
+    block.height = 512
+    block.flowDirection = "top_to_bottom"
+    block.childAlignX = 0.5
+
     ---@type JOP.Sketchbook.sketch
     local currentSketch = self:getCurrentSketch()
     if currentSketch then
-        UIHelper.createPaintingImage(parent,{
+        UIHelper.createPaintingImage(block,{
             paintingName = currentSketch.data.paintingName,
             paintingTexture = currentSketch.data.paintingTexture,
             canvasId = currentSketch.data.canvasId,
         })
     else
         --create a big rect instead
-        local rect = parent:createRect{
+        local rect = block:createRect{
             id = "JOP_Sketchbook_EmptyRect",
             color = {0,0,0},
         }
-        rect.width = 400
-        rect.height = 400
+        rect.width = 640
+        rect.height = 512
     end
 end
 
@@ -431,7 +451,7 @@ end
 function Sketchbook:playerHasSketches()
     --check player inventory for sketches
     ---@param stack tes3itemStack
-    for _, stack in pairs(tes3.player.object.inventory) do
+    for _, stack in pairs(CraftingFramework.CarryableContainer.getFullInventory()) do
         --iterate variables
         if stack.variables then
             for _, itemData in pairs(stack.variables) do
@@ -508,9 +528,13 @@ function Sketchbook:createSketchMenu()
     self:createTitle(self.menu)
     self:createSubtitle(self.menu)
     self:createSketchBlock(self.menu)
-    self:createNavbar(self.menu)
-    self:createNameField(self.menu)
-    self:createActionButtons(self.menu)
+    local block = self.menu:createBlock()
+    block.flowDirection = "top_to_bottom"
+    block.width = 400
+    block.autoHeight = true
+    self:createNavbar(block)
+    self:createNameField(block)
+    self:createActionButtons(block)
     tes3ui.enterMenuMode(self.menu.id)
     self.menu:updateLayout()
     self.menu:updateLayout()
@@ -552,34 +576,38 @@ function Sketchbook:rename()
 end
 
 function Sketchbook:activate()
-    tes3ui.showMessageMenu{
-        message = self.item.name,
-        buttons = {
-            {
-                text = "Open",
-                callback = function()
-                    timer.delayOneFrame(function()
-                        self:open()
-                    end)
-                end
+    if self.reference then
+        tes3ui.showMessageMenu{
+            message = self.item.name,
+            buttons = {
+                {
+                    text = "Open",
+                    callback = function()
+                        timer.delayOneFrame(function()
+                            self:open()
+                        end)
+                    end
+                },
+                {
+                    text = "Rename",
+                    callback = function()
+                        timer.delayOneFrame(function()
+                            self:rename()
+                        end)
+                    end
+                },
+                {
+                    text = "Pick Up",
+                    callback = function()
+                        common.pickUp(self.reference)
+                    end
+                },
             },
-            {
-                text = "Rename",
-                callback = function()
-                    timer.delayOneFrame(function()
-                        self:rename()
-                    end)
-                end
-            },
-            {
-                text = "Pick Up",
-                callback = function()
-                    common.pickUp(self.reference)
-                end
-            },
-        },
-        cancels = true
-    }
+            cancels = true
+        }
+    else
+        self:open()
+    end
 end
 
 function Sketchbook:doTooltip(parent)
