@@ -236,11 +236,11 @@ end
 
 
 ---@class JOP.UIHelper.viewPainting.params
----@field paintingName string
 ---@field paintingTexture string
 ---@field canvasId string
 ---@field tooltipText? string
 ---@field tooltipHeader? string
+---@field height? number The height of the rendered image
 
 --Display a painting in a UI menu
 ---@param parent tes3uiElement
@@ -268,9 +268,13 @@ function UIHelper.createPaintingImage(parent, e)
             id = "JOP_PaintingImage",
             path = paintingPath
         }
-        image.width = dimensions.width
-        image.height = dimensions.height
+
+        image.height = e.height or dimensions.height
+        image.width = dimensions.width * (image.height / dimensions.height)
         image.scaleMode = true
+
+        -- image.height = dimensions.height
+        -- image.scaleMode = true
             --tooltip shows location of painting
         if e.tooltipText then
             image:register("help", function()
@@ -283,6 +287,19 @@ function UIHelper.createPaintingImage(parent, e)
     else
         logger:warn("Painting texture '%s' does not exist", paintingPath)
     end
+end
+
+---Display the painting in a tooltip
+---@param parent tes3uiElement
+---@param painting JOP.Painting
+function UIHelper.showTooltipPainting(parent, painting)
+    local paintingTexture = painting.data.paintingTexture
+    local canvasId = painting.data.canvasId
+    UIHelper.createPaintingImage(parent, {
+        paintingTexture = paintingTexture,
+        canvasId = canvasId,
+        height = 80
+    })
 end
 
 

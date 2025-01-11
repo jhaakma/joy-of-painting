@@ -3,6 +3,8 @@ local logger = common.createLogger("Tooltips")
 local UIHelper = require("mer.joyOfPainting.services.UIHelper")
 local Painting = require("mer.joyOfPainting.items.Painting")
 
+---@param e uiObjectTooltipEventData
+---@param painting JOP.Painting
 local function doPaintingTooltips(e, painting)
     local labelText
     if painting.data.paintingName then
@@ -17,6 +19,11 @@ local function doPaintingTooltips(e, painting)
             labelText = labelText,
             color = tes3ui.getPalette("normal_color")
         }
+    end
+
+    --render painting image in 50x50 box
+    if painting:hasPaintingData() then
+        UIHelper.showTooltipPainting(e.tooltip, painting)
     end
 end
 
