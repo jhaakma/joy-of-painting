@@ -22,7 +22,7 @@ local function doPaintingTooltips(e, painting)
     end
 
     --render painting image in 50x50 box
-    if painting:hasPaintingData() then
+    if painting:hasPaintingData() and not e.reference then
         UIHelper.showTooltipPainting(e.tooltip, painting)
     end
 end
