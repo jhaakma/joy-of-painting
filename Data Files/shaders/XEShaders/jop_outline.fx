@@ -1,9 +1,17 @@
 float maxDistance = 62000;
 float outlineThickness = 2.0;
 
+extern float timeOffsetMulti = 0.0;
+extern float distortionStrength = 0.05; // Adjust this to change the strength of the distortion
+extern float speed = 0.5;
+extern float scale = 1.5;
+extern float distance = 0.1;
+float time;
+
 texture lastshader;
 texture depthframe;
 texture lastpass;
+texture tex1 < string src="jop/perlinNoise.tga"; >; // Your normal map texture
 
 sampler s0 = sampler_state
 {
@@ -29,6 +37,11 @@ sampler s2 = sampler_state
     magfilter = point;
     minfilter = point;
 };
+
+sampler sImage = sampler_state { texture=<lastshader>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
+sampler sNormalMap = sampler_state { texture=<tex1>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
+sampler sDepthFrame = sampler_state { texture = <depthframe>; addressu = wrap; addressv = wrap; magfilter = point; minfilter = point; };
+
 
 float3 eyevec, eyepos;
 float waterlevel;
@@ -194,10 +207,28 @@ float SobelSampleDepth(sampler s, float2 uv, float3 offset)
     return SobelDepth(pixelCenter, pixelLeft, pixelRight, pixelUp, pixelDown);
 }
 
+float2 distortedTex(float2 Tex, float timeOffset) {
+        // Sample the input image and normal map
+    float4 image = tex2D(sImage, Tex);
+    //move around over time
+    float thisTime = time + timeOffset;
+    float2 uv = float2(Tex.x + sin(thisTime*speed) * distance, Tex.y + cos(thisTime*speed) * distance) / scale;
+
+    float4 normalMap = tex2D(sNormalMap, uv);
+
+    // Convert the normal map from tangent space to [-1, 1]
+    float2 distortion = (normalMap.rg * 2.0 - 1.0) * distortionStrength;
+
+    // Apply the distortion to the texture coordinates
+    float2 distortedTex = Tex + distortion;
+
+    return distortedTex;
+}
 
 static const float xylength = sqrt(1 - eyevec.z * eyevec.z);
-float4 outline(float2 tex : TEXCOORD0) : COLOR
+float4 outline(float2 rawTex : TEXCOORD0) : COLOR
 {
+    float2 tex = distortedTex(rawTex, 0);
 
     float3 pos = toView(tex);
     float dist = length(pos);
@@ -209,7 +240,8 @@ float4 outline(float2 tex : TEXCOORD0) : COLOR
 
 
     float3 offset = float3(rcpres, 0.0) * thickness;
-    float4 sceneColor = sample0(s0, tex);
+    float2 sceneTex = distortedTex(rawTex, timeOffsetMulti*distortionStrength);
+    float4 sceneColor = sample0(s0, sceneTex);
 
     float sobelDepth = SobelSampleDepth(s1, tex.xy, offset);
     sobelDepth = sobelDepth > 25.05 ? saturate(sobelDepth) : 0.0;

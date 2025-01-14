@@ -27,7 +27,7 @@ local shaders = {
         }
     },
     { id = "fogBW", shaderId = "jop_fog_bw", defaultControls = { "distanceBW", "bgColor" } },
-    { id = "outline", shaderId = "jop_outline" },
+    { id = "outline", shaderId = "jop_outline", defaultControls = {"outlineDistortionStrength"}  },
     { id = "composite", shaderId = "jop_composite",
         defaultControls = {
             "compositeAspectRatio",
@@ -35,7 +35,7 @@ local shaders = {
             "compositeBlacken",
         }
     },
-    { id = "hatch", shaderId = "jop_hatch", defaultControls = { "hatchSize" } },
+    { id = "hatch", shaderId = "jop_hatch", defaultControls = { "hatchSize", "hatchDistortionStrength" } },
     { id = "mottle", shaderId = "jop_mottle" },
     { id = "quantize", shaderId = "jop_quantize" },
 }
@@ -229,7 +229,7 @@ local controls = {
     },
     {
         id = "distortionStrength",
-        uniform = "strength",
+        uniform = "distortionStrength",
         shader = "jop_distort",
         name = "Distortion Strength",
         sliderDefault = 50,
@@ -245,6 +245,50 @@ local controls = {
         end
     },
     {
+        id = "outlineDistortionStrength",
+        uniform = "distortionStrength",
+        shader = "jop_outline",
+        name = "Distortion Strength",
+        sliderDefault = 50,
+        shaderMin = 0.0,
+        shaderMax = 1.0,
+        calculate = function(paintingSkill, artStyle)
+            paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
+            local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
+            return math.max(0, math.remap(paintingSkill,
+                config.skillPaintEffect.MIN_SKILL, max,
+                0.02, 0.0
+            ))
+        end
+    },
+    {
+        id = "hatchDistortionStrength",
+        uniform = "distortionStrength",
+        shader = "jop_hatch",
+        name = "Distortion Strength",
+        sliderDefault = 50,
+        shaderMin = 0.0,
+        shaderMax = 1.0,
+        calculate = function(paintingSkill, artStyle)
+            paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
+            local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
+            return math.max(0, math.remap(paintingSkill,
+                config.skillPaintEffect.MIN_SKILL, max,
+                0.02, 0.0
+            ))
+        end
+    },
+    {
+        id = "colorPencilTimeOffsetMulti",
+        uniform = "timeOffsetMulti",
+        shader = "jop_outline",
+        name = "Time Offset Multi",
+        sliderDefault = 0,
+        calculate = function(_, _)
+            return 25
+        end
+    },
+    {
         id = "brushSize",
         uniform = "radius",
         shader = "jop_kuwahara",
@@ -257,22 +301,6 @@ local controls = {
             return math.remap(paintingSkill,
                 config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
                 (artStyle.maxBrushSize or 1), (artStyle.minBrushSize or 1)
-            )
-        end
-    },
-    {
-        id = "inkThickness",
-        uniform = "inkThickness",
-        shader = "jop_ink",
-        name = "Line Thickness",
-        sliderDefault = 50,
-        shaderMin = config.ink.THICKNESS_MIN,
-        shaderMax = config.ink.THICKNESS_MAX,
-        calculate = function(paintingSkill, artStyle)
-            paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
-            return math.remap(paintingSkill,
-                config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
-                config.ink.THICKNESS_MAX, config.ink.THICKNESS_MIN
             )
         end
     },
@@ -394,7 +422,7 @@ local controls = {
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, 100)
             return math.remap(paintingSkill,
                 config.skillPaintEffect.MIN_SKILL, 100,
-                0.8, 0.2
+                0.8, 0.6
             )
         end
     },
@@ -457,6 +485,7 @@ Use the fog setting to remove background elements and the threshold to adjust th
         id = "Ink Sketch",
         name = "Ink Sketch",
         shaders = {
+            "detail",
             "ink",
             "adjuster",
             "composite",
@@ -498,6 +527,7 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
             "pencilScale",
             "transparency",
             "compositeFogDistance",
+            "colorPencilTimeOffsetMulti",
         },
         valueModifier = 3,
         paintType = "pencil",
@@ -537,7 +567,7 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
         --requiresEasel = true,
         maxDetailSkill = 50,
         maxDistortSkill = 40,
-        minBrushSize = 3,
+        minBrushSize = 5,
         maxBrushSize = 12,
         helpText = [[
 Watercolor paintings have a limited color palette and thick brush strokes. They are good for making abstract and impressionist paintings.
@@ -572,7 +602,7 @@ Try replacing the background with the fog setting and changing the fog color to 
         requiresEasel = true,
         maxDetailSkill = 60,
         maxDistortSkill = 50,
-        minBrushSize = 2,
+        minBrushSize = 4,
         maxBrushSize = 12,
         helpText = [[
 Oil paintings require high skill before they start looking detailed.

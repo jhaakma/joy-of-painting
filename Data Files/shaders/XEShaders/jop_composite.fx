@@ -102,17 +102,23 @@ float4 renderCanvas(float2 tex, sampler2D image, bool doRotate = false) : COLOR0
 // Combine two images based on brightness
 // For painting < 0.5, multiply the images
 // For painting >= 0.5, screen the images
-float3 overlay(float3 baseVal, float3 blendVal, float blendStrength) {
+float3 overlay(float3 image, float3 canvas, float blendStrength) {
+
+    //First greyscale the canvas so it doesn't affect image color
+    float3 greyCanvas = canvas;
+    float average = dot(greyCanvas.rgb, float3(0.299, 0.587, 0.114));
+    greyCanvas.rgb = float3(average, average, average);
+
         // Multiply for painting < 0.5
-    float3 multiplyVal = 2.0 * baseVal * blendVal;
+    float3 multiplyVal = 2.0 * image * greyCanvas;
 
     // Screen for painting >= 0.5
-    float3 screenVal = 1.0 - 2.0 * (1.0 - baseVal) * (1.0 - blendVal);
+    float3 screenVal = 1.0 - 2.0 * (1.0 - image) * (1.0 - greyCanvas);
 
-    // step(0.5, baseVal) is 0 if baseVal < 0.5, 1 if baseVal >= 0.5
-    float3 result = lerp(multiplyVal, screenVal, step(0.5, blendVal));
+    // step(0.5, image) is 0 if image < 0.5, 1 if image >= 0.5
+    float3 result = lerp(multiplyVal, screenVal, step(0.5, greyCanvas));
 
-    return lerp(baseVal, result, blendStrength*0.25);
+    return lerp(image, result, blendStrength*0.25);
 }
 
 //This takes composites the sLastShader onto the result of sLastPass.

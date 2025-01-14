@@ -17,10 +17,10 @@ float4 main(float2 Tex : TEXCOORD0) : COLOR0 {
     float2 adjustedTex = float2(Tex.x * rcpres.y / rcpres.x, Tex.y) *(1/pencil_scale);
     // Sample the pencil texture
     float4 pencil = tex2D(sHatch, adjustedTex);
-    // Color dodge effect approximation
+
     float4 result = color / (1.0 - pencil);
     // Clamping the result to avoid overflow
-    result = clamp(result, 0.0, 1.0);
+    //result = clamp(result, 0.0, 1.0);
     return lerp(color, result, pencil_strength);
 }
 

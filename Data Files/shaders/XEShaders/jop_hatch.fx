@@ -1,3 +1,11 @@
+//Distort vars
+extern float timeOffsetMulti = 0.0;
+extern float distortionStrength = 0.05; // Adjust this to change the strength of the distortion
+extern float speed = 0.5;
+extern float scale = 1.5;
+extern float distance = 0.1;
+float time;
+
 extern float hatchStrength = 4.0;
 extern float hatchSize = 0.25;
 
@@ -16,6 +24,7 @@ texture lastpass;
 texture depthframe;
 texture tex1 < string src="jop/Hatch1.tga"; >;
 texture tex2 < string src="jop/Hatch2.tga"; >;
+texture tex3 < string src="jop/perlinNoise.tga"; >; // Your normal map texture
 
 sampler sLastShader = sampler_state { texture = <lastshader>; addressu = mirror; addressv = mirror; magfilter = linear; minfilter = linear; };
 sampler sDepthFrame = sampler_state { texture = <depthframe>; addressu = wrap; addressv = wrap; magfilter = point; minfilter = point; };
@@ -23,19 +32,35 @@ sampler sLastPass = sampler_state { texture = <lastpass>; addressu = clamp; addr
 sampler sHatch1 = sampler_state { texture = <tex1>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; };
 sampler sHatch2 = sampler_state { texture = <tex2>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; };
 
+sampler sImage = sampler_state { texture=<lastshader>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
+sampler sNormalMap = sampler_state { texture=<tex3>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
+
 static const float2 invproj =  2.0 * tan(0.5 * radians(fov)) * float2(1, rcpres.x / rcpres.y);
 static const float xylength = sqrt(1 - eyevec.z * eyevec.z);
 static const float sky = 1e6;
 
-float readDepth(in float2 coord : TEXCOORD0)
-{
-	float posZ = tex2D(sDepthFrame, coord).x;
-	return posZ;
-}
 
 float4 sample0(sampler2D s, float2 t)
 {
     return tex2Dlod(s, float4(t, 0, 0));
+}
+
+float2 distortedTex(float2 Tex, float timeOffset) {
+        // Sample the input image and normal map
+    float4 image = tex2D(sImage, Tex);
+    //move around over time
+    float thisTime = time + timeOffset;
+    float2 uv = float2(Tex.x + sin(thisTime*speed) * distance, Tex.y + cos(thisTime*speed) * distance) / scale;
+
+    float4 normalMap = tex2D(sNormalMap, uv);
+
+    // Convert the normal map from tangent space to [-1, 1]
+    float2 distortion = (normalMap.rg * 2.0 - 1.0) * distortionStrength;
+
+    // Apply the distortion to the texture coordinates
+    float2 distortedTex = Tex + distortion;
+
+    return distortedTex;
 }
 
 float3 toView(float2 tex)
@@ -46,8 +71,11 @@ float3 toView(float2 tex)
 }
 
 
-float3 getNormal(in float2 tex : TEXCOORD0)
+
+float3 getNormal(in float2 rawTex : TEXCOORD0)
 {
+    float2 tex = distortedTex(rawTex, 0.0);;
+
     float3 pos = toView(tex);
     float water = pos.z * eyevec.z - pos.y * xylength + eyepos.z;
 
@@ -156,8 +184,12 @@ float2 rotateUvByNormal(float2 uv, float3 normal)
     return rotatedUV;
 }
 
+
 float4 hatch(float2 tex : TEXCOORD0) : COLOR0
 {
+
+
+
     float3 color = tex2D(sLastShader, tex).rgb;
     float3 normal = getNormal(tex);
 
@@ -177,7 +209,7 @@ float4 hatch(float2 tex : TEXCOORD0) : COLOR0
 
 
 
-technique T0 < string MGEinterface = "MGE XE 0"; string category = "final"; int priorityAdjust = 75;>
+technique T0 < string MGEinterface = "MGE XE 0"; string category = "final"; int priorityAdjust = 81;>
 {
     pass a { PixelShader = compile ps_3_0 hatch(); }
 }
