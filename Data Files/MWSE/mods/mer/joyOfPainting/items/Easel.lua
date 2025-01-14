@@ -231,6 +231,7 @@ function Easel:paint(artStyle)
                 end,
                 closeCallback = function()
                     self.reference.sceneNode.appCulled = false
+                    self:removeContainerRefFromInventory()
                 end,
                 cancelCallback = function()
                     logger:debug("Cancelling painting")
