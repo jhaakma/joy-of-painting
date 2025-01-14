@@ -439,8 +439,9 @@ function Painting:rotate(sound)
             reference = tes3.player,
             playSound = false,
         }
-        local count, item, itemData = tes3.addItem{
+        local _, _, itemData = tes3.addItem{
             item = rotatedId, --[[@as JOP.tes3itemChildren]]
+            itemData = self.dataHolder,
             count = 1,
             reference = tes3.player,
             playSound = false,
