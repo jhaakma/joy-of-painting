@@ -11,13 +11,14 @@ local AnimatedActivator = {
 ---@field target tes3reference?
 ---@field item tes3item?
 ---@field itemData tes3itemData?
+---@field ownerRef tes3reference? The owner of the itemStack
 
 ---
 ---@class JoyOfPainting.AnimatedActivator
 ---@field id? string
----@field onActivate function
----@field onPickup? function
----@field isActivatorItem function
+---@field onActivate fun(e:JoyOfPainting.AnimatedActivator.callbackParams)
+---@field onPickup? fun(e:JoyOfPainting.AnimatedActivator.callbackParams)
+---@field isActivatorItem fun(e:JoyOfPainting.AnimatedActivator.callbackParams):boolean
 ---@field blockStackActivate? boolean
 ---@field getAnimationGroup? fun(reference:tes3reference):number? Returns the current active animation group to play
 

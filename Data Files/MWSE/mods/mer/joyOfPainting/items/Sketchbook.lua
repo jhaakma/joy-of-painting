@@ -47,6 +47,8 @@ function Sketchbook.registerSketchbook(e)
     }
 end
 
+---@param id string
+---@return boolean
 function Sketchbook.isSketchbook(id)
     return config.sketchbooks[id:lower()] ~= nil
 end
@@ -450,8 +452,8 @@ end
 
 function Sketchbook:playerHasSketches()
     --check player inventory for sketches
-    ---@param stack tes3itemStack
-    for _, stack in pairs(CraftingFramework.CarryableContainer.getFullInventory()) do
+    for _, result in pairs(CraftingFramework.CarryableContainer.getInventory()) do
+        local stack = result.stack
         --iterate variables
         if stack.variables then
             for _, itemData in pairs(stack.variables) do

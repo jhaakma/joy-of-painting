@@ -10,6 +10,11 @@ local easel = {
         doesPack = true,
     },
     {
+        id = "jop_field_easel_02",
+        miscItem = "jop_easel_pack_02",
+        doesPack = true,
+    },
+    {
         id = "jop_easel_02",
         miscItem = "jop_easel_misc",
     }

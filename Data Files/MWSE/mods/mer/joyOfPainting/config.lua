@@ -44,7 +44,7 @@ config.merchantPaintingSupplies = {
     jop_frame_w_03 = 10,
     jop_frame_t_03 = 10,
     jop_parchment_01 = 50,
-    jop_easel_pack = 1,
+    jop_easel_pack_02 = 1,
     jop_easel_misc = 1,
     jop_brush_01 = 1,
     jop_canvas_square_01 = 20,
@@ -131,8 +131,6 @@ config.colorPickers = {}
 config.paintTypes = {}
 ---@type table<string, JOP.PaletteItem>
 config.paletteItems = {}
----@type table<string, JOP.Refill[]>
-config.refills = {}
 ---@type table<string, JOP.BrushType>
 config.brushTypes = {}
 ---@type table<string, JOP.Brush>
@@ -199,6 +197,7 @@ local mcmDefault = {
     --Enable debug mode (generates debug meshes)
     debugMeshes = false,
     enableSubjectCapture = false,
+    tooltipPaintingHeight = 100,
 }
 --MCM Config (stored as JSON in MWSE/config/joyOfPainting.json)
 ---@type JOP.config.MCM

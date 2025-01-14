@@ -103,6 +103,15 @@ local function registerMCM()
         restartRequired = true,
     }
 
+    page:createSlider{
+        label = "Tooltip Painting Height",
+        description = "Set the height of the painting in the painting tooltip.",
+        min = 0,
+        max = 250,
+        step = 1,
+        jump = 10,
+        variable = mwse.mcm.createTableVariable{ id = "tooltipPaintingHeight", table = config.mcm },
+    }
 
     page:createDropdown{
         label = "Log Level",

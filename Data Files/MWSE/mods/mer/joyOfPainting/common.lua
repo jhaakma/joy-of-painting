@@ -131,6 +131,7 @@ end
 ---@field reference? tes3reference
 ---@field item? tes3item
 ---@field itemData? tes3itemData
+---@field ownerRef? tes3reference
 
 ---@class JOP.ItemInstance
 ---@field reference tes3reference
@@ -149,6 +150,7 @@ function common.createItemInstance(e, class, thisLogger)
     thisLogger:assert((e.reference or e.item) ~= nil, "requires either a reference or an item")
     local instance = setmetatable({}, class)
 
+    instance.ownerRef = e.ownerRef or tes3.player
     instance.reference = e.reference
     instance.item = e.item
     instance.itemData = e.itemData
@@ -175,7 +177,7 @@ function common.createItemInstance(e, class, thisLogger)
                     thisLogger:debug("instance.item: %s", instance.item)
                     --create itemData
                     instance.dataHolder = tes3.addItemData{
-                        to = tes3.player,
+                        to = instance.ownerRef,
                         item = instance.item.id,
                     }
                     if instance.dataHolder == nil then

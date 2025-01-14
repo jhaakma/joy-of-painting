@@ -1,5 +1,7 @@
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("Interop")
+
+---@class JOP.Interop
 local Interop = {}
 Interop.ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 Interop.Brush = require("mer.joyOfPainting.items.Brush")
@@ -20,7 +22,7 @@ Interop.Subject = require("mer.joyOfPainting.items.Subject")
 ---@field objectId string? If provided, checks for a painting with a subject with the specified objectId
 ---@field subjectIds string[]? If provided, checks for a painting with the specified subjectIds
 ---@field artStyle string? If provided, only checks for paintings with the specified artStyle
----@field canvasType "paper"|"canvas" If provided, only checks for paintings with the specified canvasType
+---@field canvasType? "paper"|"canvas" If provided, only checks for paintings with the specified canvasType
 ---@field cellId string? If provided, only checks for paintings in the specified cell
 ---@field regionId string? If provided, only checks for paintings in the specified region
 

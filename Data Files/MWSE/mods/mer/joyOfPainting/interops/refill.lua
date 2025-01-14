@@ -16,7 +16,7 @@ local emptyMapping = {
     t_com_paintpotg_02 = "t_com_paintpot_01",
 }
 
----@type JOP.Refill[]
+---@type JOP.Refill.data[]
 local refills = {
     {
         --Ashfall - crush plant dyes and mix with water
@@ -181,6 +181,8 @@ event.register(tes3.event.initialized, function()
     end
 end)
 
+
+
 local materials = {
     {
         id = "red_pigment",
@@ -188,6 +190,7 @@ local materials = {
         ids = {
             "jop_dye_red",
         },
+        registerAsRefillItems = true
     },
     {
         id = "blue_pigment",
@@ -195,6 +198,7 @@ local materials = {
         ids = {
             "jop_dye_blue",
         },
+        registerAsRefillItems = true
     },
     {
         id = "yellow_pigment",
@@ -202,6 +206,7 @@ local materials = {
         ids = {
             "jop_dye_yellow",
         },
+        registerAsRefillItems = true
     },
 
     {
@@ -252,7 +257,8 @@ local materials = {
         ids = {
             "t_com_paintpotr_01",
             "t_com_paintpotr_02",
-        }
+        },
+        registerAsRefillItems = true
     },
     {
         id = "blue_paint",
@@ -260,7 +266,8 @@ local materials = {
         ids = {
             "t_com_paintpotb_01",
             "t_com_paintpotb_02",
-        }
+        },
+        registerAsRefillItems = true
     },
     {
         id = "yellow_paint",
@@ -268,12 +275,23 @@ local materials = {
         ids = {
             "t_com_paintpoty_01",
             "t_com_paintpoty_02",
-        }
+        },
+        registerAsRefillItems = true
     },
 }
 event.register(tes3.event.initialized, function()
     local CraftingFramework = include("CraftingFramework")
     if CraftingFramework then
         CraftingFramework.Material:registerMaterials(materials)
+        for _, material in ipairs(materials) do
+            if material.registerAsRefillItems then
+                for _, id in ipairs(material.ids) do
+                    JoyOfPainting.Refill.registerRefillItem{
+                        id = id,
+                    }
+                end
+            end
+        end
+        JoyOfPainting.Refill.registerRefillItem{ id = "jop_oil_paints_01"}
     end
 end)

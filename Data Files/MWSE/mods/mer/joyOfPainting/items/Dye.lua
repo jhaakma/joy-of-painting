@@ -11,8 +11,8 @@ Dye.customRequirements = {
             if not ashfall then
                 return false
             end
-            ---@param stack tes3itemStack
-            for _, stack in pairs(CraftingFramework.CarryableContainer.getFullInventory()) do
+            for _, result in pairs(CraftingFramework.CarryableContainer.getInventory()) do
+                local stack = result.stack
                 if stack.variables then
                     for _, itemData in ipairs(stack.variables) do
                         local liquidContainer = ashfall.LiquidContainer.createFromInventory(stack.object, itemData)
@@ -32,8 +32,8 @@ Dye.customRequirements = {
     {
         getLabel = function() return "Mortar and Pestle" end,
         check = function()
-            ---@param stack tes3itemStack
-            for _, stack in pairs(CraftingFramework.CarryableContainer.getFullInventory()) do
+            for _, result in pairs(CraftingFramework.CarryableContainer.getInventory()) do
+                local stack = result.stack
                 local isMortarAndPestle = stack.object.objectType == tes3.objectType.apparatus
                     and stack.object.type == tes3.apparatusType.mortarAndPestle
                 if isMortarAndPestle then
@@ -49,8 +49,8 @@ Dye.craftCallback = function(_craftable)
     if not ashfall then
         return
     end
-    ---@param stack tes3itemStack
-    for _, stack in pairs(CraftingFramework.CarryableContainer.getFullInventory()) do
+    for _, result in pairs(CraftingFramework.CarryableContainer.getInventory()) do
+        local stack = result.stack
         if stack.variables then
             for _, itemData in ipairs(stack.variables) do
                 local liquidContainer = ashfall.LiquidContainer.createFromInventory(stack.object, itemData)

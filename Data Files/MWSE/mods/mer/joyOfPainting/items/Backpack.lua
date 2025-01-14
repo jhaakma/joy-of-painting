@@ -17,6 +17,7 @@ local BackpackService = {
     BACKPACK_SLOT = 11
 }
 
+---@param e { id: string, offset?: JOP.BackPack.Config.offset }
 function BackpackService.registerBackpack(e)
     logger:assert(type(e.id) == "string", "id must be a string")
     logger:debug("registering backpack %s", e.id)

@@ -38,6 +38,7 @@ local function onEquip(e)
     local onActivateParams = table.copy(e)
     onActivateParams.object = e.item
     onActivateParams.dataHolder = e.itemData
+    onActivateParams.ownerRef = e.reference
     for _, activator in pairs(Activator.activators) do
         if activator.isActivatorItem(onActivateParams) then
             activator.onActivate(onActivateParams)

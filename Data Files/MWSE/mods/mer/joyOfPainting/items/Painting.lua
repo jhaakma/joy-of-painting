@@ -94,18 +94,28 @@ function Painting.registerCanvas(e)
     end
 end
 
+---@param id string
+---@return boolean
+function Painting.idIsCanvas(id)
+    return config.canvases[id:lower()] ~= nil
+end
+
+---@param reference tes3reference
+---@return boolean
 function Painting.refIsPainting(reference)
     return reference.supportsLuaData
         and reference.data
         and reference.data.joyOfPainting
-        and reference.data.joyOfPainting.paintingTexture
+        and reference.data.joyOfPainting.paintingTexture ~= nil
 end
 
+---@param itemData tes3itemData
+---@return boolean
 function Painting.itemDataIsPainting(itemData)
     return itemData
         and itemData.data
         and itemData.data.joyOfPainting
-        and itemData.data.joyOfPainting.paintingTexture
+        and itemData.data.joyOfPainting.paintingTexture ~= nil
 end
 
 function Painting.getCanvasObject(dataHolder)

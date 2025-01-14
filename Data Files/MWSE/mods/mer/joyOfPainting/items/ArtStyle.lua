@@ -132,7 +132,8 @@ function ArtStyle:getBrushes()
     return brushes
 end
 
-function ArtStyle:playerHasBrush()
+---@param easel JOP.Easel?
+function ArtStyle:playerHasBrush(easel)
     logger:debug("Checking for %s brush", self.name)
 
     if not self.brushType then
@@ -144,6 +145,14 @@ function ArtStyle:playerHasBrush()
         if brushCount > 0 then
             logger:debug("Found brush: %s", brush)
             return true
+        end
+        local easelContainerRef = easel and easel:getContainerReference()
+        if easelContainerRef then
+            brushCount = CraftingFramework.CarryableContainer.getItemCount{ item = brush.id, reference = easelContainerRef }
+            if brushCount > 0 then
+                logger:debug("Found brush on easel: %s", brush)
+                return true
+            end
         end
     end
     --search area
@@ -179,7 +188,8 @@ function ArtStyle:getPalettes()
     return palettes
 end
 
-function ArtStyle:playerHasPaint()
+---@param easel JOP.Easel?
+function ArtStyle:playerHasPaint(easel)
     logger:debug("Checking playerHasPaint for %s", self.name)
     if not self.paintType then
         logger:debug("No palette required for this art style")
@@ -188,29 +198,56 @@ function ArtStyle:playerHasPaint()
     --Search inventory
     for paletteId, paletteItem in pairs(self:getPalettes()) do
         logger:debug("Checking palette: %s", paletteId)
-        local itemStack = CraftingFramework.CarryableContainer.findItemStack{ item = paletteId }
-        if itemStack then
-            logger:debug("Found palette: %s", paletteId)
-            --if no variables, then treat it as full if fullByDefault
-            if paletteItem.fullByDefault then
-                local numVariables = itemStack.variables and #itemStack.variables or 0
-                if itemStack.count > numVariables then
-                    logger:debug("stack count greater than variabels, has at least one full")
-                    return true
-                end
-            end
 
-            if itemStack.variables then
-                for _, itemData in ipairs(itemStack.variables) do
-                    local palette = Palette:new{
-                        item = itemStack.object,
-                        itemData = itemData
-                    }
-                    if palette then
-                        local remaining = palette:getRemainingUses()
-                        if remaining > 0 then
-                            logger:debug("%d uses remaining", remaining)
-                            return true
+        ---@type {stack: tes3itemStack, ownerRef: tes3reference}[]
+        local itemStacks = {}
+
+        ---Get stacks from inventory
+        do
+            local stack, owner = CraftingFramework.CarryableContainer.findItemStack{ item = paletteId }
+            if stack then
+                table.insert(itemStacks, { stack = stack, ownerRef = owner })
+            end
+        end
+
+        ---Get stacks from easel
+        local easelContainerRef = easel and easel:getContainerReference()
+        if easelContainerRef then
+            local stack, ownerRef = CraftingFramework.CarryableContainer.findItemStack{ item = paletteId, reference = easelContainerRef }
+            if stack then
+
+                table.insert(itemStacks, { stack = stack, ownerRef = ownerRef })
+            end
+        end
+
+
+        for _, stackData in ipairs(itemStacks) do
+            local itemStack = stackData.stack
+            local ownerRef = stackData.ownerRef
+            if itemStack then
+                logger:debug("Found palette: %s", paletteId)
+                --if no variables, then treat it as full if fullByDefault
+                if paletteItem.fullByDefault then
+                    local numVariables = itemStack.variables and #itemStack.variables or 0
+                    if itemStack.count > numVariables then
+                        logger:debug("stack count greater than variabels, has at least one full")
+                        return true
+                    end
+                end
+
+                if itemStack.variables then
+                    for _, itemData in ipairs(itemStack.variables) do
+                        local palette = Palette:new{
+                            item = itemStack.object,
+                            itemData = itemData,
+                            ownerRef = ownerRef
+                        }
+                        if palette then
+                            local remaining = palette:getRemainingUses()
+                            if remaining > 0 then
+                                logger:debug("%d uses remaining", remaining)
+                                return true
+                            end
                         end
                     end
                 end
@@ -245,7 +282,7 @@ function ArtStyle:usePaint()
     local newStacks = {}
 
     for paletteId, paletteItem in pairs(self:getPalettes()) do
-        local itemStack = CraftingFramework.CarryableContainer.findItemStack{ item = paletteId }
+        local itemStack, ownerRef = CraftingFramework.CarryableContainer.findItemStack{ item = paletteId }
         if itemStack then
             if itemStack.variables then
                 for _, itemData in ipairs(itemStack.variables) do
@@ -253,20 +290,23 @@ function ArtStyle:usePaint()
                         table.insert(usedStacks, {
                             paletteItem = paletteItem,
                             item = itemStack.object,
-                            itemData = itemData
+                            itemData = itemData,
+                            ownerRef = ownerRef
                         })
                     else
                         table.insert(newStacks, {
                             paletteItem = paletteItem,
                             item = itemStack.object,
-                            itemData = itemData
+                            itemData = itemData,
+                            ownerRef = ownerRef
                         })
                     end
                 end
             else
                 table.insert(newStacks, {
                     paletteItem = paletteItem,
-                    item = itemStack.object
+                    item = itemStack.object,
+                    ownerRef = ownerRef
                 })
             end
         end
@@ -307,12 +347,14 @@ function ArtStyle:usePaint()
     logger:warn("No palette found to use")
 end
 
-function ArtStyle:getButton(callback)
+---@param callback fun()
+---@param easel JOP.Easel?
+function ArtStyle:getButton(callback, easel)
     return {
         text = self.name,
         callback = callback,
         enableRequirements = function()
-            return self:playerHasBrush() and self:playerHasPaint()
+            return self:playerHasBrush(easel) and self:playerHasPaint(easel)
         end,
         tooltipDisabled = function()
             local text

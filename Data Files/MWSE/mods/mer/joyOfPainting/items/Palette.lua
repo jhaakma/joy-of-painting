@@ -1,7 +1,4 @@
 ---@class JOP.Palette.params : JOP.ItemInstanceParams
----@field reference tes3reference?
----@field item tes3item|tes3object|tes3misc?
----@field itemData tes3itemData?
 ---@field paletteItem JOP.PaletteItem?
 
 ---@class JOP.PaletteItem
@@ -25,6 +22,7 @@ local logger = common.createLogger("Palette")
 local NodeManager = require("mer.joyOfPainting.services.NodeManager")
 local CraftingFramework = require("CraftingFramework")
 local ValueModifier = require("mer.joyOfPainting.services.ValueModifier")
+local Refill = require("mer.joyOfPainting.items.Refill")
 local meshService = require("mer.joyOfPainting.services.MeshService")
 ---@class JOP.Palette : JOP.ItemInstance
 local Palette = {
@@ -169,7 +167,7 @@ function Palette:updateRecipes()
 
     ---@type CraftingFramework.Recipe.data[]
     local recipes = {}
-    for _, refill in pairs(config.refills[paintType.id]) do
+    for _, refill in ipairs(Refill.getRefills(paintType)) do
         logger:debug("Adding %s to refill recipes", refill.recipe.id)
         table.insert(recipes, refill.recipe)
     end
@@ -198,7 +196,7 @@ end
 
 function Palette:getRefills()
     local paintType = self:getPaintType()
-    return config.refills[paintType.id]
+    return Refill.getRefills(paintType)
 end
 
 function Palette:hasRefillRecipes()
@@ -223,6 +221,8 @@ function Palette:getMaxUses()
     return self.paletteItem.uses
 end
 
+---@param id string
+---@return boolean
 function Palette.isPalette(id)
     return config.paletteItems[id:lower()] ~= nil
 end

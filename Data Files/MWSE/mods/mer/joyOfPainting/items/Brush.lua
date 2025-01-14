@@ -31,4 +31,10 @@ function Brush.registerBrush(e)
     config.brushes[e.id] = table.copy(e, {})
 end
 
+---@param id string
+---@return boolean
+function Brush.isBrush(id)
+    return config.brushes[id:lower()] ~= nil
+end
+
 return Brush

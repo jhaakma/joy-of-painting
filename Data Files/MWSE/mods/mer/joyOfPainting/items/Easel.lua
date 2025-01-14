@@ -32,6 +32,8 @@ local Easel = {
     doesPack = nil,
     ---@type string
     miscItem = nil,
+    ---@type boolean?
+    isContainer = nil,
 }
 Easel.__index = Easel
 
@@ -116,12 +118,37 @@ function Easel:attachCanvasFromInventory(item, itemData)
     end
 end
 
+function Easel:addContainerRefToInventory()
+    local carryable = self:getCarryableContainer()
+    if carryable then
+        tes3.addItem{
+            reference = tes3.player,
+            item = carryable.item,
+            count = 1,
+            playSound = false,
+        }
+    end
+end
+
+function Easel:removeContainerRefFromInventory()
+    local carryable = self:getCarryableContainer()
+    if carryable then
+        tes3.removeItem{
+            reference = tes3.player,
+            item = carryable.item,
+            count = 1,
+            playSound = false,
+        }
+    end
+end
 
 --[[
     Opens the inventory select menu to select a canvas to attach to the easel
 ]]
 function Easel:openAttachCanvasMenu()
     timer.delayOneFrame(function()
+        self:addContainerRefToInventory()
+
         CraftingFramework.InventorySelectMenu.open{
             title = "Select a canvas",
             noResultsText = "No canvases found",
@@ -130,6 +157,7 @@ function Easel:openAttachCanvasMenu()
                     if e.item then
                         self:attachCanvasFromInventory(e.item, e.itemData)
                     end
+                    self:removeContainerRefFromInventory()
                 end)
             end,
             filter = function(e2)
@@ -153,6 +181,7 @@ function Easel:openAttachCanvasMenu()
             end,
             noResultsCallback = function()
                 tes3.messageBox("You don't have any canvases in your inventory.")
+                self:removeContainerRefFromInventory()
             end
         }
     end)
@@ -162,13 +191,28 @@ function Easel:getCanvasConfig()
     return config.canvases[self.data.canvasId]
 end
 
+---@return tes3reference?
+function Easel:getContainerReference()
+    if not self.miscItem then return end
+    local carryable = self:getCarryableContainer()
+    if not carryable then return end
+    return carryable:getContainerRef()
+end
+
+function Easel:getCarryableContainer()
+    if not self.miscItem then return end
+    return CraftingFramework.CarryableContainer.getFromItem(tes3.getObject(self.miscItem))
+end
+
 ---Start painting
 ---@param artStyle string
 function Easel:paint(artStyle)
+
     self.reference.sceneNode.appCulled = true
     assert(self:getCanvasConfig(), "No canvas config found for canvas " .. self.data.canvasId)
     if self:getCanvasConfig() then
         timer.delayOneFrame(function()
+            self:addContainerRefToInventory()
             PhotoMenu:new{
                 getCanvasConfig = function()
                     return self:getCanvasConfig()
@@ -192,6 +236,7 @@ function Easel:paint(artStyle)
                     logger:debug("Cancelling painting")
                     tes3.messageBox("You scrape the paint from the canvas.")
                     self.painting:cleanCanvas()
+                    self:removeContainerRefFromInventory()
                 end,
                 finalCallback = function(e)
                     logger:debug("Creating new object for painting %s", e.paintingName)
@@ -206,6 +251,7 @@ function Easel:paint(artStyle)
                     for _, field in ipairs(Painting.canvasFields) do
                         assert(self.data[field] ~= nil, string.format("Missing field %s", field))
                     end
+                    self:removeContainerRefFromInventory()
                 end
             }:open()
         end)
@@ -323,6 +369,8 @@ function Easel:pickUp()
                 tes3.player.mobile:equip{
                     item = item
                 }
+                local carryable = self:getCarryableContainer()
+                if carryable then carryable:updateStats() end
             end
         end
     end
@@ -374,6 +422,7 @@ end
 -- Static Functions --------------------
 ----------------------------------------
 
+---@param e { id: string, miscItem?: string, doesPack?: boolean, isContainer?: boolean }
 function Easel.registerEasel(e)
     logger:assert(type(e.id) == "string", "Easel id must be a string")
     logger:debug("Registering easel %s", e.id)
@@ -400,34 +449,69 @@ function Easel.getEaselFromMiscId(easelId)
     return config.miscEasels[easelId:lower()]
 end
 
+
+
 ---Check the player's inventory for canvas items
+---@param easel JOP.Easel? If provided, the easel will be checked for a canvas (assuming its a container)
 ---@return boolean
-function Easel.playerHasCanvas()
-    ---@param stack tes3itemStack
-    for _, stack in pairs(CraftingFramework.CarryableContainer.getFullInventory()) do
-        if config.canvases[stack.object.id:lower()] then
-            return true
+function Easel.playerHasCanvas(easel)
+    logger:debug("Checking inventory for canvases")
+    ---@type CarryableContainer.getInventory.result[][]
+    local inventories = {
+        CraftingFramework.CarryableContainer.getInventory()
+    }
+    if easel and easel.miscItem then
+        logger:debug("Checking easel for canvas")
+        local containerRef = easel:getContainerReference()
+        if containerRef then
+            logger:debug("Adding easel inventory to check for canvas")
+            table.insert(inventories, CraftingFramework.CarryableContainer.getInventory(containerRef))
         end
-        if stack.variables then
-            for _, variable in ipairs(stack.variables) do
-                if variable
-                    and variable.data
-                    and variable.data.joyOfPainting
-                    and variable.data.joyOfPainting.paintingTexture
-                then
-                    return true
+    end
+
+    for _, inventory in ipairs(inventories) do
+        for _, result in ipairs(inventory) do
+            local stack = result.stack
+            if config.canvases[stack.object.id:lower()] then
+                return true
+            end
+            if stack.variables then
+                for _, variable in ipairs(stack.variables) do
+                    if variable
+                        and variable.data
+                        and variable.data.joyOfPainting
+                        and variable.data.joyOfPainting.paintingTexture
+                    then
+                        return true
+                    end
                 end
             end
         end
     end
+
     return false
+end
+
+---For cloned easels, retrieve the static id of the misc item
+---@param miscId string
+---@return string
+function Easel.getSavedStaticId(miscId)
+    tes3.player.data.jopSavedEaselStatics = tes3.player.data.jopSavedEaselStatics or {}
+    return tes3.player.data.jopSavedEaselStatics[miscId:lower()]
+end
+
+---Save the static id of a cloned easel
+---@param e { miscId: string, staticId: string }
+function Easel.saveStaticId(e)
+    tes3.player.data.jopSavedEaselStatics = tes3.player.data.jopSavedEaselStatics or {}
+    tes3.player.data.jopSavedEaselStatics[e.miscId:lower()] = e.staticId:lower()
 end
 
 
 function Easel.getActivationButtons()
     local buttons =  {
         {
-            text = "Open",
+            text = "Open Lid",
             callback = function(e)
                 local easel = Easel:new(e.reference)
                 return easel and easel:open()
@@ -440,12 +524,16 @@ function Easel.getActivationButtons()
         {
             text = "Paint",
             callback = function(e)
+                local easel = Easel:new(e.reference)
+                if not easel then return end
+
                 local buttons = {}
                 for _, artStyleData in pairs(config.artStyles) do
                     local artStyle = ArtStyle:new(artStyleData)
-                    table.insert(buttons, artStyle:getButton(function()
-                        Easel:new(e.reference):paint(artStyle.id)
-                    end))
+                    table.insert(buttons, artStyle:getButton(
+                        function() Easel:new(e.reference):paint(artStyle.id) end,
+                        easel
+                    ))
                 end
                 tes3ui.showMessageMenu{
                     text = "Select Art Style",
@@ -514,7 +602,8 @@ function Easel.getActivationButtons()
                 return easel and easel:isOpen() and easel:canAttachCanvas()
             end,
             enableRequirements = function(e)
-                return Easel.playerHasCanvas()
+                local easel = Easel:new(e.reference)
+                return Easel.playerHasCanvas(easel)
             end,
             tooltipDisabled = function(e)
                 local text = ""
@@ -546,6 +635,21 @@ function Easel.getActivationButtons()
                 local easel = Easel:new(e.reference)
                 return easel and easel:hasPainting()
             end,
+        },
+        {
+            text = "Open",
+            callback = function(e)
+                timer.delayOneFrame(function()
+                    local carryable = Easel:new(e.reference):getCarryableContainer()
+                    if carryable then
+                        carryable:openFromInventory()
+                    end
+                end)
+            end,
+            showRequirements = function(e)
+                local easel = Easel:new(e.reference)
+                return easel and easel:getCarryableContainer() ~= nil
+            end
         },
         {
             text = "Position",

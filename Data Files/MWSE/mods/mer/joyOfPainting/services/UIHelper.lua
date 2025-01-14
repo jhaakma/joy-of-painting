@@ -300,7 +300,7 @@ function UIHelper.showTooltipPainting(parent, painting)
     UIHelper.createPaintingImage(parent, {
         paintingTexture = paintingTexture,
         canvasId = canvasId,
-        height = 80
+        height = config.mcm.tooltipPaintingHeight
     })
 end
 
