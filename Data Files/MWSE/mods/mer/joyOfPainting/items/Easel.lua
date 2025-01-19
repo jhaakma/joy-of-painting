@@ -121,6 +121,7 @@ end
 function Easel:addContainerRefToInventory()
     local carryable = self:getCarryableContainer()
     if carryable then
+        logger:debug("Adding container ref to inventory")
         tes3.addItem{
             reference = tes3.player,
             item = carryable.item,
@@ -133,6 +134,7 @@ end
 function Easel:removeContainerRefFromInventory()
     local carryable = self:getCarryableContainer()
     if carryable then
+        logger:debug("Removing container ref from inventory")
         tes3.removeItem{
             reference = tes3.player,
             item = carryable.item,
@@ -147,8 +149,6 @@ end
 ]]
 function Easel:openAttachCanvasMenu()
     timer.delayOneFrame(function()
-        self:addContainerRefToInventory()
-
         CraftingFramework.InventorySelectMenu.open{
             title = "Select a canvas",
             noResultsText = "No canvases found",
@@ -157,7 +157,6 @@ function Easel:openAttachCanvasMenu()
                     if e.item then
                         self:attachCanvasFromInventory(e.item, e.itemData)
                     end
-                    self:removeContainerRefFromInventory()
                 end)
             end,
             filter = function(e2)
@@ -181,8 +180,10 @@ function Easel:openAttachCanvasMenu()
             end,
             noResultsCallback = function()
                 tes3.messageBox("You don't have any canvases in your inventory.")
-                self:removeContainerRefFromInventory()
-            end
+            end,
+            additionalContainers = {
+                self:getCarryableContainer()
+            }
         }
     end)
 end
