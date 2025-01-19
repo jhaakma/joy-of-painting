@@ -224,6 +224,6 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 
 technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 90;  >
 {
-	//pass p0 { PixelShader = compile ps_3_0 edgedetecting(); }
+	pass p0 { PixelShader = compile ps_3_0 edgedetecting(); }
 	pass p3 { PixelShader = compile ps_3_0 splashblend(); }
 }
