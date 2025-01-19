@@ -26,7 +26,7 @@ local PaintService = require("mer.joyOfPainting.services.PaintService")
 local config = require("mer.joyOfPainting.config")
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("Image")
-local imageLib = require("imagelib")
+local imageLib = include("imagelib")
 
 
 

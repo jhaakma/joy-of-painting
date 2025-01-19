@@ -19,7 +19,7 @@ local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 local OcclusionTester = require("mer.joyOfPainting.services.subjectCapture.OcclusionTester")
 local SubjectService = require("mer.joyOfPainting.services.subjectCapture.SubjectService")
 local ZoomSlider = require("mer.joyOfPainting.services.PhotoMenu.ZoomSlider")
-local ImageLib = require("imagelib")
+local ImageLib = include("imagelib")
 
 local alwaysOnShaders
 

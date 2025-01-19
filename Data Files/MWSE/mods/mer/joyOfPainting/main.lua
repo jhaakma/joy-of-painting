@@ -28,6 +28,15 @@ end)
 
 
 event.register(tes3.event.initialized, function()
+    -- Check for imagelib plugin.
+    local imagelib = include("imagelib")
+    if (imagelib == nil) then
+        local warningMsg = "MWSE/lib/imagelib.dll not found. Your mod manager may not install .dll files, and you will need to manually install it."
+        logger:warn(warningMsg)
+        tes3.messageBox("[Joy of Painting]: " .. warningMsg)
+        return
+    end
+
     logger:debug("Initialising activators")
     initAll("activators")
     logger:info("Initialized v%s", common.getVersion())
