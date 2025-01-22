@@ -96,20 +96,21 @@ function Easel:new(reference)
 end
 
 
-function Easel:attachCanvasFromInventory(item, itemData)
-    if not CraftingFramework.CarryableContainer.findItemStack{ item = item, itemData = itemData } then
-        logger:debug("Player does not have canvas %s", item.id)
+---@param e { item: tes3item, itemData: tes3itemData, ownerRef: tes3reference }
+function Easel:attachCanvasFromInventory(e)
+    if not CraftingFramework.CarryableContainer.findItemStack{ item = e.item, itemData = e.itemData, reference = e.ownerRef } then
+        logger:debug("Player does not have canvas %s", e.item.id)
         return
     end
-    if item then
-        self.painting:attachCanvas(item, itemData)
+    if e.item then
+        self.painting:attachCanvas(e.item, e.itemData)
         self:setClamp()
         --Remove the canvas from the player's inventory
-        logger:debug("Removing canvas %s from inventory", item.id)
+        logger:debug("Removing canvas %s from inventory", e.item.id)
         CraftingFramework.CarryableContainer.removeItem{
-            reference = tes3.player,
-            item = item.id,
-            itemData = itemData,
+            reference = e.ownerRef or tes3.player,
+            item = e.item.id,
+            itemData = e.itemData,
             count = 1,
             playSound = false,
         }
@@ -155,7 +156,11 @@ function Easel:openAttachCanvasMenu()
             callback = function(e)
                 timer.delayOneFrame(function()
                     if e.item then
-                        self:attachCanvasFromInventory(e.item, e.itemData)
+                        self:attachCanvasFromInventory{
+                            item = e.item,
+                            itemData = e.itemData,
+                            ownerRef = e.actor.reference
+                        }
                     end
                 end)
             end,
