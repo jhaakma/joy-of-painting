@@ -1,6 +1,8 @@
 //vtastek's Splash
 
-extern float hatchStrength = 0.3;
+float hatch_strength = 0.4;
+extern float saturation = 3;
+extern float contrast = 0.8;
 
 float time;
 float2 rcpres;
@@ -19,10 +21,6 @@ float forge = 90;
 float backgro = 100;
 //50 is ~1 meters or so
 
-//supress distant lines
-float linend = 20000;
-
-float3 Params = float3(0,1,1);
 
 static const float2 OffsetMaskH = float2(1.0f, 0.0f);
 static const float2 OffsetMaskV = float2(0.0f, 1.0f);
@@ -182,10 +180,6 @@ float4 edgedetecting( float2 tex : TEXCOORD0  ) : COLOR0
 
 float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 {
-	// depth blend masks
-	float4 ce = smoothstep(forge, backgro, tex2D(sDepthFrame, Tex).r);
-
-	ce.a = 0.0f;
 	// original image, hatch. Hatch is animated.
 	// hatch2 is single color from green channel to match
 	float4 image = tex2D(sLastShader,Tex);
@@ -199,9 +193,8 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 
 
 	float lum = sqrt(dot(image * image, float3(0.29, 0.58, 0.114)));
-	obbright = smoothstep(0.04, hatchStrength, lum.xxxx);
+	obbright = smoothstep(0.04, hatch_strength, lum.xxxx);
 
-	float4 sky = image;
 	float3 edges = tex2D(sLastPass,Tex + float2(0.0, 0.0)).a/2;
 
 	edges += tex2D(sLastPass,Tex + float2( 0.5, 0.5) * (rcpres.y)).a/8;
@@ -212,13 +205,16 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 
 	edges = lerp(hatch.r, edges, obbright);
 
-	float distmask = step(linend,tex2D(sDepthFrame, Tex));
-
-	edges = saturate(edges + distmask);
-
 	float3 final = image.rgb * edges.rgb * edges.rgb;
 
 	final = 1.0 - (1.0 - final) * (1.0 - image);
+
+    //Reduce contrast
+    final = final * contrast;
+    //Increase saturation
+    float average = (final.r + final.g + final.b) / 3;
+    final.rgb = lerp(average, final.rgb, saturation);
+
 	return float4(final.rgb,1);
 }
 

@@ -502,12 +502,13 @@ function PhotoMenu:resetControls()
     for _, shader in ipairs(self.shaders) do
         logger:debug("- shader %s", shader.id)
     end
-
     for _, controlId in pairs(self.controls) do
         local control = config.controls[controlId]
-        logger:debug("Control %s for shader %s", control.id, control.shader )
-        config.persistent[control.id] = control.sliderDefault
-        self:setShaderValue(control)
+        if not control.calculate then
+            logger:debug("Control %s for shader %s", control.id, control.shader )
+            config.persistent[control.id] = control.sliderDefault
+            self:setShaderValue(control)
+        end
     end
     local controlsBlock = self:getControlsBlock()
     if controlsBlock then

@@ -37,7 +37,7 @@ local shaders = {
     },
     { id = "hatch", shaderId = "jop_hatch", defaultControls = { "hatchSize", "hatchDistortionStrength" } },
     { id = "mottle", shaderId = "jop_mottle" },
-    { id = "quantize", shaderId = "jop_quantize" },
+    { id = "quantize", shaderId = "jop_quantize", defaultControls = { "quantizeHueLevels", "quantizeLuminosityLevels"} },
 }
 
 ---@type JOP.ArtStyle.control[]
@@ -64,8 +64,6 @@ local controls = {
         id = "hatchSize",
         uniform = "hatchSize",
         shader = "jop_hatch",
-        name = "Hatch Size",
-        sliderDefault = 50,
         calculate = function(paintingSkill, artStyle)
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
             return math.remap(paintingSkill,
@@ -78,10 +76,6 @@ local controls = {
         id = "compositeBlacken",
         uniform = "doBlackenImage",
         shader = "jop_composite",
-        name = "Blacken Image",
-        sliderDefault = 0,
-        shaderMin = 0,
-        shaderMax = 1,
         calculate = function(_, artStyle)
             local blackenStyles = {
                 charcoal = true,
@@ -94,10 +88,6 @@ local controls = {
         id = "compositeAspectRatio",
         uniform = "aspectRatio",
         shader = "jop_composite",
-        name = "Aspect Ratio",
-        sliderDefault = 50,
-        shaderMin = 0.5,
-        shaderMax = 2.0,
         calculate = function(_, _, canvas)
             return PaintService.getAspectRatio(canvas)
         end
@@ -106,10 +96,6 @@ local controls = {
         id = "compositeIsRotated",
         uniform = "isRotated",
         shader = "jop_composite",
-        name = "Is Rotated",
-        sliderDefault = 0,
-        shaderMin = 0,
-        shaderMax = 1,
         calculate = function(_, _, canvas)
             return canvas.baseRotation == 90 and 1 or 0
         end
@@ -139,10 +125,6 @@ local controls = {
         id = "inkCompositeStrength",
         uniform = "compositeStrength",
         shader = "jop_composite",
-        name = "Transparency",
-        sliderDefault = 0,
-        shaderMin = 0.0,
-        shaderMax = 3.0,
         calculate = function(_)
             return 1
         end
@@ -151,10 +133,6 @@ local controls = {
         id = "watercolorComposite",
         uniform = "compositeStrength",
         shader = "jop_composite",
-        name = "Transparency",
-        sliderDefault = 0,
-        shaderMin = 0.0,
-        shaderMax = 0.0,
         calculate = function(_)
             return 0.3
         end
@@ -163,10 +141,6 @@ local controls = {
         id = "oilComposite",
         uniform = "compositeStrength",
         shader = "jop_composite",
-        name = "Transparency",
-        sliderDefault = 0,
-        shaderMin = 0.0,
-        shaderMax = 0.0,
         calculate = function(_)
             return 0.2
         end
@@ -231,16 +205,12 @@ local controls = {
         id = "distortionStrength",
         uniform = "distortionStrength",
         shader = "jop_distort",
-        name = "Distortion Strength",
-        sliderDefault = 50,
-        shaderMin = 0.0,
-        shaderMax = 1.0,
         calculate = function(paintingSkill, artStyle)
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
             local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
             return math.max(0, math.remap(paintingSkill,
                 config.skillPaintEffect.MIN_SKILL, max,
-                0.02, 0.0
+                0.025, 0.0
             ))
         end
     },
@@ -248,16 +218,13 @@ local controls = {
         id = "outlineDistortionStrength",
         uniform = "distortionStrength",
         shader = "jop_outline",
-        name = "Distortion Strength",
-        sliderDefault = 50,
-        shaderMin = 0.0,
-        shaderMax = 1.0,
+
         calculate = function(paintingSkill, artStyle)
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
             local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
             return math.max(0, math.remap(paintingSkill,
                 config.skillPaintEffect.MIN_SKILL, max,
-                0.02, 0.0
+                0.025, 0.0
             ))
         end
     },
@@ -265,10 +232,7 @@ local controls = {
         id = "hatchDistortionStrength",
         uniform = "distortionStrength",
         shader = "jop_hatch",
-        name = "Distortion Strength",
-        sliderDefault = 50,
-        shaderMin = 0.0,
-        shaderMax = 1.0,
+
         calculate = function(paintingSkill, artStyle)
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
             local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
@@ -282,20 +246,14 @@ local controls = {
         id = "colorPencilTimeOffsetMulti",
         uniform = "timeOffsetMulti",
         shader = "jop_outline",
-        name = "Time Offset Multi",
-        sliderDefault = 0,
         calculate = function(_, _)
-            return 25
+            return 40
         end
     },
     {
         id = "brushSize",
         uniform = "radius",
         shader = "jop_kuwahara",
-        name = "Detail",
-        sliderDefault = 50,
-        shaderMin = 1,
-        shaderMax = 15,
         calculate = function(paintingSkill, artStyle)
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
             return math.remap(paintingSkill,
@@ -366,10 +324,6 @@ local controls = {
         id = "hatchStrength",
         uniform = "hatchStrength",
         shader = "jop_oil",
-        name = "Hatch Strength",
-        sliderDefault = 30,
-        shaderMin = 0.0,
-        shaderMax = 1.0,
         calculate = function(_, _)
             return 0.2
         end
@@ -378,22 +332,14 @@ local controls = {
         id = "canvasStrengthOil",
         uniform = "canvas_strength",
         shader = "jop_splash",
-        name = "Canvas Strength",
-        sliderDefault = 10,
-        shaderMin = 0.0,
-        shaderMax = 1.0,
         calculate = function()
-            return 0.15
+            return 0.3
         end
     },
     {
         id = "canvasStrengthWatercolor",
         uniform = "canvas_strength",
         shader = "jop_splash",
-        name = "Canvas Strength",
-        sliderDefault = 10,
-        shaderMin = 0.0,
-        shaderMax = 1.0,
         calculate = function()
             return 0.10
         end
@@ -403,9 +349,6 @@ local controls = {
         uniform = "pencil_strength",
         shader = "jop_charcoal",
         name = "Pencil Strength",
-        sliderDefault = 0,
-        shaderMin = 0.1,
-        shaderMax = 0.9,
         calculate = function()
             return 0.1
         end
@@ -414,10 +357,6 @@ local controls = {
         id = "pencilScale",
         uniform = "pencil_scale",
         shader = "jop_charcoal",
-        name = "Pencil Scale",
-        sliderDefault = 50,
-        shaderMin = 0.5,
-        shaderMax = 1.5,
         calculate = function(paintingSkill, _)
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, 100)
             return math.remap(paintingSkill,
@@ -436,6 +375,30 @@ local controls = {
         sliderMax = 3,
         shaderMin = 0.0,
         shaderMax = 3.0,
+    },
+    {
+        id = "quantizeHueLevels",
+        uniform = "hueLevels",
+        shader = "jop_quantize",
+        calculate = function(paintingSkill, artStyle)
+            local levels = {
+                watercolor = 20,
+                oil = 34
+            }
+            return levels[artStyle.paintType.id] or 50
+        end
+    },
+    {
+        id = "quantizeLuminosityLevels",
+        uniform = "luminosityLevels",
+        shader = "jop_quantize",
+        calculate = function(paintingSkill, artStyle)
+            local levels = {
+                watercolor = 12,
+                oil = 30
+            }
+            return levels[artStyle.paintType.id] or 50
+        end
     }
 }
 
@@ -586,6 +549,7 @@ Try replacing the background with the fog setting and changing the fog color to 
             "adjuster",
             "composite",
             "fogColor",
+            "quantize",
         },
         controls = {
             "vignette",

@@ -21,8 +21,8 @@ local CraftingFramework = require("CraftingFramework")
 ---@field id string The id of the control
 ---@field uniform string the name of the external variable in the shader being manipulated
 ---@field shader string The shader to use for this control
----@field name string The name of the control (shown in menu)
----@field sliderDefault number The default value for the slider
+---@field name? string The name of the control (shown in menu)
+---@field sliderDefault? number The default value for the slider
 ---@field sliderMin? number The minimum value for the slider
 ---@field sliderMax? number The maximum value for the slider
 ---@field shaderMin? number The minimum value for the shader variable
@@ -72,8 +72,8 @@ end
 function ArtStyle.registerControl(e)
     logger:assert(type(e.id) == "string", "id must be a string")
     logger:assert(type(e.shader) == "string", "shader must be a string")
-    logger:assert(type(e.name) == "string", "name must be a string")
-    logger:assert(type(e.sliderDefault) == "number", "sliderDefault must be a number")
+    -- logger:assert(type(e.name) == "string", "name must be a string")
+    -- logger:assert(type(e.sliderDefault) == "number", "sliderDefault must be a number")
     logger:debug("Registering control %s", e.id)
     config.controls[e.id] = table.copy(e, {})
 end
