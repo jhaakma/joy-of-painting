@@ -399,6 +399,17 @@ local controls = {
             }
             return levels[artStyle.paintType.id] or 50
         end
+    },
+    {
+        id = "sketchAlphaMask",
+        uniform = "sketchMaskIndex",
+        shader = "jop_composite",
+        name = "Sketch Pattern",
+        sliderDefault = 0,
+        sliderMin = 0,
+        sliderMax = 1,
+        shaderMin = 0,
+        shaderMax = 1,
     }
 }
 
@@ -428,6 +439,7 @@ local artStyles = {
             "composite",
         },
         controls = {
+            "sketchAlphaMask",
             "brightness",
             "contrast",
             "charcoalCompositeStrength",
@@ -482,6 +494,7 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
             "composite",
         },
         controls = {
+            "sketchAlphaMask",
             "brightness",
             "contrast",
             "saturation",
@@ -515,7 +528,6 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
             "quantize",
         },
         controls = {
-            --"watercolorLut",
             "vignette",
             "brightness",
             "contrast",

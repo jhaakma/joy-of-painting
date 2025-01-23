@@ -12,6 +12,8 @@ extern float isRotated;
 extern float fogDistance = 250;
 //If enabled, will use the alpha mask to create a vignette effect
 extern int maskIndex = 0;
+//If enabled, will use the alpha mask to create a sketch effect
+extern int sketchMaskIndex = 0;
 
 float maxDistance = 250-1;
 float2 rcpres;
@@ -28,6 +30,7 @@ texture tex1  < string src="jop/composite_tex.dds"; >;
 texture tex2 < string src="jop/vignetteAlphaMask.tga"; >;
 texture tex3 < string src="jop/vignetteAlphaMask_2.tga"; >;
 texture tex4 < string src="jop/vignetteAlphaMask_3.tga"; >;
+texture tex5 < string src="jop/vignetteAlphaMask_4.tga"; >;
 
 sampler2D sLastShader = sampler_state { texture = <lastshader>; addressu = clamp; };
 sampler2D sLastPass = sampler_state { texture = <lastpass>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
@@ -36,7 +39,7 @@ sampler2D sComposite = sampler_state { texture=<tex1>; minfilter = linear; magfi
 sampler2D sVignetteAlphaMask_1 = sampler_state { texture =<tex2>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sVignetteAlphaMask_2 = sampler_state { texture =<tex3>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sVignetteAlphaMask_3 = sampler_state { texture =<tex4>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
-//sampler2D sVignetteAlphaMask_4 = sampler_state { texture =<tex5>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
+sampler2D sVignetteAlphaSketchMask_1 = sampler_state { texture =<tex5>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 
 float readDepth(float2 tex)
 {
@@ -133,6 +136,8 @@ float4 composite(float2 tex : TEXCOORD0) : COLOR0
     float4 alphaMask_2 = renderCanvas(tex, sVignetteAlphaMask_2);
     float4 alphaMask_3 = renderCanvas(tex, sVignetteAlphaMask_3);
 
+    float4 alphaSketchMask_1 = renderCanvas(tex, sVignetteAlphaSketchMask_1);
+
     float brightness = max(max(image.r, image.g), image.b);
 
     // Calculate the final image based on compositeStrength
@@ -149,7 +154,7 @@ float4 composite(float2 tex : TEXCOORD0) : COLOR0
     image = lerp(image, canvas, (1-alphaMask_1.a) * (maskIndex == 1));
     image = lerp(image, canvas, (1-alphaMask_2.a) * (maskIndex == 2));
     image = lerp(image, canvas, (1-alphaMask_3.a) * (maskIndex == 3));
-    //image = lerp(image, canvas, (1-alphaMask_4.a) * (maskIndex == 4));
+    image = lerp(image, canvas, (1-alphaSketchMask_1.a) * (sketchMaskIndex == 1));
 
     // Cull distant objects
     float depth = readDepth(tex);
