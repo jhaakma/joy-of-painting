@@ -444,7 +444,7 @@ local controls = {
             return ({
                 watercolor = 24,
                 oil = 36
-            }[artStyle.paintType.id] or 50
+            })[artStyle.paintType.id] or 50
         end
     },
     {
