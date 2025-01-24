@@ -121,7 +121,7 @@ float3 overlay(float3 image, float3 canvas, float blendStrength) {
     // step(0.5, image) is 0 if image < 0.5, 1 if image >= 0.5
     float3 result = lerp(multiplyVal, screenVal, step(0.5, greyCanvas));
 
-    return lerp(image, result, blendStrength*0.25);
+    return lerp(image, result, blendStrength*0.1);
 }
 
 //This takes composites the sLastShader onto the result of sLastPass.
