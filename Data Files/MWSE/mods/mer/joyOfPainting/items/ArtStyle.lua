@@ -100,9 +100,7 @@ end
 function ArtStyle.registerExcludedShader(e)
     logger:assert(type(e.id) == "string", "id must be a string")
     logger:debug("Registering excluded shader %s", e.id)
-    config.excludedShaders[e.id] = {
-
-    }
+    config.excludedShaders[e.id] = {}
 end
 
 ---@param data JOP.ArtStyle.data

@@ -634,7 +634,8 @@ function PhotoMenu:enableShaders()
         ShaderService.enable(shader.shaderId)
     end
     for shaderId in pairs(config.excludedShaders) do
-        if ShaderService.isEnabled(shaderId) then
+        local shader = mgeShadersConfig.find{name=shaderId}
+        if shader and shader.enabled then
             ShaderService.disable(shaderId)
             config.excludedShaders[shaderId].isDisabled = true
         end

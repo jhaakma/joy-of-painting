@@ -597,7 +597,7 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
         --requiresEasel = true,
         maxDetailSkill = 50,
         maxDistortSkill = 40,
-        minBrushSize = 5,
+        minBrushSize = 4,
         maxBrushSize = 12,
         helpText = [[
 Watercolor paintings have a limited color palette and thick brush strokes. They are good for making abstract and impressionist paintings.

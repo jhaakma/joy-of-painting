@@ -7,7 +7,7 @@ sampler sDepthFrame = sampler_state { texture=<depthframe>; addressu = clamp; ad
 
 float PI = 3.14159265359;
 float2 rcpres;
-extern float radius = 6;
+extern float radius = 12;
 
 struct Region
 {
@@ -63,7 +63,7 @@ Region calcRegion(float2 uv, int xStart, int xEnd, int yStart, int yEnd)
 
     float depth = saturate(readDepth(uv) / 100000);
 
-    float minRadius = max(1, radius * 0.3);
+    float minRadius = max(1, radius * 0.5);
     float effectiveRadius = lerp(radius, minRadius, depth);
 
     [loop]
