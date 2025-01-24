@@ -29,6 +29,7 @@ float4 main(float2 tex: TEXCOORD0) : COLOR0
   float transitionD = 100 + distance * 10;
 
   color = lerp(color, fogColor, ( smoothstep(distance_exp, distance_exp + transitionD , depth ) * ( step(distance_exp, maxDistance_exp) )) );
+
   return float4(color, 1);
 }
 

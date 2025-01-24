@@ -1,8 +1,15 @@
 // Brightness, Contrast, and Saturation Shader
 
+//Controlled vars
 extern float brightness = 0;
 extern float contrast = 1;
 extern float saturation = 1;
+
+//Automatic vars
+extern float brightnessOffset = 0;
+extern float contrastOffset = 0;
+extern float saturationOffset = 0;
+
 extern float hue = 0;
 texture lastshader;
 
@@ -98,24 +105,17 @@ float4 adjust(float2 tex: TEXCOORD0) : COLOR0
     float4 color = tex2D(s0, tex);
 
     //BRIGHTNESS AND CONTRAST
-    color.rgb += brightness;
-    color.rgb *= contrast;
+    color.rgb += (brightness + brightnessOffset);
+    color.rgb *= contrast + contrastOffset;
 
     //SATURATION
     float average = (color.r + color.g + color.b) / 3;
-    color.rgb = lerp(average, color.rgb, saturation);
+    color.rgb = lerp(average, color.rgb, (saturation + saturationOffset));
 
     //HUE
     float3 hsl = RGBToHSL(color.rgb);
     hsl.x += hue;
     color.rgb = HSLToRGB(hsl);
-
-
-
-
-
-
-
 
     return color;
 }

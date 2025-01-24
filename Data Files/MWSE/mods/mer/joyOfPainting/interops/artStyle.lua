@@ -5,9 +5,25 @@ local JoyOfPainting = require("mer.joyOfPainting")
 local SkillService = require("mer.joyOfPainting.services.SkillService")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
 
+local excludedShaders = {
+    ["Bloom Soft"] = true,
+    ["Sunshafts"] = true,
+    ["Eye Adaptation (HDR)"] = true,
+}
+for shaderId in pairs(excludedShaders) do
+    JoyOfPainting.ArtStyle.registerExcludedShader{ id = shaderId }
+end
+
+
 ---@type JOP.ArtStyle.shader[]
 local shaders = {
-    { id = "adjuster", shaderId = "jop_adjuster" },
+    {
+        id = "adjuster",
+        shaderId = "jop_adjuster",
+        defaultControls = {
+            "adjusterOffsetSaturation",
+        }
+    },
     { id = "pencil", shaderId = "jop_charcoal" },
     { id = "greyscale", shaderId = "jop_greyscale" },
     { id = "blackAndWhite", shaderId = "jop_blackwhite" },
@@ -18,7 +34,9 @@ local shaders = {
     { id = "detail", shaderId = "jop_kuwahara", defaultControls = {"brushSize"} },
     { id = "splash", shaderId = "jop_splash" },
     { id = "distort", shaderId = "jop_distort", defaultControls = {"distortionStrength"} },
-    { id = "fogColor", shaderId = "jop_fog_color",
+    {
+        id = "fogColor",
+        shaderId = "jop_fog_color",
         defaultControls = {
             "distanceColor",
         },
@@ -27,8 +45,18 @@ local shaders = {
         }
     },
     { id = "fogBW", shaderId = "jop_fog_bw", defaultControls = { "distanceBW", "bgColor" } },
-    { id = "outline", shaderId = "jop_outline", defaultControls = {"outlineDistortionStrength"}  },
-    { id = "composite", shaderId = "jop_composite",
+    {
+        id = "outline",
+        shaderId = "jop_outline",
+        defaultControls = {
+            "outlineDistortionStrength",
+            "outlineThickness",
+            "outlineDarkness",
+        }
+    },
+    {
+        id = "composite",
+        shaderId = "jop_composite",
         defaultControls = {
             "compositeAspectRatio",
             "compositeIsRotated",
@@ -43,6 +71,17 @@ local shaders = {
 ---@type JOP.ArtStyle.control[]
 local controls = {
     {
+        id = "adjusterOffsetSaturation",
+        uniform = "saturationOffset",
+        shader = "jop_adjuster",
+        calculate = function (_, artStyle)
+            return ({
+                pencil = 0.5,
+                watercolor = 0.5,
+            })[artStyle.paintType.id] or 0
+        end
+    },
+    {
         id = "maxDistance",
         uniform = "maxDistance",
         shader = "jop_outline",
@@ -52,13 +91,35 @@ local controls = {
         shaderMax = 200000,
     },
     {
+        id = "outlineDetail",
+        uniform = "lineTest",
+        shader = "jop_outline",
+        name = "Detail",
+        sliderDefault = 50,
+        sliderMin = 0,
+        sliderMax = 100,
+        shaderMin = 70.0,
+        shaderMax = 10.0,
+    },
+    {
         id = "outlineThickness",
         uniform = "outlineThickness",
         shader = "jop_outline",
-        name = "Outline Thickness",
-        sliderDefault = 40,
-        shaderMin = 1,
-        shaderMax = 10,
+        calculate = function(_, artStyle)
+            return ({
+                pencil = 1.3,
+            })[artStyle.paintType.id] or 1.1
+        end
+    },
+    {
+        id = "outlineDarkness",
+        uniform = "lineDarkMulti",
+        shader = "jop_outline",
+        calculate = function(_, artStyle)
+            return ({
+                pencil = 0.6,
+            })[artStyle.paintType.id]  or 0.25
+        end
     },
     {
         id = "hatchSize",
@@ -77,11 +138,10 @@ local controls = {
         uniform = "doBlackenImage",
         shader = "jop_composite",
         calculate = function(_, artStyle)
-            local blackenStyles = {
-                charcoal = true,
-                ink = true
-            }
-            return blackenStyles[artStyle.paintType.id] and 1 or 0
+            return({
+                charcoal = 1,
+                ink = 1
+            })[artStyle.paintType.id] or 0
         end
     },
     {
@@ -361,7 +421,7 @@ local controls = {
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, 100)
             return math.remap(paintingSkill,
                 config.skillPaintEffect.MIN_SKILL, 100,
-                0.8, 0.6
+                0.85, 0.6
             )
         end
     },
@@ -380,24 +440,22 @@ local controls = {
         id = "quantizeHueLevels",
         uniform = "hueLevels",
         shader = "jop_quantize",
-        calculate = function(paintingSkill, artStyle)
-            local levels = {
-                watercolor = 20,
-                oil = 34
-            }
-            return levels[artStyle.paintType.id] or 50
+        calculate = function(_, artStyle)
+            return ({
+                watercolor = 24,
+                oil = 36
+            }[artStyle.paintType.id] or 50
         end
     },
     {
         id = "quantizeLuminosityLevels",
         uniform = "luminosityLevels",
         shader = "jop_quantize",
-        calculate = function(paintingSkill, artStyle)
-            local levels = {
-                watercolor = 12,
+        calculate = function(_, artStyle)
+            return ({
+                watercolor = 20,
                 oil = 30
-            }
-            return levels[artStyle.paintType.id] or 50
+            })[artStyle.paintType.id] or 50
         end
     },
     {
@@ -405,7 +463,7 @@ local controls = {
         uniform = "sketchMaskIndex",
         shader = "jop_composite",
         name = "Sketch Pattern",
-        sliderDefault = 0,
+        sliderDefault = 1,
         sliderMin = 0,
         sliderMax = 1,
         shaderMin = 0,
@@ -487,7 +545,6 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
         name = "Pencil Drawing",
         shaders = {
             "detail",
-            "oil",
             "adjuster",
             "pencil",
             "outline",
@@ -498,7 +555,6 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
             "brightness",
             "contrast",
             "saturation",
-            "hatchStrength",
             "pencilStrength",
             "pencilScale",
             "transparency",
@@ -508,7 +564,7 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
         valueModifier = 3,
         paintType = "pencil",
         maxDetailSkill = 55,
-        minBrushSize = 2,
+        minBrushSize = 3,
         maxBrushSize = 12,
         helpText = [[
 The bright areas of the pencil drawing will be replaced with the background. Keep this in mind when preparing your scene, use the contrast/brightness settings to make sure any parts of the image you want to remain are below 50% brightness.
@@ -520,7 +576,6 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
         shaders = {
             "detail",
             "watercolor",
-            "mottle",
             "distort",
             "adjuster",
             "fogColor",

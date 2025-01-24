@@ -148,6 +148,8 @@ config.tapestries = {}
 config.shaders = {}
 ---@type table<string, JOP.Subject>
 config.subjects = {}
+---@type table<string, { isDisabled: boolean? }>
+config.excludedShaders = {}
 
 ---@class JOP.config.persistent
 ---@field lightingMode any

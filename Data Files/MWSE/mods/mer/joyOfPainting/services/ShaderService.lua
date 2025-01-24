@@ -25,6 +25,11 @@ function ShaderService.setEnabled(shaderId, isEnabled)
     end
 end
 
+function ShaderService.isEnabled(shaderId)
+    local shader = getShader(shaderId)
+    return shader and shader.enabled
+end
+
 ---@param shaderId string
 function ShaderService.enable(shaderId)
     logger:debug("Enabling shader: %s", shaderId)

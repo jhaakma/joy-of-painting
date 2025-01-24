@@ -1,5 +1,7 @@
-float maxDistance = 62000;
-float outlineThickness = 2.0;
+extern float maxDistance = 62000;
+extern float outlineThickness = 2.0;
+extern float lineTest = 25.05;
+extern float lineDarkMulti = 0.8;
 
 extern float timeOffsetMulti = 0.0;
 extern float distortionStrength = 0.05; // Adjust this to change the strength of the distortion
@@ -244,12 +246,12 @@ float4 outline(float2 rawTex : TEXCOORD0) : COLOR
     float4 sceneColor = sample0(s0, sceneTex);
 
     float sobelDepth = SobelSampleDepth(s1, tex.xy, offset);
-    sobelDepth = sobelDepth > 25.05 ? saturate(sobelDepth) : 0.0;
+    sobelDepth = sobelDepth > lineTest ? saturate(sobelDepth) : 0.0;
     sobelDepth = pow(saturate(sobelDepth) * OutlineDepthMultiplier, OutlineDepthBias);
     sobelDepth = step(0.01, sobelDepth);
     float sobelOutline = saturate(sobelDepth);
 
-    float3 outColor = saturate(sceneColor.rgb * 0.8 - 0.1);
+    float3 outColor = sceneColor.rgb * lineDarkMulti;
 
     float water = pos.z * eyevec.z - pos.y * xylength + eyepos.z;
     bool aboveWater = water > waterlevel;

@@ -633,6 +633,12 @@ function PhotoMenu:enableShaders()
         logger:debug("- shader: %s", shader.shaderId)
         ShaderService.enable(shader.shaderId)
     end
+    for shaderId in pairs(config.excludedShaders) do
+        if ShaderService.isEnabled(shaderId) then
+            ShaderService.disable(shaderId)
+            config.excludedShaders[shaderId].isDisabled = true
+        end
+    end
 end
 
 function PhotoMenu:disableShaders()
@@ -640,6 +646,12 @@ function PhotoMenu:disableShaders()
     for _, shader in ipairs(self.shaders) do
         logger:debug("- shader: %s", shader.shaderId)
         ShaderService.disable(shader.shaderId)
+    end
+    for shaderId, data in pairs(config.excludedShaders) do
+        if data.isDisabled then
+            ShaderService.enable(shaderId)
+            data.isDisabled = false
+        end
     end
 end
 

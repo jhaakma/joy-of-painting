@@ -97,6 +97,14 @@ function ArtStyle.registerShader(e)
     config.shaders[e.id] = e
 end
 
+function ArtStyle.registerExcludedShader(e)
+    logger:assert(type(e.id) == "string", "id must be a string")
+    logger:debug("Registering excluded shader %s", e.id)
+    config.excludedShaders[e.id] = {
+
+    }
+end
+
 ---@param data JOP.ArtStyle.data
 function ArtStyle:new(data)
     local artStyle = setmetatable(table.deepcopy(data), self)

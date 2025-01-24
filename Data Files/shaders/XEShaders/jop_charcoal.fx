@@ -18,9 +18,8 @@ float4 main(float2 Tex : TEXCOORD0) : COLOR0 {
     // Sample the pencil texture
     float4 pencil = tex2D(sHatch, adjustedTex);
 
-    float4 result = color / (1.0 - pencil);
+    float4 result = saturate((color+0.1) / (1-pencil));
     // Clamping the result to avoid overflow
-    //result = clamp(result, 0.0, 1.0);
     return lerp(color, result, pencil_strength);
 }
 
