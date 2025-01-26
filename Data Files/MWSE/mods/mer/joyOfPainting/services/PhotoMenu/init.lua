@@ -328,7 +328,7 @@ function PhotoMenu:createCaptureButtons(parent)
     logger:debug("Creating capture button")
     local paintButton = parent:createButton {
         id = "JOP.CaptureButton",
-        text = "Paint"
+        text = self.artStyle.paintType.action
     }
     paintButton:register("mouseClick", function(e)
         self:capture()
@@ -339,7 +339,7 @@ function PhotoMenu:createHeader(parent)
     logger:debug("Creating header")
     parent:createLabel {
         id = "JOP.Header",
-        text = "Hold Right Click to hide menu and move camera"
+        text = "Hold Right Click to move camera"
     }
 end
 
@@ -670,6 +670,8 @@ end
 local function isRightClickPressed(e)
     return e.button == 1
 end
+
+local doCapture
 local hideMenuOnRightClick
 function PhotoMenu:registerIOEvents()
     logger:debug("Registering IO events.")
@@ -690,13 +692,18 @@ function PhotoMenu:registerIOEvents()
     end
     self.zoomSlider:registerEvents()
 
+    doCapture = function(e)
+        if e.keyCode == tes3.scanCode.enter and self.state ~= "capturing" then
+            if tes3ui.menuMode() and tes3ui.getMenuOnTop() ~= self.menu then
+                return
+            end
+            self:capture()
+        end
+    end
+
     timer.frame.delayOneFrame(function()
         event.register("mouseButtonDown", hideMenuOnRightClick)
-        event.register("keyDown", function(e)
-            if e.keyCode == tes3.scanCode.enter and self.state ~= "capturing" then
-                self:capture()
-            end
-        end)
+        event.register("keyDown", doCapture)
     end)
 
 end
@@ -704,6 +711,7 @@ end
 function PhotoMenu:unregisterIOEvents()
     logger:debug("Unregistering IO events.")
     event.unregister("mouseButtonDown", hideMenuOnRightClick)
+    event.unregister("keyDown", doCapture)
     self.zoomSlider:unregisterEvents()
 end
 
@@ -714,15 +722,26 @@ function PhotoMenu:createMenu()
         id = self.menuID,
         fixedFrame = true
     }
-    menu.minWidth = 410
+    menu.minWidth = 390
     menu.absolutePosAlignX = 0.02
     menu.absolutePosAlignY = 0.5
     self.menu = menu
 
     self:createHeader(menu)
     self:createHelpText(menu)
-    self.zoomSlider:create(menu)
-    self:createShaderControls(menu)
+
+    local controlsParent = menu
+    local _, height = tes3ui.getViewportSize()
+    logger:debug("Viewport height: %s", height)
+    if height <= 800 then
+        logger:debug("Creating scroll pane")
+        controlsParent = menu:createVerticalScrollPane{}
+        controlsParent.widthProportional = 1.0
+        controlsParent.minHeight = 400
+        controlsParent.borderTop = 16
+    end
+    self.zoomSlider:create(controlsParent)
+    self:createShaderControls(controlsParent)
     self:createResetButton(menu)
     self:createRotateButton(menu)
     self:createFindSubjectsButton(menu)
