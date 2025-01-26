@@ -13,8 +13,9 @@
 ---@class JOP.PaintType
 ---@field id string The id of the palette type
 ---@field name string The name of the palette type
----@field brushType string? The brush type to use for this palette. If not specified, this palette does not need a brush to use.
----@field refillMenu CraftingFramework.MenuActivator
+---@field brushType? string The brush type to use for this palette. If not specified, this palette does not need a brush to use.
+---@field refillMenu? CraftingFramework.MenuActivator
+---@field action "Draw" | "Sketch" | "Paint" | string The action to take when using this paint type
 
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
@@ -44,8 +45,9 @@ function Palette.registerPaletteItem(e)
     logger:assert(type(e.id) == "string", "id must be a string")
     logger:assert(type(e.paintType) == "string", "paintTypes must be a table")
     logger:debug("Registering palette item %s", e.id)
+    e = table.copy(e, {})
     e.id = e.id:lower()
-    config.paletteItems[e.id] = table.copy(e, {})
+    config.paletteItems[e.id] = e
     if e.meshOverride then
         meshService.registerOverride(e.id, e.meshOverride)
     end
@@ -92,8 +94,10 @@ function Palette.registerPaintType(e)
     logger:assert(type(e.id) == "string", "id must be a string")
     logger:assert(type(e.name) == "string", "name must be a string")
     logger:debug("Registering palette type %s", e.id)
-    e.id = e.id:lower()
-    config.paintTypes[e.id] = table.copy(e, {})
+    local paintType = table.copy(e, {})
+    paintType.id = paintType.id:lower()
+    paintType.action = paintType.action or "Paint"
+    config.paintTypes[paintType.id] = paintType
 end
 
 ---@param e JOP.Palette.params

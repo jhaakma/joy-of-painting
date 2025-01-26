@@ -58,31 +58,37 @@ local paletteItems = {
     }
 }
 
+---@type JOP.PaintType[]
 local paintTypes = {
     {
         id = "charcoal",
         name = "Charcoal",
         brushType = nil,
+        action = "Draw",
     },
     {
         id = "ink",
         name = "Ink",
         brushType = "quill",
+        action = "Sketch",
     },
     {
         id = "watercolor",
         name = "Watercolor Paint",
         brushType = "brush",
+        action = "Paint",
     },
     {
         id = "oil",
         name = "Oil Paint",
         brushType = "brush",
+        action = "Paint",
     },
     {
         id = "pencil",
         name = "Color Pencil",
         brushType = nil,
+        action = "Draw",
     }
 }
 event.register(tes3.event.initialized, function()
