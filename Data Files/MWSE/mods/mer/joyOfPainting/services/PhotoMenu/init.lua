@@ -1,3 +1,4 @@
+
 --[[
     Service for taking a photo. Includes toggling shaders,
     adjusting Zoom etc
@@ -35,6 +36,10 @@ local alwaysOnShaders
 ---@field controls string[]?
 ---@field colorPickers string[]?
 
+---@aliasing JOP.PhotoMenu.State
+---| "ready"
+---| "capturing"
+
 ---@class JOP.PhotoMenu : JOP.PhotoMenu.newParams
 ---@field artStyle JOP.ArtStyle
 ---@field controls string[]
@@ -46,7 +51,8 @@ local alwaysOnShaders
 ---@field isLooking boolean? default false
 local PhotoMenu = {
     shaders = nil,
-    isLooking = false
+    isLooking = false,
+    state = nil,
 }
 PhotoMenu.menuID = "TJOP.PhotoMenu"
 
@@ -67,6 +73,7 @@ function PhotoMenu:new(photoMenuParams)
     local o = setmetatable(photoMenuParams, self)
     self.__index = self
 
+    o.state = "ready"
     o.canvasConfig = photoMenuParams.getCanvasConfig()
     o.artStyle = ArtStyle:new(photoMenuParams.artStyle)
 
@@ -289,7 +296,11 @@ end
 ]]
 function PhotoMenu:capture()
     logger:debug("Capturing image")
-
+    if self.state == "capturing" then
+        logger:debug("Already capturing, skipping")
+        return
+    end
+    self.state = "capturing"
     local builder = self:getImageBuilder()
 
     builder:start()
@@ -681,6 +692,11 @@ function PhotoMenu:registerIOEvents()
 
     timer.frame.delayOneFrame(function()
         event.register("mouseButtonDown", hideMenuOnRightClick)
+        event.register("keyDown", function(e)
+            if e.keyCode == tes3.scanCode.enter and self.state ~= "capturing" then
+                self:capture()
+            end
+        end)
     end)
 
 end
@@ -731,7 +747,8 @@ end
 --Destroy the menu
 function PhotoMenu:hideMenu()
     tes3ui.leaveMenuMode()
-    tes3ui.findMenu(self.menuID):destroy()
+    local menu = tes3ui.findMenu(self.menuID)
+    if menu then menu:destroy() end
     self.active = false
 end
 
