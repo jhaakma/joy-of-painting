@@ -324,7 +324,7 @@ function PhotoMenu:capture()
 end
 
 ---@param parent tes3uiElement
-function PhotoMenu:createCaptureButtons(parent)
+function PhotoMenu:createCaptureButton(parent)
     logger:debug("Creating capture button")
     local paintButton = parent:createButton {
         id = "JOP.CaptureButton",
@@ -333,6 +333,7 @@ function PhotoMenu:createCaptureButtons(parent)
     paintButton:register("mouseClick", function(e)
         self:capture()
     end)
+    return paintButton
 end
 
 function PhotoMenu:createHeader(parent)
@@ -574,6 +575,7 @@ function PhotoMenu:createCloseButton(parent)
             self.closeCallback()
         end
     end)
+    return button
 end
 
 
@@ -738,6 +740,7 @@ function PhotoMenu:createMenu()
         controlsParent = menu:createVerticalScrollPane{}
         controlsParent.widthProportional = 1.0
         controlsParent.minHeight = 400
+        controlsParent.maxHeight = 400
         controlsParent.borderTop = 16
     end
     self.zoomSlider:create(controlsParent)
@@ -745,8 +748,13 @@ function PhotoMenu:createMenu()
     self:createResetButton(menu)
     self:createRotateButton(menu)
     self:createFindSubjectsButton(menu)
-    self:createCaptureButtons(menu)
-    self:createCloseButton(menu)
+    local buttomRowBlock = menu:createBlock()
+    buttomRowBlock.flowDirection = "left_to_right"
+    buttomRowBlock.widthProportional = 1.0
+    buttomRowBlock.autoHeight = true
+    self:createCloseButton(buttomRowBlock)
+    local captureButton = self:createCaptureButton(buttomRowBlock)
+    captureButton.absolutePosAlignX = 1.0
     self.active = true
     tes3ui.enterMenuMode(menu.id)
 end
