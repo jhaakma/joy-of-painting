@@ -1,3 +1,4 @@
+extern float distortionStrength = 0.05;
 //When true, the overlay image will converted to black
 extern float doBlackenImage = false;
 //Higher values replace more of the overlay image with the canvas image
@@ -15,6 +16,12 @@ extern int maskIndex = 0;
 //If enabled, will use the alpha mask to create a sketch effect
 extern int sketchMaskIndex = 0;
 
+
+extern float speed = 0.5;
+extern float scale = 3;
+extern float distance = 0.1;
+
+float time;
 float maxDistance = 250-1;
 float2 rcpres;
 static const float screen_width = rcpres.x;
@@ -31,6 +38,7 @@ texture tex2 < string src="jop/vignetteAlphaMask.tga"; >;
 texture tex3 < string src="jop/vignetteAlphaMask_2.tga"; >;
 texture tex4 < string src="jop/vignetteAlphaMask_3.tga"; >;
 texture tex5 < string src="jop/vignetteAlphaMask_4.tga"; >;
+texture tex6 < string src="jop/perlinNoise.tga"; >;
 
 sampler2D sLastShader = sampler_state { texture = <lastshader>; addressu = clamp; };
 sampler2D sLastPass = sampler_state { texture = <lastpass>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
@@ -40,6 +48,7 @@ sampler2D sVignetteAlphaMask_1 = sampler_state { texture =<tex2>; addressu = cla
 sampler2D sVignetteAlphaMask_2 = sampler_state { texture =<tex3>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sVignetteAlphaMask_3 = sampler_state { texture =<tex4>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sVignetteAlphaSketchMask_1 = sampler_state { texture =<tex5>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
+sampler sNormalMap = sampler_state { texture=<tex6>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
 
 float readDepth(float2 tex)
 {
@@ -124,6 +133,22 @@ float3 overlay(float3 image, float3 canvas, float blendStrength) {
     return lerp(image, result, blendStrength*0.1);
 }
 
+float2 distortedTex(float2 Tex) {
+
+    //move around over time
+    float2 uv = float2(Tex.x + sin(time*speed) * distance, Tex.y + cos(time*speed) * distance) / scale;
+
+    float4 normalMap = tex2D(sNormalMap, uv);
+
+    // Convert the normal map from tangent space to [-1, 1]
+    float2 distortion = (normalMap.rg * 2.0 - 1.0) * distortionStrength;
+
+    // Apply the distortion to the texture coordinates
+    float2 distortedTex = Tex + distortion;
+
+    return distortedTex;
+}
+
 //This takes composites the sLastShader onto the result of sLastPass.
 //It renders the sLastShader transparent based on brightness and the compositeStrength.
 //At 0 compositeStrength, the sLastShader is invisible.
@@ -157,7 +182,8 @@ float4 composite(float2 tex : TEXCOORD0) : COLOR0
     image = lerp(image, canvas, (1-alphaSketchMask_1.a) * (sketchMaskIndex == 1));
 
     // Cull distant objects
-    float depth = readDepth(tex);
+    float2 distTex = distortedTex(tex);
+    float depth = readDepth(distTex);
     float distance_exp = pow(fogDistance, 2);
     float maxDistance_exp = pow(maxDistance, 2);
     float transitionD = 100 + fogDistance * 10;

@@ -2,12 +2,14 @@
 extern float timeOffsetMulti = 0.0;
 extern float distortionStrength = 0.05; // Adjust this to change the strength of the distortion
 extern float speed = 0.5;
-extern float scale = 1.5;
+extern float scale = 3;
 extern float distance = 0.1;
+
+extern float fogDistance = 0;
 float time;
 
 extern float hatchStrength = 4.0;
-extern float hatchSize = 0.25;
+extern float hatchSize = 0.1;
 
 #define PI 3.1415926535897932384626433832795
 
@@ -25,6 +27,8 @@ texture depthframe;
 texture tex1 < string src="jop/Hatch1.tga"; >;
 texture tex2 < string src="jop/Hatch2.tga"; >;
 texture tex3 < string src="jop/perlinNoise.tga"; >; // Your normal map texture
+texture tex4;
+sampler sampNormals = sampler_state { texture = <tex1>; minfilter = anisotropic; magfilter = linear; mipfilter = linear; addressu = wrap; addressv = wrap; };
 
 sampler sLastShader = sampler_state { texture = <lastshader>; addressu = mirror; addressv = mirror; magfilter = linear; minfilter = linear; };
 sampler sDepthFrame = sampler_state { texture = <depthframe>; addressu = wrap; addressv = wrap; magfilter = point; minfilter = point; };
@@ -58,9 +62,9 @@ float2 distortedTex(float2 Tex, float timeOffset) {
     float2 distortion = (normalMap.rg * 2.0 - 1.0) * distortionStrength;
 
     // Apply the distortion to the texture coordinates
-    float2 distortedTex = Tex + distortion;
+    float2 distTex = Tex + distortion;
 
-    return distortedTex;
+    return distTex;
 }
 
 float3 toView(float2 tex)
@@ -70,50 +74,72 @@ float3 toView(float2 tex)
     return float3(xy, depth);
 }
 
-
-
-float3 getNormal(in float2 rawTex : TEXCOORD0)
+float3 toWorldWithDepth(float2 uv, float depth)
 {
-    float2 tex = distortedTex(rawTex, 0.0);;
+    // This version modifies your toWorld() to incorporate depth.
+    // (Adjust signs, near/far plane logic, or matrix usage as needed.)
+    // Some engines use [0..1] for depth; others might use different ranges.
 
-    float3 pos = toView(tex);
+    // Move uv from [0..1] into clip space [-1..1]
+    float2 clip = float2(2.0 * uv.x - 1.0, 1.0 - 2.0 * uv.y);
+
+    // Start with the camera's forward basis from your mview, etc.
+    // We'll just show a pseudo-code version:
+    float3 wpos = float3(mview[0][2], mview[1][2], mview[2][2]);
+
+    // Scale factors from the projection
+    float invProjX = 1.0 / mproj[0][0];  // typically FOV scale
+    float invProjY = 1.0 / mproj[1][1];
+
+    // "clip.x" is the [-1..1] x coordinate
+    wpos += (clip.x * invProjX) * float3(mview[0][0], mview[1][0], mview[2][0]);
+    wpos += (clip.y * -invProjY) * float3(mview[0][1], mview[1][1], mview[2][1]);
+
+    // Adjust by 'depth' in a way consistent with your engine's depth range
+    // Exactly how you factor in 'depth' depends on how your pipeline is set up.
+    // E.g., you might do something like:
+    wpos *= depth;  // or apply near/far plane logic as appropriate
+
+    return wpos;
+}
+
+float3 getWorldSpaceNormal(float2 uv)
+{
+
+    // Sample depth from the depth buffer
+    float depthC = sample0(sDepthFrame, uv).r;
+
+    // Get the world‐space position at the center
+    float3 center = toWorldWithDepth(uv, depthC);
+
+    float3 pos = toView(uv);
     float water = pos.z * eyevec.z - pos.y * xylength + eyepos.z;
 
     if(pos.z <= 0 || pos.z > sky || (water - waterlevel) < 0)
-        return float3(0.5, 0.5, 1);
+        return float3(0, 0, 1);
 
-    float depth = tex2Dlod(sDepthFrame, float4(tex, 0, 0)).x;
+    // Offset in X
+    float2 uvR = uv + float2(rcpres.x, 0);
+    float2 uvL = uv - float2(rcpres.x, 0);
 
-    float3 depthL = pos - toView(tex + float2(-rcpres.x, 0));
-    float3 depthR = toView(tex + float2(rcpres.x, 0)) - pos;
-    float3 depthU = pos - toView(tex + float2(0, -rcpres.y));
-    float3 depthD = toView(tex + float2(0, rcpres.y)) - pos;
+    float3 posR = toWorldWithDepth(uvR, sample0(sDepthFrame, uvR).r);
+    float3 posL = toWorldWithDepth(uvL, sample0(sDepthFrame, uvL).r);
 
-    float4 H;
-    H.x = tex2Dlod(sDepthFrame, float4(tex - float2(rcpres.x, 0), 0, 0)).x;
-    H.y = tex2Dlod(sDepthFrame, float4(tex + float2(rcpres.x, 0), 0, 0)).x;
-    H.z = tex2Dlod(sDepthFrame, float4(tex - float2(2 * rcpres.x, 0), 0, 0)).x;
-    H.w = tex2Dlod(sDepthFrame, float4(tex + float2(2 * rcpres.x, 0), 0, 0)).x;
-    float2 he = abs(H.xy * H.zw * rcp(2 * H.zw - H.xy) - depth);
-    float3 hDeriv;
-    if (he.x > he.y)
-        hDeriv = depthR;
-    else
-        hDeriv = depthL;
+    // Offset in Y
+    float2 uvD = uv + float2(0, rcpres.y);
+    float2 uvU = uv - float2(0, rcpres.y);
 
-    float4 V;
-    V.x = tex2Dlod(sDepthFrame, float4(tex - float2(0, rcpres.y), 0, 0)).x;
-    V.y = tex2Dlod(sDepthFrame, float4(tex + float2(0, rcpres.y), 0, 0)).x;
-    V.z = tex2Dlod(sDepthFrame, float4(tex - float2(0, 2 * rcpres.y), 0, 0)).x;
-    V.w = tex2Dlod(sDepthFrame, float4(tex + float2(0, 2 * rcpres.y), 0, 0)).x;
-    float2 ve = abs(V.xy * V.zw * rcp(2 * V.zw - V.xy) - depth);
-    float3 vDeriv;
-    if (ve.x > ve.y)
-        vDeriv = depthU;
-    else
-        vDeriv = depthD;
+    float3 posD = toWorldWithDepth(uvD, sample0(sDepthFrame, uvD).r);
+    float3 posU = toWorldWithDepth(uvU, sample0(sDepthFrame, uvU).r);
 
-    return cross(hDeriv, vDeriv).xyz;
+    // Compute partial derivatives: one across X, one across Y
+    float3 dX = posR - posL;
+    float3 dY = posD - posU;
+
+    // World‐space normal via cross product
+    float3 N = normalize(cross(dX, dY));
+
+    return N;
 }
 
 
@@ -123,7 +149,6 @@ float3 getNormal(in float2 rawTex : TEXCOORD0)
 * The hatch texture is 6 levels of hatching encoded
 * In the RGB of two images side by side
 ***********************************************************/
-
 
 float3 Hatching(float2 _uv, half _intensity)
 {
@@ -160,8 +185,8 @@ float2 rotateUvByNormal(float2 uv, float3 normal)
 {
     //Normal: r = right, u = up, f = forward
     float3 r = float3(1, 0, 0);
-    float3 u = float3(0, 1, 0);
-    float3 f = float3(0, 0, 1);
+    float3 f = float3(0, 1, 0);
+    float3 u = float3(0, 0, 1);
 
     //Calculate the rotation matrix
     float3x3 rotationMatrix = float3x3(r, u, f);
@@ -179,19 +204,38 @@ float2 rotateUvByNormal(float2 uv, float3 normal)
     // Rotate the UV coordinates by the angle
     float2 rotatedUV = float2(cosAngle * uv.x - sinAngle * uv.y, sinAngle * uv.x + cosAngle * uv.y);
     // Rotate by a further 15 degrees
-    rotatedUV = float2(cos(PI/6) * rotatedUV.x - sin(PI/6) * rotatedUV.y, sin(PI/6) * rotatedUV.x + cos(PI/6) * rotatedUV.y);
+    float rotationAngle = PI/6;
+    rotatedUV = float2(cos(rotationAngle)
+        * rotatedUV.x - sin(rotationAngle)
+        * rotatedUV.y, sin(rotationAngle)
+        * rotatedUV.x + cos(rotationAngle)
+        * rotatedUV.y);
 
     return rotatedUV;
+}
+
+float readDepth(float2 tex)
+{
+	float depth = pow(tex2D(sDepthFrame, tex).r,1);
+	return depth;
 }
 
 
 float4 hatch(float2 tex : TEXCOORD0) : COLOR0
 {
-
-
-
+    float2 distortTex = distortedTex(tex, 0.0);;
     float3 color = tex2D(sLastShader, tex).rgb;
-    float3 normal = getNormal(tex);
+    float3 normal = getWorldSpaceNormal(distortTex);
+
+    float expDistance =  pow(fogDistance, 2);
+    bool beyondFog = fogDistance < 250 && readDepth(distortTex) > expDistance;
+
+    if ( beyondFog )
+    {
+        normal = float3(0,0,1);
+    }
+
+    normal = lerp(normal, float3(0,0,1), beyondFog);
 
     // Adjust UV coordinates based on the normal
     float2 adjustedUV = tex;
@@ -200,6 +244,14 @@ float4 hatch(float2 tex : TEXCOORD0) : COLOR0
 
     // Get luminosity
     float luminosity = dot(color, float3(0.299, 0.587, 0.114));
+
+    // beyond fog is white
+    float depth = readDepth(distortTex);
+    float distance_exp = pow(fogDistance, 2);
+    float maxDistance_exp = pow(249, 2);
+    float transitionD = 100 + fogDistance * 10;
+
+    luminosity = lerp(luminosity, 1, smoothstep(distance_exp, distance_exp + transitionD , depth ) * ( step(distance_exp, maxDistance_exp) ));
 
     // Use adjusted UV for hatching
     float3 hatching = Hatching(adjustedUV, luminosity);

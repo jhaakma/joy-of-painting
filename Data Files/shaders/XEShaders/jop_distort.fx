@@ -1,25 +1,16 @@
 extern float distortionStrength = 0.05; // Adjust this to change the strength of the distortion
 extern float speed = 0.5;
-extern float scale = 1.5;
+extern float scale = 3;
 extern float distance = 0.1;
 float time;
 
 texture tex1 < string src="jop/perlinNoise.tga"; >; // Your normal map texture
 texture lastshader; // The texture you want to distort
-texture depthframe;
 sampler sImage = sampler_state { texture=<lastshader>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
 sampler sNormalMap = sampler_state { texture=<tex1>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
-sampler sDepthFrame = sampler_state { texture = <depthframe>; addressu = wrap; addressv = wrap; magfilter = point; minfilter = point; };
-
-float readDepth(in float2 coord : TEXCOORD0)
-{
-	float posZ = tex2D(sDepthFrame, coord).x;
-	return posZ;
-}
 
 float4 distort(float2 Tex) {
-    // Sample the input image and normal map
-    float4 image = tex2D(sImage, Tex);
+
     //move around over time
     float2 uv = float2(Tex.x + sin(time*speed) * distance, Tex.y + cos(time*speed) * distance) / scale;
 

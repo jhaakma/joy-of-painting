@@ -61,12 +61,22 @@ local shaders = {
             "compositeAspectRatio",
             "compositeIsRotated",
             "compositeBlacken",
+            "compositeDistortionStrength",
         }
     },
     { id = "hatch", shaderId = "jop_hatch", defaultControls = { "hatchSize", "hatchDistortionStrength" } },
     { id = "mottle", shaderId = "jop_mottle" },
     { id = "quantize", shaderId = "jop_quantize", defaultControls = { "quantizeHueLevels", "quantizeLuminosityLevels"} },
 }
+
+local getDistortionStrength = function (paintingSkill, artStyle)
+    paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
+    local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
+    return math.max(0, math.remap(paintingSkill,
+        config.skillPaintEffect.MIN_SKILL, max,
+        0.025, 0.0
+    ))
+end
 
 ---@type JOP.ArtStyle.control[]
 local controls = {
@@ -129,7 +139,7 @@ local controls = {
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
             return math.remap(paintingSkill,
                 config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
-                0.15, 0.08
+                0.11, 0.09
             )
         end
     },
@@ -265,49 +275,34 @@ local controls = {
         id = "distortionStrength",
         uniform = "distortionStrength",
         shader = "jop_distort",
-        calculate = function(paintingSkill, artStyle)
-            paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
-            local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
-            return math.max(0, math.remap(paintingSkill,
-                config.skillPaintEffect.MIN_SKILL, max,
-                0.025, 0.0
-            ))
-        end
+        calculate = getDistortionStrength,
     },
     {
         id = "outlineDistortionStrength",
         uniform = "distortionStrength",
         shader = "jop_outline",
-
-        calculate = function(paintingSkill, artStyle)
-            paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
-            local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
-            return math.max(0, math.remap(paintingSkill,
-                config.skillPaintEffect.MIN_SKILL, max,
-                0.025, 0.0
-            ))
-        end
+        calculate = getDistortionStrength,
     },
     {
         id = "hatchDistortionStrength",
         uniform = "distortionStrength",
         shader = "jop_hatch",
-
-        calculate = function(paintingSkill, artStyle)
-            paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
-            local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
-            return math.max(0, math.remap(paintingSkill,
-                config.skillPaintEffect.MIN_SKILL, max,
-                0.02, 0.0
-            ))
-        end
+        calculate = getDistortionStrength
+    },
+    {
+        id = "compositeDistortionStrength",
+        uniform = "distortionStrength",
+        shader = "jop_composite",
+        calculate = getDistortionStrength
     },
     {
         id = "colorPencilTimeOffsetMulti",
         uniform = "timeOffsetMulti",
         shader = "jop_outline",
-        calculate = function(_, _)
-            return 40
+        calculate = function(_, artStyle)
+            return ({
+                pencil = 40,
+            })[artStyle.paintType.id] or 0
         end
     },
     {
@@ -339,6 +334,15 @@ local controls = {
         name = "Fog",
         sliderDefault = 100,
         shaderMin = 8,
+        shaderMax = 250,
+    },
+    {
+        id = "distanceHatch",
+        uniform = "fogDistance",
+        shader = "jop_hatch",
+        name = "Fog",
+        sliderDefault = 100,
+        shaderMin = 0,
         shaderMax = 250,
     },
     {
@@ -529,7 +533,7 @@ Use the fog setting to remove background elements and the threshold to adjust th
             "brightness",
             "contrast",
             "inkCompositeStrength",
-            "compositeFogDistance",
+            "distanceHatch",
         },
         valueModifier = 1.5,
         paintType = "ink",

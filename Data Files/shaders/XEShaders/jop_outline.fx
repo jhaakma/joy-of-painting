@@ -1,12 +1,13 @@
 extern float maxDistance = 62000;
 extern float outlineThickness = 2.0;
-extern float lineTest = 25.05;
+extern float lineTest = 5;
 extern float lineDarkMulti = 0.8;
+extern float lineDarkMax = 0.1;
 
 extern float timeOffsetMulti = 0.0;
 extern float distortionStrength = 0.05; // Adjust this to change the strength of the distortion
 extern float speed = 0.5;
-extern float scale = 1.5;
+extern float scale = 3;
 extern float distance = 0.1;
 float time;
 
@@ -198,6 +199,8 @@ float SobelDepth(float ldc, float ldl, float ldr, float ldu, float ldd)
            (ldd - ldc);
 }
 
+
+
 float SobelSampleDepth(sampler s, float2 uv, float3 offset)
 {
     float pixelCenter = LinearEyeDepth(sample0(s, uv).r);
@@ -208,6 +211,13 @@ float SobelSampleDepth(sampler s, float2 uv, float3 offset)
 
     return SobelDepth(pixelCenter, pixelLeft, pixelRight, pixelUp, pixelDown);
 }
+
+float readDepth(in float2 coord : TEXCOORD0)
+{
+	float posZ = tex2D(sDepthFrame, coord).x;
+	return posZ;
+}
+
 
 float2 distortedTex(float2 Tex, float timeOffset) {
         // Sample the input image and normal map
@@ -246,12 +256,16 @@ float4 outline(float2 rawTex : TEXCOORD0) : COLOR
     float4 sceneColor = sample0(s0, sceneTex);
 
     float sobelDepth = SobelSampleDepth(s1, tex.xy, offset);
-    sobelDepth = sobelDepth > lineTest ? saturate(sobelDepth) : 0.0;
+
+    float depth = readDepth(tex);
+    float adjustedLineText = lineTest + (saturate(depth / 25000) * 500);
+
+    sobelDepth = sobelDepth > adjustedLineText ? saturate(sobelDepth) : 0.0;
     sobelDepth = pow(saturate(sobelDepth) * OutlineDepthMultiplier, OutlineDepthBias);
     sobelDepth = step(0.01, sobelDepth);
     float sobelOutline = saturate(sobelDepth);
 
-    float3 outColor = sceneColor.rgb * lineDarkMulti;
+    float3 outColor = min(sceneColor.rgb * lineDarkMulti, lineDarkMax);
 
     float water = pos.z * eyevec.z - pos.y * xylength + eyepos.z;
     bool aboveWater = water > waterlevel;
