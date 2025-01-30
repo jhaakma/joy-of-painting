@@ -133,21 +133,32 @@ float3 overlay(float3 image, float3 canvas, float blendStrength) {
     return lerp(image, result, blendStrength*0.1);
 }
 
-float2 distortedTex(float2 Tex) {
+float2 distort(float2 Tex, float offset = 0) {
 
-    //move around over time
-    float2 uv = float2(Tex.x + sin(time*speed) * distance, Tex.y + cos(time*speed) * distance) / scale;
+    float thisTime = time + offset;
+    // Move around over time
+    float2 uvR = float2(Tex.x + sin(thisTime * speed) * distance, Tex.y + cos(thisTime * speed) * distance) / scale;
+    float2 uvG = float2(Tex.x + cos(thisTime * speed) * distance, Tex.y + sin(thisTime * speed) * distance) / scale * 1.1;
+    float2 uvB = float2(Tex.x - sin(thisTime * speed) * distance, Tex.y - cos(thisTime * speed) * distance) / scale * 1.3;
 
-    float4 normalMap = tex2D(sNormalMap, uv);
+    float4 normalMapR = tex2D(sNormalMap, uvR);
+    float4 normalMapG = tex2D(sNormalMap, uvG);
+    float4 normalMapB = tex2D(sNormalMap, uvB);
 
     // Convert the normal map from tangent space to [-1, 1]
-    float2 distortion = (normalMap.rg * 2.0 - 1.0) * distortionStrength;
+    float2 distortionR = (normalMapR.rg * 2.0 - 1.0);
+    float2 distortionG = (normalMapG.rg * 2.0 - 1.0);
+    float2 distortionB = (normalMapB.rg * 2.0 - 1.0);
 
-    // Apply the distortion to the texture coordinates
-    float2 distortedTex = Tex + distortion;
+    // Combine the distortions from each channel
+    float2 combinedDistortion = (distortionR + distortionG + distortionB) / 3.0;
 
-    return distortedTex;
+    // Apply the combined distortion to the texture coordinates
+    float2 distort = Tex + combinedDistortion * distortionStrength;
+
+    return distort;
 }
+
 
 //This takes composites the sLastShader onto the result of sLastPass.
 //It renders the sLastShader transparent based on brightness and the compositeStrength.
@@ -182,7 +193,7 @@ float4 composite(float2 tex : TEXCOORD0) : COLOR0
     image = lerp(image, canvas, (1-alphaSketchMask_1.a) * (sketchMaskIndex == 1));
 
     // Cull distant objects
-    float2 distTex = distortedTex(tex);
+    float2 distTex = distort(tex);
     float depth = readDepth(distTex);
     float distance_exp = pow(fogDistance, 2);
     float maxDistance_exp = pow(maxDistance, 2);

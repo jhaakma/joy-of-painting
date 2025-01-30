@@ -675,6 +675,8 @@ end
 
 local doCapture
 local hideMenuOnRightClick
+local unregisterOnLoad
+local blockSave
 function PhotoMenu:registerIOEvents()
     logger:debug("Registering IO events.")
 
@@ -708,6 +710,15 @@ function PhotoMenu:registerIOEvents()
         event.register("keyDown", doCapture)
     end)
 
+    unregisterOnLoad = function()
+       self:unregisterIOEvents()
+    end
+    event.register("load", unregisterOnLoad)
+
+    blockSave = function()
+        return false
+    end
+    event.register("save", blockSave, {priority = 1000})
 end
 
 function PhotoMenu:unregisterIOEvents()
@@ -715,6 +726,8 @@ function PhotoMenu:unregisterIOEvents()
     event.unregister("mouseButtonDown", hideMenuOnRightClick)
     event.unregister("keyDown", doCapture)
     self.zoomSlider:unregisterEvents()
+    event.unregister("load", unregisterOnLoad)
+    event.unregister("save", blockSave)
 end
 
 

@@ -49,23 +49,33 @@ float4 sample0(sampler2D s, float2 t)
     return tex2Dlod(s, float4(t, 0, 0));
 }
 
-float2 distortedTex(float2 Tex, float timeOffset) {
-        // Sample the input image and normal map
-    float4 image = tex2D(sImage, Tex);
-    //move around over time
-    float thisTime = time + timeOffset;
-    float2 uv = float2(Tex.x + sin(thisTime*speed) * distance, Tex.y + cos(thisTime*speed) * distance) / scale;
 
-    float4 normalMap = tex2D(sNormalMap, uv);
+float2 distort(float2 Tex, float offset = 0) {
+
+    float thisTime = time + offset;
+    // Move around over time
+    float2 uvR = float2(Tex.x + sin(thisTime * speed) * distance, Tex.y + cos(thisTime * speed) * distance) / scale;
+    float2 uvG = float2(Tex.x + cos(thisTime * speed) * distance, Tex.y + sin(thisTime * speed) * distance) / scale * 1.1;
+    float2 uvB = float2(Tex.x - sin(thisTime * speed) * distance, Tex.y - cos(thisTime * speed) * distance) / scale * 1.3;
+
+    float4 normalMapR = tex2D(sNormalMap, uvR);
+    float4 normalMapG = tex2D(sNormalMap, uvG);
+    float4 normalMapB = tex2D(sNormalMap, uvB);
 
     // Convert the normal map from tangent space to [-1, 1]
-    float2 distortion = (normalMap.rg * 2.0 - 1.0) * distortionStrength;
+    float2 distortionR = (normalMapR.rg * 2.0 - 1.0);
+    float2 distortionG = (normalMapG.rg * 2.0 - 1.0);
+    float2 distortionB = (normalMapB.rg * 2.0 - 1.0);
 
-    // Apply the distortion to the texture coordinates
-    float2 distTex = Tex + distortion;
+    // Combine the distortions from each channel
+    float2 combinedDistortion = (distortionR + distortionG + distortionB) / 3.0;
 
-    return distTex;
+    // Apply the combined distortion to the texture coordinates
+    float2 distort = Tex + combinedDistortion * distortionStrength;
+
+    return distort;
 }
+
 
 float3 toView(float2 tex)
 {
@@ -223,7 +233,7 @@ float readDepth(float2 tex)
 
 float4 hatch(float2 tex : TEXCOORD0) : COLOR0
 {
-    float2 distortTex = distortedTex(tex, 0.0);;
+    float2 distortTex = distort(tex, 0.0);;
     float3 color = tex2D(sLastShader, tex).rgb;
     float3 normal = getWorldSpaceNormal(distortTex);
 

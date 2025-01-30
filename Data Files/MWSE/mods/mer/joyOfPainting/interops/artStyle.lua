@@ -74,7 +74,7 @@ local getDistortionStrength = function (paintingSkill, artStyle)
     local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
     return math.max(0, math.remap(paintingSkill,
         config.skillPaintEffect.MIN_SKILL, max,
-        0.025, 0.0
+        0.1, 0.0
     ))
 end
 
@@ -115,11 +115,12 @@ local controls = {
         id = "outlineThickness",
         uniform = "outlineThickness",
         shader = "jop_outline",
-        calculate = function(_, artStyle)
-            return ({
-                pencil = 1.3,
-            })[artStyle.paintType.id] or 1.1
-        end
+        name = "Outline Thickness",
+        sliderDefault = 3,
+        sliderMin = 1,
+        sliderMax = 10,
+        shaderMin = 1.0,
+        shaderMax = 3.0,
     },
     {
         id = "outlineDarkness",
