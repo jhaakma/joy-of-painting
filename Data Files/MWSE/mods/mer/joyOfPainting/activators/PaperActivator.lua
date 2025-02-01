@@ -202,6 +202,7 @@ end
 
 ---@param e activateEventData
 local function activate(e)
+    if tes3ui.menuMode() then return end
     local painting = Painting:new{
         reference = e.target,
     }
