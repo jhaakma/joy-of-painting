@@ -1,3 +1,5 @@
+#include "jop_common.fx"
+
 extern float distortionStrength = 0.05;
 //When true, the overlay image will converted to black
 extern float doBlackenImage = false;
@@ -16,14 +18,7 @@ extern int maskIndex = 0;
 //If enabled, will use the alpha mask to create a sketch effect
 extern int sketchMaskIndex = 0;
 
-
-extern float speed = 0.5;
-extern float scale = 3;
-extern float distance = 0.1;
-
-float time;
 float maxDistance = 250-1;
-float2 rcpres;
 static const float screen_width = rcpres.x;
 static const float screen_height = rcpres.y;
 
@@ -48,13 +43,7 @@ sampler2D sVignetteAlphaMask_1 = sampler_state { texture =<tex2>; addressu = cla
 sampler2D sVignetteAlphaMask_2 = sampler_state { texture =<tex3>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sVignetteAlphaMask_3 = sampler_state { texture =<tex4>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sVignetteAlphaSketchMask_1 = sampler_state { texture =<tex5>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
-sampler sNormalMap = sampler_state { texture=<tex6>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
-
-float readDepth(float2 tex)
-{
-	float depth = pow(tex2D(sDepthFrame, tex).r,1);
-	return depth;
-}
+sampler sDistortionMap = sampler_state { texture=<tex6>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
 
 /**
 * Renders the canvas image on the screen, adjusting for aspect ratio and rotation.
@@ -133,31 +122,7 @@ float3 overlay(float3 image, float3 canvas, float blendStrength) {
     return lerp(image, result, blendStrength*0.1);
 }
 
-float2 distort(float2 Tex, float offset = 0) {
 
-    float thisTime = time + offset;
-    // Move around over time
-    float2 uvR = float2(Tex.x + sin(thisTime * speed) * distance, Tex.y + cos(thisTime * speed) * distance) / scale;
-    float2 uvG = float2(Tex.x + cos(thisTime * speed) * distance, Tex.y + sin(thisTime * speed) * distance) / scale * 1.1;
-    float2 uvB = float2(Tex.x - sin(thisTime * speed) * distance, Tex.y - cos(thisTime * speed) * distance) / scale * 1.3;
-
-    float4 normalMapR = tex2D(sNormalMap, uvR);
-    float4 normalMapG = tex2D(sNormalMap, uvG);
-    float4 normalMapB = tex2D(sNormalMap, uvB);
-
-    // Convert the normal map from tangent space to [-1, 1]
-    float2 distortionR = (normalMapR.rg * 2.0 - 1.0);
-    float2 distortionG = (normalMapG.rg * 2.0 - 1.0);
-    float2 distortionB = (normalMapB.rg * 2.0 - 1.0);
-
-    // Combine the distortions from each channel
-    float2 combinedDistortion = (distortionR + distortionG + distortionB) / 3.0;
-
-    // Apply the combined distortion to the texture coordinates
-    float2 distort = Tex + combinedDistortion * distortionStrength;
-
-    return distort;
-}
 
 
 //This takes composites the sLastShader onto the result of sLastPass.
@@ -193,8 +158,8 @@ float4 composite(float2 tex : TEXCOORD0) : COLOR0
     image = lerp(image, canvas, (1-alphaSketchMask_1.a) * (sketchMaskIndex == 1));
 
     // Cull distant objects
-    float2 distTex = distort(tex);
-    float depth = readDepth(distTex);
+    float2 distTex = distort(tex, time, distortionStrength, sDistortionMap);
+    float depth = readDepth(distTex, sDepthFrame);
     float distance_exp = pow(fogDistance, 2);
     float maxDistance_exp = pow(maxDistance, 2);
     float transitionD = 100 + fogDistance * 10;

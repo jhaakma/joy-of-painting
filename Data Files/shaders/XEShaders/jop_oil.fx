@@ -1,16 +1,8 @@
-//vtastek's Splash
+#include "jop_common.fx"
 
 float hatch_strength = 0.4;
 extern float saturation = 3;
 extern float contrast = 0.8;
-
-float time;
-float2 rcpres;
-float3 sunvec;
-float sunvis;
-matrix mview;
-matrix mproj;
-float3 eyepos, eyevec;
 
 //tweakables
 //last value is coverage
@@ -97,34 +89,17 @@ sampler sDepthFrame = sampler_state { texture=<depthframe>; minfilter = linear; 
 sampler sLastPass = sampler_state { texture=<lastpass>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
 sampler sHatchTex = sampler_state { texture=<tex2>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
 
-float readDepth(float2 tex)
-{
-	float depth = pow(tex2D(sDepthFrame, tex).r,1);
-	return depth;
-}
-float3 toWorld(float2 tex)
-{
-	float3 v = float3(mview[0][2], mview[1][2], mview[2][2]);
-	v += (1/mproj[0][0] * (2*tex.x-1)).xxx * float3(mview[0][0], mview[1][0], mview[2][0]);
-	v += (-1/mproj[1][1] * (2*tex.y-1)).xxx * float3(mview[0][1], mview[1][1], mview[2][1]);
-	return v;
-}
-float3 getPosition(in float2 tex, in float depth)
-{
-	return (eyepos + toWorld(tex) * depth);
-}
-
 
 float4 edgedetecting( float2 tex : TEXCOORD0  ) : COLOR0
 {
 
-	float depth = readDepth(tex);
+	float depth = readDepth(tex, sDepthFrame);
 	float3 pos2 = getPosition(tex, depth);
 
-	float3 left2 = pos2 - getPosition(tex + rcpres.xy * float2(-1, 0), readDepth(tex + rcpres.xy * float2(-1, 0)));
-	float3 right2 = getPosition(tex + rcpres.xy * float2(1, 0), readDepth(tex + rcpres.xy * float2(1, 0))) - pos2;
-	float3 up2 = pos2 - getPosition(tex + rcpres.xy * float2(0, -1), readDepth(tex + rcpres.xy * float2(0, -1)));
-	float3 down2 = getPosition(tex + rcpres.xy * float2(0, 1), readDepth(tex + rcpres.xy * float2(0, 1))) - pos2;
+	float3 left2 = pos2 - getPosition(tex + rcpres.xy * float2(-1, 0), readDepth(tex + rcpres.xy * float2(-1, 0), sDepthFrame));
+	float3 right2 = getPosition(tex + rcpres.xy * float2(1, 0), readDepth(tex + rcpres.xy * float2(1, 0), sDepthFrame)) - pos2;
+	float3 up2 = pos2 - getPosition(tex + rcpres.xy * float2(0, -1), readDepth(tex + rcpres.xy * float2(0, -1), sDepthFrame));
+	float3 down2 = getPosition(tex + rcpres.xy * float2(0, 1), readDepth(tex + rcpres.xy * float2(0, 1), sDepthFrame)) - pos2;
 
 	float3 dx2 = length(left2) < length(right2) ? left2 : right2;
 	float3 dy2 = length(up2) < length(down2) ? up2 : down2;
@@ -192,7 +167,7 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 	obbright = tex2D(sLastPass, Tex).rgb;
 
 
-	float lum = sqrt(dot(image * image, float3(0.29, 0.58, 0.114)));
+	float lum = sqrt(dot(image.rgb * image.rgb, float3(0.29, 0.58, 0.114)));
 	obbright = smoothstep(0.04, hatch_strength, lum.xxxx);
 
 	float3 edges = tex2D(sLastPass,Tex + float2(0.0, 0.0)).a/2;
@@ -207,7 +182,7 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 
 	float3 final = image.rgb * edges.rgb * edges.rgb;
 
-	final = 1.0 - (1.0 - final) * (1.0 - image);
+	final = 1.0 - (1.0 - final) * (1.0 - image.rgb);
 
     //Reduce contrast
     final = final * contrast;

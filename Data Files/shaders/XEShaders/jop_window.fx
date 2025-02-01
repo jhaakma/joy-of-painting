@@ -1,7 +1,9 @@
+#include "jop_common.fx"
+
+
 // Aspect Ratio Shader
 extern float aspectRatio = 1.0;
 extern float view_port_size = 0.8;
-float2 rcpres;
 static const float screen_width = rcpres.x;
 static const float screen_height = rcpres.y;
 

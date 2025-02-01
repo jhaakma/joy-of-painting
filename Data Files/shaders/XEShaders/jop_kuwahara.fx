@@ -1,12 +1,11 @@
+#include "jop_common.fx"
+
 texture lastshader;
 texture depthframe;
 
 sampler s0 = sampler_state { texture = <lastshader>; magfilter = point; minfilter = point; };
 sampler sDepthFrame = sampler_state { texture=<depthframe>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
 
-
-float PI = 3.14159265359;
-float2 rcpres;
 extern float radius = 12;
 
 struct Region
@@ -45,12 +44,6 @@ static const float kernel[KERNEL_RADIUS * 2 + 1][KERNEL_RADIUS * 2 + 1] = {
 };
 
 
-float readDepth(float2 tex)
-{
-	float depth = pow(tex2D(sDepthFrame, tex).r,1);
-	return depth;
-}
-
 
 Region calcRegion(float2 uv, int xStart, int xEnd, int yStart, int yEnd)
 {
@@ -61,7 +54,8 @@ Region calcRegion(float2 uv, int xStart, int xEnd, int yStart, int yEnd)
 
     int samples = 0;
 
-    float depth = saturate(readDepth(uv) / 100000);
+    float depth = readDepth(uv, sDepthFrame);
+    depth = saturate(depth / 100000);
 
     float minRadius = max(1, radius * 0.5);
     float effectiveRadius = lerp(radius, minRadius, depth);

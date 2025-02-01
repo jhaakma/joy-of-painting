@@ -9,6 +9,8 @@ local excludedShaders = {
     ["Bloom Soft"] = true,
     ["Sunshafts"] = true,
     ["Eye Adaptation (HDR)"] = true,
+    ["mer_pixel"] = true,
+    ["mer_kuwahara"] = true,
 }
 for shaderId in pairs(excludedShaders) do
     JoyOfPainting.ArtStyle.registerExcludedShader{ id = shaderId }
