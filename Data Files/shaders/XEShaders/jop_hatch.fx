@@ -101,13 +101,13 @@ float2 rotateUvByNormal(float2 uv, float3 normal)
 
 float4 hatch(float2 tex : TEXCOORD0) : COLOR0
 {
-    float2 distortTex = distort(tex, time, distortionStrength, sDistortionMap);
+    float2 distortTex = distort(tex, distortionStrength, sDistortionMap);
     float3 color = tex2D(sLastShader, tex).rgb;
     float3 normal = getWorldSpaceNormal(distortTex, sDepthFrame);
     float depth = readDepth(distortTex, sDepthFrame);
 
     float expDistance =  pow(fogDistance, 2);
-    bool beyondFog = fogDistance < 250 && depth > expDistance;
+    bool beyondFog = depth > expDistance;
 
     if ( beyondFog )
     {

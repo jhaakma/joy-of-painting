@@ -112,9 +112,6 @@ float4 paint(float2 tex : TEXCOORD0) : COLOR
     testVal = step(regionD.variance, minVar);
     col = lerp(col, regionD.mean, testVal);
 
-
-
-
     return float4(col, 1.0);
 }
 

@@ -27,11 +27,11 @@ float4 main(float2 uv : TEXCOORD) : SV_Target {
     // Quantize luminosity
     float luminosity = hsl.z;
     float offset = 1.0 / (2.0 * effectiveLumLevels);
-    float quantizedLuminosity = floor(luminosity * effectiveLumLevels) / (effectiveLumLevels-1) - offset;
+    float quantizedLuminosity = ceil(luminosity * effectiveLumLevels) / (effectiveLumLevels-1) - offset;
 
     // Quantize hue
     float hue = hsl.x;
-    float quantizedHue = floor(hsl.x * effectiveHueLevels) / effectiveHueLevels;
+    float quantizedHue = ceil(hsl.x * effectiveHueLevels) / effectiveHueLevels;
 
     // Convert back to RGB
     hsl.z = quantizedLuminosity;

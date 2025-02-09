@@ -10,7 +10,7 @@ sampler sDistortionMap = sampler_state { texture=<tex1>; minfilter = linear; mag
 float4 main(float2 Tex : TEXCOORD0) : COLOR0
 {
     // Apply the distortion to the texture coordinates
-    float2 distTex = distort(Tex, time, distortionStrength, sDistortionMap);
+    float2 distTex = distort(Tex, distortionStrength, sDistortionMap);
     // Sample the image again with the distorted texture coordinates
     float4 final = tex2D(sImage, distTex);
     return final;

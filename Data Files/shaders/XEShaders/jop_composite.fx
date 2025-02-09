@@ -37,13 +37,14 @@ texture tex6 < string src="jop/perlinNoise.tga"; >;
 
 sampler2D sLastShader = sampler_state { texture = <lastshader>; addressu = clamp; };
 sampler2D sLastPass = sampler_state { texture = <lastpass>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
-sampler sDepthFrame = sampler_state { texture=<depthframe>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
+sampler2D sDepthFrame = sampler_state { texture=<depthframe>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
 sampler2D sComposite = sampler_state { texture=<tex1>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
 sampler2D sVignetteAlphaMask_1 = sampler_state { texture =<tex2>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sVignetteAlphaMask_2 = sampler_state { texture =<tex3>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sVignetteAlphaMask_3 = sampler_state { texture =<tex4>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sVignetteAlphaSketchMask_1 = sampler_state { texture =<tex5>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
-sampler sDistortionMap = sampler_state { texture=<tex6>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
+sampler2D sDistortionMap = sampler_state { texture=<tex6>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
+
 
 /**
 * Renders the canvas image on the screen, adjusting for aspect ratio and rotation.
@@ -106,9 +107,9 @@ float4 renderCanvas(float2 tex, sampler2D image, bool doRotate = false) : COLOR0
 float3 overlay(float3 image, float3 canvas, float blendStrength) {
 
     //First greyscale the canvas so it doesn't affect image color
+    float3 hsl = RGBToHSL(canvas.rgb);
+    hsl.g = 0.0;
     float3 greyCanvas = canvas;
-    float average = dot(greyCanvas.rgb, float3(0.299, 0.587, 0.114));
-    greyCanvas.rgb = float3(average, average, average);
 
         // Multiply for painting < 0.5
     float3 multiplyVal = 2.0 * image * greyCanvas;
@@ -119,7 +120,7 @@ float3 overlay(float3 image, float3 canvas, float blendStrength) {
     // step(0.5, image) is 0 if image < 0.5, 1 if image >= 0.5
     float3 result = lerp(multiplyVal, screenVal, step(0.5, greyCanvas));
 
-    return lerp(image, result, blendStrength*0.1);
+    return lerp(image, result, compositeStrength * 0.1);
 }
 
 
@@ -146,9 +147,11 @@ float4 composite(float2 tex : TEXCOORD0) : COLOR0
     // Convert to black for sketches
     image = lerp(image, float4(0.01,0.01,0.01,image.a), doBlackenImage);
 
+    //Blend canvas into lighter areas
     image = lerp(image, canvas, saturate(brightness * compositeStrength));
 
     if (!doBlackenImage) {
+
         image.rgb = overlay(image.rgb, canvas.rgb, compositeStrength);
     }
 
@@ -158,12 +161,13 @@ float4 composite(float2 tex : TEXCOORD0) : COLOR0
     image = lerp(image, canvas, (1-alphaSketchMask_1.a) * (sketchMaskIndex == 1));
 
     // Cull distant objects
-    float2 distTex = distort(tex, time, distortionStrength, sDistortionMap);
+    float2 distTex = distort(tex, distortionStrength, sDistortionMap);
     float depth = readDepth(distTex, sDepthFrame);
     float distance_exp = pow(fogDistance, 2);
     float maxDistance_exp = pow(maxDistance, 2);
     float transitionD = 100 + fogDistance * 10;
     image = lerp(image, canvas, ( smoothstep(distance_exp, distance_exp + transitionD , depth ) * ( step(distance_exp, maxDistance_exp) )) );
+
 
     // Where the canvas has alpha, render as black
     image.rgb = lerp(0.001, image.rgb, canvas.a);

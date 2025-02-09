@@ -32,7 +32,8 @@ float4 adjust(float2 tex: TEXCOORD0) : COLOR0
 
     //HUE
     float3 hsl = RGBToHSL(color.rgb);
-    hsl.x += hue;
+    //hsl.x += hue;
+    hsl.x = frac(hsl.x * (1 + hue));
     color.rgb = HSLToRGB(hsl);
 
     return color;

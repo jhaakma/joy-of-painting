@@ -21,9 +21,11 @@ float fognearrange;
 float fognearstart;
 float3 fognearcol;
 
+static const float Time = time;
+
 // The inverse projection matrix
 static const float2 invproj = 2.0 * tan(0.5 * radians(fov)) * float2(1, rcpres.x / rcpres.y);
-
+static const float xylength = sqrt(1 - eyevec.z * eyevec.z);
 /**
     Samples a texture at the given texture coordinates, with mip level 0.
     @param s The texture sampler.
@@ -38,7 +40,7 @@ float4 sample0(sampler2D s, float2 tex)
 /**
     Distorts the texture based on the provided distortion texture
     @param Tex The texture coordinates of the pixel.
-    @param time The current time.
+    @param Time The current Time.
     @param speed The speed of the distortion.
     @param distance How far the distortion moves.
     @param scale The scale applied to the distortion texture.
@@ -46,13 +48,15 @@ float4 sample0(sampler2D s, float2 tex)
     @param sDistortionTex The distortion texture.
     @param offset The offset of the distortion. Default is 0.
 */
-float2 distort(float2 Tex, float time, float distortionStrength, sampler2D sDistortionTex, float offset = 0) {
+float2 distort(float2 Tex, float distortionStrength, sampler2D sDistortionTex, float offset = 0) {
 
-    float thisTime = time + offset;
-    // Move around over time
-    float2 uvR = float2(Tex.x + sin(thisTime * 0.5) * 0.1, Tex.y + cos(thisTime * 0.5) * 0.1) / 4.0;
-    float2 uvG = float2(Tex.x + cos(thisTime * 0.5) * 0.1, Tex.y + sin(thisTime * 0.5) * 0.1) / 4.0 * 1.1;
-    float2 uvB = float2(Tex.x - sin(thisTime * 0.5) * 0.1, Tex.y - cos(thisTime * 0.5) * 0.1) / 4.0 * 1.3;
+    float thisTime = Time + offset;
+    float distortionScale = 0.5;
+    // Move around over Time
+    float scale = 0.2;
+    float2 uvR = float2(Tex.x + sin(thisTime * 0.5) * 0.1, Tex.y + cos(thisTime * 0.5) * 0.1) * scale;
+    float2 uvG = float2(Tex.x + cos(thisTime * 0.5) * 0.1, Tex.y + sin(thisTime * 0.5) * 0.1) * scale * 1.1;
+    float2 uvB = float2(Tex.x - sin(thisTime * 0.5) * 0.1, Tex.y - cos(thisTime * 0.5) * 0.1) * scale * 1.3;
 
     float4 normalMapR = tex2D(sDistortionTex, uvR);
     float4 normalMapG = tex2D(sDistortionTex, uvG);
@@ -67,10 +71,11 @@ float2 distort(float2 Tex, float time, float distortionStrength, sampler2D sDist
     float2 combinedDistortion = (distortionR + distortionG + distortionB) / 3.0;
 
     // Apply the combined distortion to the texture coordinates
-    float2 distort = Tex + combinedDistortion * distortionStrength;
+    float2 distort = Tex + combinedDistortion * distortionStrength * distortionScale;
 
     return distort;
 }
+
 
 /**
     Reads the depth of the pixel at the given texture coordinates.
@@ -220,7 +225,7 @@ float3 getPosition(float2 tex, float depth)
     @param sDepthFrame The depth frame sampler.
     @return The world-space normal of the pixel.
 */
-float3 getWorldSpaceNormal(float2 uv, sampler2D sDepthFrame)
+float3 _getWorldSpaceNormal(float2 uv, sampler2D sDepthFrame)
 {
     // Neighboring UV coordinates
     float2 posCenter = uv;
@@ -244,4 +249,56 @@ float3 getWorldSpaceNormal(float2 uv, sampler2D sDepthFrame)
     // Correct for Z-up coordinate system
     float3 normal = normalize(cross(edge2, edge1)); // Switch cross order to respect Z-up
     return normal;
+}
+
+
+float3 toWorldWithDepth(float2 uv, float depth)
+{
+    // This version modifies your toWorld() to incorporate depth.
+    // (Adjust signs, near/far plane logic, or matrix usage as needed.)
+    // Some engines use [0..1] for depth; others might use different ranges.
+    // Move uv from [0..1] into clip space [-1..1]
+    float2 clip = float2(2.0 * uv.x - 1.0, 1.0 - 2.0 * uv.y);
+    // Start with the camera's forward basis from your mview, etc.
+    // We'll just show a pseudo-code version:
+    float3 wpos = float3(mview[0][2], mview[1][2], mview[2][2]);
+    // Scale factors from the projection
+    float invProjX = 1.0 / mproj[0][0];  // typically FOV scale
+    float invProjY = 1.0 / mproj[1][1];
+    // "clip.x" is the [-1..1] x coordinate
+    wpos += (clip.x * invProjX) * float3(mview[0][0], mview[1][0], mview[2][0]);
+    wpos += (clip.y * -invProjY) * float3(mview[0][1], mview[1][1], mview[2][1]);
+    // Adjust by 'depth' in a way consistent with your engine's depth range
+    // Exactly how you factor in 'depth' depends on how your pipeline is set up.
+    // E.g., you might do something like:
+    wpos *= depth;  // or apply near/far plane logic as appropriate
+    return wpos;
+}
+
+float3 getWorldSpaceNormal(float2 uv, sampler2D sDepthFrame)
+{
+    // Sample depth from the depth buffer
+    float depthC = sample0(sDepthFrame, uv).r;
+    // Get the world‐space position at the center
+    float3 center = toWorldWithDepth(uv, depthC);
+    float3 pos = toView(uv, sDepthFrame);
+    float water = pos.z * eyevec.z - pos.y * xylength + eyepos.z;
+    if(pos.z <= 0 || pos.z > sky || (water - waterlevel) < 0)
+        return float3(0, 0, 1);
+    // Offset in X
+    float2 uvR = uv + float2(rcpres.x, 0);
+    float2 uvL = uv - float2(rcpres.x, 0);
+    float3 posR = toWorldWithDepth(uvR, sample0(sDepthFrame, uvR).r);
+    float3 posL = toWorldWithDepth(uvL, sample0(sDepthFrame, uvL).r);
+    // Offset in Y
+    float2 uvD = uv + float2(0, rcpres.y);
+    float2 uvU = uv - float2(0, rcpres.y);
+    float3 posD = toWorldWithDepth(uvD, sample0(sDepthFrame, uvD).r);
+    float3 posU = toWorldWithDepth(uvU, sample0(sDepthFrame, uvU).r);
+    // Compute partial derivatives: one across X, one across Y
+    float3 dX = posR - posL;
+    float3 dY = posD - posU;
+    // World‐space normal via cross product
+    float3 N = normalize(cross(dX, dY));
+    return N;
 }
