@@ -51,7 +51,7 @@ float4 sample0(sampler2D s, float2 tex)
 float2 distort(float2 Tex, float distortionStrength, sampler2D sDistortionTex, float offset = 0) {
 
     float thisTime = Time + offset;
-    float distortionScale = 0.5;
+    float distortionScale = 0.2;
     // Move around over Time
     float scale = 0.2;
     float2 uvR = float2(Tex.x + sin(thisTime * 0.5) * 0.1, Tex.y + cos(thisTime * 0.5) * 0.1) * scale;

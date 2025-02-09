@@ -1,7 +1,6 @@
 local common = {}
 
 common.config = require("mer.joyOfPainting.config")
-local bit = require("bit")
 local MWSELogger = require("logging.logger")
 local CraftingFramework = require("CraftingFramework")
 
