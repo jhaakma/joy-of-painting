@@ -89,6 +89,28 @@ local canvases = {
         animSound = "jop_scribble_01",
         animSpeed = 2.0,
         baseRotation = 90,
+    },
+    {
+        canvasId = "ab_misc_dwrvparchmentblank01",
+        meshOverride = "meshes\\jop\\medium\\dwrvParchBlank01.nif",
+        textureWidth = 1024,
+        textureHeight = 512,
+        valueModifier = 1.4,
+        canvasTexture = "oaab\\tx_dwrv_parchment_blank_02.dds",
+        animSound = "jop_scribble_01",
+        animSpeed = 2.0,
+        frameSize = "rectangle",
+    },
+    {
+        canvasId = "ab_misc_dwrvparchmentblank02",
+        meshOverride = "meshes\\jop\\medium\\dwrvParchBlank02.nif",
+        textureWidth = 512,
+        textureHeight = 512,
+        valueModifier = 1.4,
+        canvasTexture = "oaab\\tx_dwrv_parchment_blank_01.dds",
+        animSound = "jop_scribble_01",
+        animSpeed = 2.0,
+        frameSize = "square",
     }
 }
 

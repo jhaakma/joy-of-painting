@@ -7,6 +7,11 @@ local frameSizes = {
         height = 100,
     },
     {
+        id = "rectangle",
+        width = 100,
+        height = 50,
+    },
+    {
         id = "tall",
         width = 9,
         height = 16,
@@ -28,6 +33,7 @@ local frameSizes = {
         width = 100,
         height = 80
     },
+
 }
 local frames = {
     {
