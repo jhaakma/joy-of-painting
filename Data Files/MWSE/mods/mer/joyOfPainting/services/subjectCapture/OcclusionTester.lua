@@ -160,8 +160,16 @@ function OcclusionTester:disable()
     end
 end
 
-function OcclusionTester:capturePixelData()
+---@param e { visibleOnly: boolean }
+function OcclusionTester:capturePixelData(e)
     self.logger:debug("Capturing pixel data...")
+
+    ---@diagnostic disable
+    if e.visibleOnly then
+        self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.lessEqual
+    else
+        self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.always
+    end
 
     ---@diagnostic disable
     self.camera.renderer:setRenderTarget(self.texture)
@@ -184,17 +192,13 @@ function OcclusionTester:dumpDebug(subjectId)
     end
 end
 
+---@param e { visibleOnly: boolean }
 ---@return JOP.PixelMap.countPixels.data
 function OcclusionTester:getPixelCounts(e)
     e = e or { visibleOnly = false}
-    ---@diagnostic disable
-    if e.visibleOnly then
-        self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.lessEqual
-    else
-        self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.always
-    end
+
     ---@diagnostic enable
-    self:capturePixelData()
+    self:capturePixelData(e)
     self.logger:debug("Counting pixels...")
     local pixelMap = PixelMap.new{
         pixelData = self.pixelData,

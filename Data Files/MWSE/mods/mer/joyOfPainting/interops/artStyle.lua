@@ -122,7 +122,7 @@ local controls = {
         sliderMin = 1,
         sliderMax = 10,
         shaderMin = 1.0,
-        shaderMax = 3.0,
+        shaderMax = 6.0,
     },
     {
         id = "outlineDarkness",
@@ -186,10 +186,6 @@ local controls = {
         id = "charcoalCompositeStrength",
         uniform = "compositeStrength",
         shader = "jop_composite",
-        name = "Transparency",
-        sliderDefault = 0,
-        shaderMin = 0.0,
-        shaderMax = 3.0,
         calculate = function(_)
             return 3
         end
@@ -203,19 +199,20 @@ local controls = {
         end
     },
     {
-        id = "watercolorComposite",
+        id = "watercolorTransparency",
         uniform = "compositeStrength",
         shader = "jop_composite",
-        calculate = function(_)
-            return 0.3
-        end
+        name = "Transparency",
+        sliderDefault = 50,
+        shaderMin = 0.2,
+        shaderMax = 1.0,
     },
     {
         id = "oilComposite",
         uniform = "compositeStrength",
         shader = "jop_composite",
         calculate = function(_)
-            return 0.2
+            return 0.1
         end
     },
     {
@@ -262,7 +259,7 @@ local controls = {
         name = "Hue",
         sliderDefault = 0,
         shaderMin = 0.0,
-        shaderMax = 1.0,
+        shaderMax = 4.0,
         defaultValue = 0.0,
     },
     {
@@ -449,7 +446,7 @@ local controls = {
         shader = "jop_quantize",
         calculate = function(_, artStyle)
             return ({
-                watercolor = 24,
+                watercolor = 16,
                 oil = 36
             })[artStyle.paintType.id] or 50
         end
@@ -596,7 +593,7 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
             "saturation",
             "hue",
             "canvasStrengthWatercolor",
-            "watercolorComposite",
+            "watercolorTransparency",
         },
         valueModifier = 4,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",

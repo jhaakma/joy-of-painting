@@ -21,6 +21,7 @@ local OcclusionTester = require("mer.joyOfPainting.services.subjectCapture.Occlu
 local SubjectService = require("mer.joyOfPainting.services.subjectCapture.SubjectService")
 local ZoomSlider = require("mer.joyOfPainting.services.PhotoMenu.ZoomSlider")
 local ImageLib = include("imagelib")
+local SubjectFilter = require("mer.joyOfPainting.services.PhotoMenu.SubjectFilter")
 
 local alwaysOnShaders
 
@@ -49,6 +50,8 @@ local alwaysOnShaders
 ---@field painting JOP.Painting
 ---@field shaders JOP.ArtStyle.shader[]?
 ---@field isLooking boolean? default false
+---@field occlusionTester OcclusionTester
+---@field subjectFilter JOP.SubjectFilter
 local PhotoMenu = {
     shaders = nil,
     isLooking = false,
@@ -117,6 +120,17 @@ function PhotoMenu:new(photoMenuParams)
         end
     end
 
+    o.occlusionTester = OcclusionTester.new{
+        logger = occlusionTesterLogger,
+        viewportAspectResolution = PaintService.getAspectRatio(o.canvasConfig),
+        viewportScale = 0.8
+    }
+
+    o.subjectFilter = SubjectFilter.new{
+        PhotoMenu = o,
+        occlusionTester = o.occlusionTester
+    }
+
     --Using lfs, create a link from the canvas texture to jop/composite_tex.dds
     local compositeTexPath = "Data Files\\Textures\\jop\\composite_tex.dds"
     --Delete the current compositeTexPath file if it exists
@@ -140,16 +154,19 @@ end
 
 ---@return table<string, JOP.SubjectService.Result>
 function PhotoMenu:calculateSubjectResults()
-    local occlusionTester = OcclusionTester.new{
-        logger = occlusionTesterLogger,
-        viewportAspectResolution = PaintService.getAspectRatio(self.canvasConfig),
-        viewportScale = 0.8
-    }
+    local safeTarget = self.subjectFilter.safeTarget
+    local occludedTarget = safeTarget and safeTarget:getObject()
+    if occludedTarget then
+        self.subjectFilter:disableOcclusion()
+    end
     local subjectService = SubjectService.new{
-        occlusionTester = occlusionTester,
+        occlusionTester = self.occlusionTester,
     }
     local subjects = subjectService:getSubjects()
     logger:debug("Found %s subjects", table.size(subjects))
+    if occludedTarget then
+        self.subjectFilter:enableOcclusion(occludedTarget)
+    end
     return subjects
 end
 
@@ -406,7 +423,6 @@ end
 ---@param colorPicker JOP.ArtStyle.colorPicker
 function PhotoMenu:createColorPicker(parent, colorPicker)
 
-
     if not config.persistent[colorPicker.id] then
         config.persistent[colorPicker.id] = colorPicker.defaultValue
     end
@@ -492,6 +508,9 @@ function PhotoMenu:createRotateButton(parent)
     if not self.doRotate then
         return
     end
+    if not self.canvasConfig.rotatedId then
+        return
+    end
     logger:debug("Creating rotate button")
     local canvasId = self.canvasConfig.canvasId
     logger:debug("Canvas ID: %s", canvasId)
@@ -507,6 +526,13 @@ function PhotoMenu:createRotateButton(parent)
         self.canvasConfig = self.getCanvasConfig()
         self:open()
     end)
+end
+
+function PhotoMenu:applyControlValues()
+    for _, controlId in ipairs(self.controls) do
+        local control = config.controls[controlId]
+        self:setShaderValue(control)
+    end
 end
 
 function PhotoMenu:resetControls()
@@ -547,8 +573,8 @@ function PhotoMenu:createFindSubjectsButton(parent)
         text = "Find Subjects"
     }
     button:register("mouseClick", function(e)
-        local subjects = self:calculateSubjectResults()
 
+        local subjects = self:calculateSubjectResults()
         if table.size(subjects) > 0 then
             local subjectNames = Subject.getSubjectNames(subjects)
             local subjectNamesString = "Found subjects:"
@@ -691,14 +717,16 @@ function PhotoMenu:registerIOEvents()
             else
                 self.isLooking = true
                 self:hideMenu()
+
             end
         end
     end
     self.zoomSlider:registerEvents()
+    self.subjectFilter:registerEvents()
 
     doCapture = function(e)
         if e.keyCode == tes3.scanCode.enter and self.state ~= "capturing" then
-            if tes3ui.menuMode() and tes3ui.getMenuOnTop() ~= self.menu then
+            if tes3ui.menuMode() == true and tes3ui.getMenuOnTop() ~= self.menu then
                 return
             end
             self:capture()
@@ -726,6 +754,7 @@ function PhotoMenu:unregisterIOEvents()
     event.unregister("mouseButtonDown", hideMenuOnRightClick)
     event.unregister("keyDown", doCapture)
     self.zoomSlider:unregisterEvents()
+    self.subjectFilter:unregisterEvents()
     event.unregister("load", unregisterOnLoad)
     event.unregister("save", blockSave)
 end
@@ -812,10 +841,12 @@ end
 
 --Reset events, settings, shaders
 function PhotoMenu:finishMenu()
+    logger:debug("Finishing menu")
     self:unregisterIOEvents()
     self:restoreMGESettings()
     self:disableShaders()
     self:resetControlDefaults()
+    self.subjectFilter:disableOcclusion()
 end
 
 

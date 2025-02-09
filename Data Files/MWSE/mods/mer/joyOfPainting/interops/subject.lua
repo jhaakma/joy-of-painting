@@ -23,6 +23,51 @@ local subjects = {
                 and e.reference.object.name ~= ""
         end
     },
+    {
+        id = "weapon",
+        requirements = function(e)
+            return e.reference.baseObject.objectType == tes3.objectType.weapon
+        end
+    },
+    {
+        id = "armor",
+        requirements = function(e)
+            return e.reference.baseObject.objectType == tes3.objectType.armor
+        end
+    },
+    {
+        id = "clothing",
+        requirements = function(e)
+            return e.reference.baseObject.objectType == tes3.objectType.clothing
+        end
+    },
+    {
+        id = "container",
+        requirements = function(e)
+            return e.reference.baseObject.objectType == tes3.objectType.container
+                and e.reference.object.name ~= nil
+                and e.reference.object.name ~= ""
+        end
+    },
+    {
+        id = "miscItem",
+        requirements = function(e)
+            return e.reference.baseObject.objectType == tes3.objectType.miscItem
+        end
+    },
+    {
+        id = "apparatus",
+        requirements = function(e)
+            return e.reference.baseObject.objectType == tes3.objectType.apparatus
+        end
+    },
+    {
+        id = "book",
+        requirements = function(e)
+            return e.reference.baseObject.objectType == tes3.objectType.book
+        end
+    },
+
 
     --Points of Interest
     {
@@ -42,6 +87,11 @@ local subjects = {
             "ex_dwrv_ruin_tower00",
             "AB_Ex_DwrvTower00Intact",
         },
+    },
+    {
+        id = "azura",
+        name = "Azura'",
+        objectIds = {"azura"},
     }
 }
 
