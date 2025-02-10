@@ -78,8 +78,9 @@ float calculateSobelOutline(float sobelDepth, float depth, float lineTest, float
 float getFadeStrength(float2 Tex) {
     float2 uv = float2(Tex.x + sin(Time * 0.5) * 0.1, Tex.y + cos(Time * 0.5) * 0.1) / 4.0;
     float4 normalMap = tex2D(sDistortionMap, uv * fadePerlinScale);
-    float fadeStrength = normalMap.b;
-    return saturate(fadeStrength - 0.2);
+    float fadeStrength = normalMap.r;
+
+    return saturate(fadeStrength * 1.5 - 0.3);
 }
 
 
@@ -102,7 +103,7 @@ float4 outline(float2 rawTex : TEXCOORD0) : COLOR {
     float3 pos = toView(tex, sDepthFrame);
     float fog = calculateFog(pos, fognearstart, fognearrange);
 
-    float fadeStrength1 = getFadeStrength(rawTex) * 2;
+    float fadeStrength1 = getFadeStrength(tex);
     float thickness1 = calculateThickness(length(pos), maxDistance, outlineThickness);
     thickness1 = thickness1 * fadeStrength1;
     float depth = readDepth(tex, sDepthFrame);

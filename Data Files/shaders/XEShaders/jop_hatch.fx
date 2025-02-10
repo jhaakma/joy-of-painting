@@ -124,15 +124,12 @@ float4 hatch(float2 tex : TEXCOORD0) : COLOR0
     // Get luminosity
     float luminosity = dot(color, float3(0.299, 0.587, 0.114));
 
-    // beyond fog is white
-    float distance_exp = pow(fogDistance, 2);
-    float maxDistance_exp = pow(249, 2);
-    float transitionD = 100 + fogDistance * 10;
-
-    luminosity = lerp(luminosity, 1, smoothstep(distance_exp, distance_exp + transitionD , depth ) * ( step(distance_exp, maxDistance_exp) ));
-
     // Use adjusted UV for hatching
     float3 hatching = Hatching(adjustedUV, luminosity);
+
+    //Beyond fog is empty
+    hatching = lerp(hatching, float3(1,1,1), beyondFog * (fogDistance < 250));
+
 
     return float4(hatching , 1);
 }

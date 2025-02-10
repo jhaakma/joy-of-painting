@@ -203,7 +203,7 @@ local controls = {
         uniform = "compositeStrength",
         shader = "jop_composite",
         name = "Transparency",
-        sliderDefault = 50,
+        sliderDefault = 10,
         shaderMin = 0.2,
         shaderMax = 1.0,
     },
@@ -446,7 +446,7 @@ local controls = {
         shader = "jop_quantize",
         calculate = function(_, artStyle)
             return ({
-                watercolor = 16,
+                watercolor = 24,
                 oil = 36
             })[artStyle.paintType.id] or 50
         end
@@ -457,8 +457,8 @@ local controls = {
         shader = "jop_quantize",
         calculate = function(_, artStyle)
             return ({
-                watercolor = 20,
-                oil = 30
+                watercolor = 24,
+                oil = 36
             })[artStyle.paintType.id] or 50
         end
     },
