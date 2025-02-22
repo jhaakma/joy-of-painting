@@ -1,7 +1,7 @@
 #include "jop_common.fx"
 
 extern float maxDistance = 62000;
-extern float outlineThickness = 8;
+extern float outlineThickness = 7;
 extern float lineTest = 5;
 extern float lineDarkMulti = 0.05;
 extern float lineDarkMax = 0.1;
@@ -58,7 +58,7 @@ float SobelSampleDepth(sampler s, float2 uv, float3 offset) {
     return SobelDepth(pixelCenter, pixelLeft, pixelRight, pixelUp, pixelDown);
 }
 
-
+// Calculate the fog factor based on the distance from the camera
 float calculateFog(float3 pos, float fognearstart, float fognearrange) {
     float dist = length(pos);
     return saturate((fognearrange - dist) / (fognearrange - fognearstart));
@@ -130,16 +130,23 @@ float4 getBlackAndWhite(float2 tex, float4 color)
 {
     // Define the thresholds for the limited band shades
     float darkGrayThreshold = outlineThickness * 0.02;
+    float fadeThreshold = darkGrayThreshold + 0.01;
     float average = dot(color.rgb, float3(0.299, 0.587, 0.114));
 
     float black = 0.01;
     float white = 0.99;
 
     // Quantize the average value to the limited band of shades
-    if (average < darkGrayThreshold)
+    if (average < darkGrayThreshold) {
         color.rgb = float3(white, white, white);
-    else
+    } else if (average < fadeThreshold) {
+        float smoothDecay = saturate((average - darkGrayThreshold) / (fadeThreshold - darkGrayThreshold));
+        float grey = lerp(white, black, smoothDecay);
+        color.rgb = float3(grey, grey, grey);
+    } else {
         color.rgb = float3(black, black, black);
+    }
+
 
     return color;
 }
@@ -174,12 +181,15 @@ float4 outline(float2 rawTex : TEXCOORD0) : COLOR {
     float thickness1 = calculateThickness(length(pos), maxDistance, outlineThickness);
     thickness1 = thickness1 * fadeStrength1;
     float depth = readDepth(tex, sDepthFrame);
-    float3 outline1 = getOutline(tex, pos, thickness1, depth);
+    float3 outline = getOutline(tex, pos, thickness1, depth);
+
+    //remove outline beyond fog
+    outline = lerp(0, outline, saturate(fog + 0.1));
 
     float4 sceneColor = sampleSceneColor(rawTex, Time, distortionStrength * 1.1, sDistortionMap, timeOffsetMulti, sLastShader);
     float3 lineColor = min(sceneColor.rgb * lineDarkMulti, lineDarkMax);
 
-    float3 color = lerp(sceneColor.rgb, lineColor, outline1);
+    float3 color = lerp(sceneColor.rgb, lineColor, outline);
     return float4(color, sceneColor.a);
 }
 

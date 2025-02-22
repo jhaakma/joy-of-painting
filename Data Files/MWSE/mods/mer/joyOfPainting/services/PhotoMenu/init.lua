@@ -52,6 +52,7 @@ local alwaysOnShaders
 ---@field isLooking boolean? default false
 ---@field occlusionTester OcclusionTester
 ---@field subjectFilter JOP.SubjectFilter
+---@field detailLevel number?
 local PhotoMenu = {
     shaders = nil,
     isLooking = false,
@@ -369,7 +370,8 @@ function PhotoMenu:setShaderValue(control)
     local shaderValue
     if control.calculate then
         local paintingSkill = SkillService.getPaintingSkillLevel()
-        shaderValue = control.calculate(paintingSkill, self.artStyle, canvasConfig)
+        local effectiveSkill = self.detailLevel or paintingSkill
+        shaderValue = control.calculate(effectiveSkill, self.artStyle, canvasConfig)
     else
         local sliderMin = control.sliderMin or 0
         local sliderMax = control.sliderMax or 100
@@ -378,6 +380,34 @@ function PhotoMenu:setShaderValue(control)
 
     logger:debug("Setting %s to %s", control.id, shaderValue)
     ShaderService.setUniform(control.shader, control.uniform, shaderValue)
+end
+
+--[[
+    A special slider for reducing the effective skill level used
+    for the painting. The max slider value is the current skill level
+    Allows for deliberately reducing details of the painting
+]]
+function PhotoMenu:createSkillSlider(parent)
+    logger:debug("Creating skill slider")
+    local skillLevel = SkillService.getPaintingSkillLevel()
+    local maxLevel = self.artStyle.maxDetailSkill or skillLevel
+    local minLevel = config.skillPaintEffect.MIN_SKILL
+    self.detailLevel = self.detailLevel or skillLevel
+    local slider = mwse.mcm.createSlider(parent, {
+        label = "Skill Level: %s",
+        current = skillLevel,
+        min = minLevel,
+        max = maxLevel,
+        step = 1,
+        jump = 10,
+        variable = mwse.mcm.createTableVariable {
+            id = "detailLevel",
+            table = self
+        }
+    })
+    slider.callback = function()
+        self:applyControlValues()
+    end
 end
 
 ---@param parent any
@@ -475,6 +505,7 @@ end
 function PhotoMenu:createShaderControls(parent)
     local controlsBlock = self:getControlsBlock()
         or self:createControlsBlock(parent)
+    self:createSkillSlider(controlsBlock)
     if self.controls then
         logger:debug("Creating shader controls")
         local controls = self.controls

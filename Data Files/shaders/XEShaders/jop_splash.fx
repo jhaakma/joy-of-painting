@@ -2,12 +2,11 @@
 
 texture tex1 < string src="jop/emptytexscroll.tga"; >;
 texture lastshader;
-texture depthframe;
 
-extern float canvas_strength = 0.9;
+extern float canvas_strength = 0.0;
 sampler sImage = sampler_state { texture=<lastshader>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
 sampler sOverlayImage = sampler_state { texture=<tex1>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
-sampler sDepthFrame = sampler_state { texture=<depthframe>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
+
 
 float3 overlay(float3 image, float3 canvas, float blendStrength) {
 
@@ -32,10 +31,7 @@ float3 overlay(float3 image, float3 canvas, float blendStrength) {
 float4 main(float2 Tex : TEXCOORD0) : COLOR0
 {
     // Sample the scroll texture
-    //float2 scrollUV = float2(Tex.x + sin(Time) * 0.05, Tex.y + cos(Time) * 0.05);
-
-    float3 normal = getWorldSpaceNormal(Tex, sDepthFrame);
-    float2 scrollUV = rotateUvByNormal(Tex, normal);
+    float2 scrollUV = float2(Tex.x + sin(Time) * 0.05, Tex.y + cos(Time) * 0.05);
 
     float4 scrollTex = tex2D(sOverlayImage, scrollUV);
 

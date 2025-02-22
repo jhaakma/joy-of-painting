@@ -21,7 +21,7 @@ float fognearrange;
 float fognearstart;
 float3 fognearcol;
 
-static const float Time = 1;
+static const float Time = time;
 
 // The inverse projection matrix
 static const float2 invproj = 2.0 * tan(0.5 * radians(fov)) * float2(1, rcpres.x / rcpres.y);
@@ -54,7 +54,7 @@ float2 distort(float2 Tex, float distortionStrength, sampler2D sDistortionTex, f
     float thisTime = Time + offset;
     float distortionScale = 0.2;
     // Move around over Time
-    float scale = 0.2;
+    float scale = 0.5;
     float2 uv = float2(Tex.x + sin(thisTime * 0.5) * 0.1, Tex.y + cos(thisTime * 0.5) * 0.1) * scale;
 
     // Get the distortion from the texture

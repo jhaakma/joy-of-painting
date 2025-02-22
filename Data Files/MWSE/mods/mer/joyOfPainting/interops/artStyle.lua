@@ -73,7 +73,7 @@ local shaders = {
 
 local getDistortionStrength = function (paintingSkill, artStyle)
     paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
-    local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
+    local max = artStyle.maxDetailSkill
     return math.max(0, math.remap(paintingSkill,
         config.skillPaintEffect.MIN_SKILL, max,
         0.2, 0.0
@@ -633,7 +633,6 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
         paintType = "watercolor",
         --requiresEasel = true,
         maxDetailSkill = 50,
-        maxDistortSkill = 40,
         minBrushSize = 4,
         maxBrushSize = 12,
         helpText = [[
@@ -653,6 +652,7 @@ Try replacing the background with the fog setting and changing the fog color to 
             "composite",
             "fogColor",
             "quantize",
+            "distort",
         },
         controls = {
             "vignette",
@@ -668,7 +668,6 @@ Try replacing the background with the fog setting and changing the fog color to 
         paintType = "oil",
         requiresEasel = true,
         maxDetailSkill = 60,
-        maxDistortSkill = 50,
         minBrushSize = 4,
         maxBrushSize = 12,
         helpText = [[
