@@ -1,11 +1,18 @@
 #include "jop_common.fx"
 
 extern float maxDistance = 62000;
-extern float outlineThickness = 2;
+extern float outlineThickness = 8;
 extern float lineTest = 5;
-extern float lineDarkMulti = 0.1;
+extern float lineDarkMulti = 0.05;
 extern float lineDarkMax = 0.1;
 extern float fadePerlinScale = 5;
+
+//dog values
+extern float sigmaC = 0.5;
+extern float sigmaE = 2;
+extern float sigmaM = 3;
+extern float threshold = 0.01;
+extern float phi = 40;
 
 extern float timeOffsetMulti = 0.0;
 extern float distortionStrength = 0.05; // Adjust this to change the strength of the distortion
@@ -84,7 +91,7 @@ float getFadeStrength(float2 Tex) {
 }
 
 
-float getOutline(float2 tex, float3 pos, float thickness, float depth) {
+float getSobelOutline(float2 tex, float3 pos, float thickness, float depth) {
     float3 offset = float3(rcpres, 0.0) * thickness;
     float4 sceneColor = sampleSceneColor(tex, Time, distortionStrength, sDistortionMap, timeOffsetMulti, sLastShader);
 
@@ -98,6 +105,66 @@ float getOutline(float2 tex, float3 pos, float thickness, float depth) {
 }
 
 
+float calculateLuminosity(float3 color) {
+    return dot(color, float3(0.299, 0.587, 0.114));
+}
+
+
+float SobelSampleLuminosity(sampler s, float2 uv, float3 offset) {
+    float3 colorCenter = sample0(s, uv).rgb;
+    float3 colorLeft = sample0(s, uv - offset.xz).rgb;
+    float3 colorRight = sample0(s, uv + offset.xz).rgb;
+    float3 colorUp = sample0(s, uv + offset.zy).rgb;
+    float3 colorDown = sample0(s, uv - offset.zy).rgb;
+
+    float lumCenter = RGBToHSL(colorCenter).x;
+    float lumLeft = RGBToHSL(colorLeft).x;
+    float lumRight = RGBToHSL(colorRight).x;
+    float lumUp = RGBToHSL(colorUp).x;
+    float lumDown = RGBToHSL(colorDown).x;
+
+    return SobelDepth(lumCenter, lumLeft, lumRight, lumUp, lumDown);
+}
+
+float4 getBlackAndWhite(float2 tex, float4 color)
+{
+    // Define the thresholds for the limited band shades
+    float darkGrayThreshold = outlineThickness * 0.02;
+    float average = dot(color.rgb, float3(0.299, 0.587, 0.114));
+
+    float black = 0.01;
+    float white = 0.99;
+
+    // Quantize the average value to the limited band of shades
+    if (average < darkGrayThreshold)
+        color.rgb = float3(white, white, white);
+    else
+        color.rgb = float3(black, black, black);
+
+    return color;
+}
+
+float getOutline(float2 tex, float3 pos, float thickness, float depth) {
+    float sobelOutline = getSobelOutline(tex, pos, thickness, depth);
+
+    ////Luminosity based outline
+    // float sobelLuminosity = SobelSampleLuminosity(sLastShader, tex.xy, offset);
+    // float luminosityOutline = step(0.05, sobelLuminosity);
+
+    // DoG based outline
+    // inputs.sigmaC = sigmaC;
+    // inputs.sigmaE = sigmaE;
+    // inputs.sigmaM = sigmaM;
+    // inputs.threshold = threshold;
+    // inputs.phi = phi;
+    // float dogStrength = DoGEdgeDetectionETF(tex, sLastShader, rcpres, inputs);
+
+    float4 color = tex2D(sLastShader, tex);
+    float4 blackAndWhite = getBlackAndWhite(tex, color);
+
+    return max(sobelOutline, blackAndWhite.r);
+}
+
 float4 outline(float2 rawTex : TEXCOORD0) : COLOR {
     float2 tex = distort(rawTex, distortionStrength, sDistortionMap);
     float3 pos = toView(tex, sDepthFrame);
@@ -109,11 +176,10 @@ float4 outline(float2 rawTex : TEXCOORD0) : COLOR {
     float depth = readDepth(tex, sDepthFrame);
     float3 outline1 = getOutline(tex, pos, thickness1, depth);
 
-    float4 sceneColor = sampleSceneColor(rawTex, Time, distortionStrength, sDistortionMap, timeOffsetMulti, sLastShader);
+    float4 sceneColor = sampleSceneColor(rawTex, Time, distortionStrength * 1.1, sDistortionMap, timeOffsetMulti, sLastShader);
     float3 lineColor = min(sceneColor.rgb * lineDarkMulti, lineDarkMax);
 
     float3 color = lerp(sceneColor.rgb, lineColor, outline1);
-
     return float4(color, sceneColor.a);
 }
 

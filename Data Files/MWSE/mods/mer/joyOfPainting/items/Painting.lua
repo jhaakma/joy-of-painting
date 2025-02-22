@@ -22,6 +22,7 @@ local meshService = require("mer.joyOfPainting.services.MeshService")
 ---@field regionId string?
 ---@field cellName string?
 ---@field position tes3vector3?
+---@field orientation tes3vector3?
 
 ---@class JOP.Painting.data
 ---@field canvasId string

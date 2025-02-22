@@ -3,10 +3,10 @@
 float hatch_strength = 0.4;
 extern float saturation = 3;
 extern float contrast = 0.8;
+extern float outlines = 0.6;
 
-//tweakables
-//last value is coverage
-float4 ColorBlend = float4(0.1,0.1,0.1,0.2);
+
+
 
 //fade start-end, preferrably put 10-50 between for a smooth transition
 float forge = 90;
@@ -81,7 +81,6 @@ texture depthframe;
 texture lastpass;
 
 //this is background texture inside textures folder
-texture tex1 < string src="jop/emptytexscroll.tga"; >;
 texture tex2 < string src="jop/hatchvt.tga"; >;
 
 sampler sLastShader = sampler_state { texture=<lastshader>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
@@ -109,11 +108,11 @@ float4 edgedetecting( float2 tex : TEXCOORD0  ) : COLOR0
 
 	float4 color = tex2D(sLastShader,tex.xy);
 
-	color.r = round(color.r*ColorBlend.r)/ColorBlend.r;
-	color.g = round(color.g*ColorBlend.g)/ColorBlend.g;
-	color.b = round(color.b*ColorBlend.b)/ColorBlend.b;
+	// color.r = round(color.r*ColorBlend.r)/ColorBlend.r;
+	// color.g = round(color.g*ColorBlend.g)/ColorBlend.g;
+	// color.b = round(color.b*ColorBlend.b)/ColorBlend.b;
 
-	const float threshold = ColorBlend.w;
+	const float threshold = outlines;
 
 	const int NUM = 9;
 	const float2 c[NUM] =
@@ -178,7 +177,7 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 	edges += tex2D(sLastPass,Tex + float2( -0.5, -0.5) * (rcpres.y)).a/8;
 	edges = lerp(hatch2.g-0.5, edges, edges);
 
-	edges = lerp(hatch.r, edges, obbright);
+	edges = lerp(image.r, edges, obbright);
 
 	float3 final = image.rgb * edges.rgb * edges.rgb;
 

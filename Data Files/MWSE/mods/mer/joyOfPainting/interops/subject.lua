@@ -49,25 +49,6 @@ local subjects = {
                 and e.reference.object.name ~= ""
         end
     },
-    {
-        id = "miscItem",
-        requirements = function(e)
-            return e.reference.baseObject.objectType == tes3.objectType.miscItem
-        end
-    },
-    {
-        id = "apparatus",
-        requirements = function(e)
-            return e.reference.baseObject.objectType == tes3.objectType.apparatus
-        end
-    },
-    {
-        id = "book",
-        requirements = function(e)
-            return e.reference.baseObject.objectType == tes3.objectType.book
-        end
-    },
-
 
     --Points of Interest
     {

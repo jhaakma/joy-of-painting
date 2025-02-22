@@ -127,7 +127,7 @@ local containers = {
                 doesPack = true,
             }
         end,
-        blockWorldActivate = true,
+        --blockWorldActivate = true,
         allowUnfiltered = true,
         filter = "paintingSupplies"
     },

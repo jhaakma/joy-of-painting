@@ -21,7 +21,7 @@ float fognearrange;
 float fognearstart;
 float3 fognearcol;
 
-static const float Time = time;
+static const float Time = 1;
 
 // The inverse projection matrix
 static const float2 invproj = 2.0 * tan(0.5 * radians(fov)) * float2(1, rcpres.x / rcpres.y);
@@ -36,6 +36,7 @@ float4 sample0(sampler2D s, float2 tex)
 {
     return tex2Dlod(s, float4(tex, 0, 0));
 }
+
 
 /**
     Distorts the texture based on the provided distortion texture
@@ -54,24 +55,13 @@ float2 distort(float2 Tex, float distortionStrength, sampler2D sDistortionTex, f
     float distortionScale = 0.2;
     // Move around over Time
     float scale = 0.2;
-    float2 uvR = float2(Tex.x + sin(thisTime * 0.5) * 0.1, Tex.y + cos(thisTime * 0.5) * 0.1) * scale;
-    float2 uvG = float2(Tex.x + cos(thisTime * 0.5) * 0.1, Tex.y + sin(thisTime * 0.5) * 0.1) * scale * 1.1;
-    float2 uvB = float2(Tex.x - sin(thisTime * 0.5) * 0.1, Tex.y - cos(thisTime * 0.5) * 0.1) * scale * 1.3;
+    float2 uv = float2(Tex.x + sin(thisTime * 0.5) * 0.1, Tex.y + cos(thisTime * 0.5) * 0.1) * scale;
 
-    float4 normalMapR = tex2D(sDistortionTex, uvR);
-    float4 normalMapG = tex2D(sDistortionTex, uvG);
-    float4 normalMapB = tex2D(sDistortionTex, uvB);
-
-    // Convert the normal map from tangent space to [-1, 1]
-    float2 distortionR = (normalMapR.rg * 2.0 - 1.0);
-    float2 distortionG = (normalMapG.rg * 2.0 - 1.0);
-    float2 distortionB = (normalMapB.rg * 2.0 - 1.0);
-
-    // Combine the distortions from each channel
-    float2 combinedDistortion = (distortionR + distortionG + distortionB) / 3.0;
+    // Get the distortion from the texture
+    float4 distortion = tex2D(sDistortionTex, uv);
 
     // Apply the combined distortion to the texture coordinates
-    float2 distort = Tex + combinedDistortion * distortionStrength * distortionScale;
+    float2 distort = Tex + distortion.x * distortionStrength * distortionScale;
 
     return distort;
 }
@@ -301,4 +291,37 @@ float3 getWorldSpaceNormal(float2 uv, sampler2D sDepthFrame)
     // World‐space normal via cross product
     float3 N = normalize(cross(dX, dY));
     return N;
+}
+
+float2 rotateUvByNormal(float2 uv, float3 normal)
+{
+    //Normal: r = right, u = up, f = forward
+    float3 r = float3(1, 0, 0);
+    float3 f = float3(0, 1, 0);
+    float3 u = float3(0, 0, 1);
+
+    //Calculate the rotation matrix
+    float3x3 rotationMatrix = float3x3(r, u, f);
+
+    // Rotate the normal
+    normal = mul(normal, rotationMatrix);
+
+    // Calculate the angle between the normal and the forward vector
+    float angle = acos(dot(normal, float3(0, 0, 1)));
+
+    // Calculate cos(angle) and sin(angle) simultaneously
+    float cosAngle, sinAngle;
+    sincos(angle, sinAngle, cosAngle);
+
+    // Rotate the UV coordinates by the angle
+    float2 rotatedUV = float2(cosAngle * uv.x - sinAngle * uv.y, sinAngle * uv.x + cosAngle * uv.y);
+    // Rotate by a further 15 degrees
+    float rotationAngle = PI/6;
+    rotatedUV = float2(cos(rotationAngle)
+        * rotatedUV.x - sin(rotationAngle)
+        * rotatedUV.y, sin(rotationAngle)
+        * rotatedUV.x + cos(rotationAngle)
+        * rotatedUV.y);
+
+    return rotatedUV;
 }

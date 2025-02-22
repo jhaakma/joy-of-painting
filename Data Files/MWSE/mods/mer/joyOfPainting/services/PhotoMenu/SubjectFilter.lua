@@ -34,17 +34,11 @@ function SubjectFilter.new(e)
     return self
 end
 
-local function getShader()
-    if not compositeShader then
-        compositeShader = mgeShadersConfig.find{ name = "jop_composite" }
-    end
-    return compositeShader
-end
 
 function SubjectFilter:getTarget()
     local result = common.getCursorTarget()
     local target = result and result.reference
-    return target and Subject.isSubject(target) and target or nil
+    return target
 end
 
 local onMouseButtonDown

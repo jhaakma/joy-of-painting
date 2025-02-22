@@ -647,9 +647,12 @@ function Easel.getActivationButtons()
             text = "Open",
             callback = function(e)
                 timer.delayOneFrame(function()
+                    logger:debug("Opening easel")
                     local carryable = Easel:new(e.reference):getCarryableContainer()
                     if carryable then
                         carryable:openFromInventory()
+                    else
+                        logger:error("No carryable container found")
                     end
                 end)
             end,

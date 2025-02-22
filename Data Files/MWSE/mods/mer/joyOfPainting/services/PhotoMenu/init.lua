@@ -176,6 +176,7 @@ function PhotoMenu:calculateLocation()
         regionId = tes3.player.cell.region and tes3.player.cell.region.id:lower(),
         cellName = tes3.player.cell.displayName,
         position = tes3.player.position:copy(),
+        orientation = tes3.player.orientation:copy(),
     }
 end
 

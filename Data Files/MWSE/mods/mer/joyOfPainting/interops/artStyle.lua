@@ -41,6 +41,7 @@ local shaders = {
         shaderId = "jop_fog_color",
         defaultControls = {
             "distanceColor",
+            "fogColorDistortionStrength",
         },
         defaultColorPickers = {
             "fogColor"
@@ -52,7 +53,6 @@ local shaders = {
         shaderId = "jop_outline",
         defaultControls = {
             "outlineDistortionStrength",
-            "outlineThickness",
             "outlineDarkness",
         }
     },
@@ -76,7 +76,7 @@ local getDistortionStrength = function (paintingSkill, artStyle)
     local max = artStyle.maxDistortSkill or artStyle.maxDetailSkill
     return math.max(0, math.remap(paintingSkill,
         config.skillPaintEffect.MIN_SKILL, max,
-        0.1, 0.0
+        0.2, 0.0
     ))
 end
 
@@ -114,7 +114,29 @@ local controls = {
         shaderMax = 10.0,
     },
     {
-        id = "outlineThickness",
+        id = "outlineThicknessPencil",
+        uniform = "outlineThickness",
+        shader = "jop_outline",
+        name = "Outline Thickness",
+        sliderDefault = 3,
+        sliderMin = 1,
+        sliderMax = 10,
+        shaderMin = 2.0,
+        shaderMax = 8.0,
+    },
+    {
+        id = "outlineThicknessWatercolor",
+        uniform = "outlineThickness",
+        shader = "jop_outline",
+        name = "Outline Thickness",
+        sliderDefault = 0,
+        sliderMin = 0,
+        sliderMax = 10,
+        shaderMin = 0.0,
+        shaderMax = 12.0,
+    },
+    {
+        id = "outlineThicknessInk",
         uniform = "outlineThickness",
         shader = "jop_outline",
         name = "Outline Thickness",
@@ -122,7 +144,7 @@ local controls = {
         sliderMin = 1,
         sliderMax = 10,
         shaderMin = 1.0,
-        shaderMax = 6.0,
+        shaderMax = 8.0,
     },
     {
         id = "outlineDarkness",
@@ -130,8 +152,9 @@ local controls = {
         shader = "jop_outline",
         calculate = function(_, artStyle)
             return ({
-                pencil = 0.6,
-            })[artStyle.paintType.id]  or 0.25
+                pencil = 0.2,
+                watercolor = 0.4,
+            })[artStyle.paintType.id]  or 0.05
         end
     },
     {
@@ -212,7 +235,7 @@ local controls = {
         uniform = "compositeStrength",
         shader = "jop_composite",
         calculate = function(_)
-            return 0.1
+            return 0.3
         end
     },
     {
@@ -259,7 +282,7 @@ local controls = {
         name = "Hue",
         sliderDefault = 0,
         shaderMin = 0.0,
-        shaderMax = 4.0,
+        shaderMax = 2.0,
         defaultValue = 0.0,
     },
     {
@@ -293,6 +316,12 @@ local controls = {
         id = "compositeDistortionStrength",
         uniform = "distortionStrength",
         shader = "jop_composite",
+        calculate = getDistortionStrength
+    },
+    {
+        id = "fogColorDistortionStrength",
+        uniform = "distortionStrength",
+        shader = "jop_fog_color",
         calculate = getDistortionStrength
     },
     {
@@ -397,7 +426,7 @@ local controls = {
         uniform = "canvas_strength",
         shader = "jop_splash",
         calculate = function()
-            return 0.3
+            return 0.2
         end
     },
     {
@@ -414,7 +443,7 @@ local controls = {
         shader = "jop_charcoal",
         name = "Pencil Strength",
         calculate = function()
-            return 0.1
+            return 0.23
         end
     },
     {
@@ -534,6 +563,7 @@ Use the fog setting to remove background elements and the threshold to adjust th
             "contrast",
             "inkCompositeStrength",
             "distanceHatch",
+            "outlineThicknessInk"
         },
         valueModifier = 1.5,
         paintType = "ink",
@@ -564,6 +594,7 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
             "transparency",
             "compositeFogDistance",
             "colorPencilTimeOffsetMulti",
+            "outlineThicknessPencil",
         },
         valueModifier = 3,
         paintType = "pencil",
@@ -580,11 +611,12 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
         shaders = {
             "detail",
             "watercolor",
-            "distort",
             "adjuster",
             "fogColor",
             "composite",
             "quantize",
+            "splash",
+            "outline",
         },
         controls = {
             "vignette",
@@ -594,6 +626,7 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
             "hue",
             "canvasStrengthWatercolor",
             "watercolorTransparency",
+            "outlineThicknessWatercolor"
         },
         valueModifier = 4,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
@@ -616,7 +649,6 @@ Try replacing the background with the fog setting and changing the fog color to 
             "detail",
             "oil",
             "splash",
-            "distort",
             "adjuster",
             "composite",
             "fogColor",

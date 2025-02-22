@@ -65,38 +65,7 @@ float3 Hatching(float2 _uv, half _intensity)
     return hatching;
 }
 
-float2 rotateUvByNormal(float2 uv, float3 normal)
-{
-    //Normal: r = right, u = up, f = forward
-    float3 r = float3(1, 0, 0);
-    float3 f = float3(0, 1, 0);
-    float3 u = float3(0, 0, 1);
 
-    //Calculate the rotation matrix
-    float3x3 rotationMatrix = float3x3(r, u, f);
-
-    // Rotate the normal
-    normal = mul(normal, rotationMatrix);
-
-    // Calculate the angle between the normal and the forward vector
-    float angle = acos(dot(normal, float3(0, 0, 1)));
-
-    // Calculate cos(angle) and sin(angle) simultaneously
-    float cosAngle, sinAngle;
-    sincos(angle, sinAngle, cosAngle);
-
-    // Rotate the UV coordinates by the angle
-    float2 rotatedUV = float2(cosAngle * uv.x - sinAngle * uv.y, sinAngle * uv.x + cosAngle * uv.y);
-    // Rotate by a further 15 degrees
-    float rotationAngle = PI/6;
-    rotatedUV = float2(cos(rotationAngle)
-        * rotatedUV.x - sin(rotationAngle)
-        * rotatedUV.y, sin(rotationAngle)
-        * rotatedUV.x + cos(rotationAngle)
-        * rotatedUV.y);
-
-    return rotatedUV;
-}
 
 
 float4 hatch(float2 tex : TEXCOORD0) : COLOR0
