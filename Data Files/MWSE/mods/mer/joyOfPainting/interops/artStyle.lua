@@ -16,6 +16,27 @@ for shaderId in pairs(excludedShaders) do
     JoyOfPainting.ArtStyle.registerExcludedShader{ id = shaderId }
 end
 
+--Exclude any shader that utilizes the depthframe texture
+for filename in lfs.dir("Data Files/shaders/XEShaders/") do
+    logger:debug("Checking %s", filename)
+    local isShader = filename:sub(-3, -1) == ".fx"
+    logger:debug("Is shader? %s", isShader)
+    local isJopShader = filename:sub(1, 4) == "jop_"
+    logger:debug("Is JOP shader? %s", isJopShader)
+    if isShader and not isJopShader then
+        logger:debug("Reading %s", filename)
+        local path = "Data Files/shaders/XEShaders/" .. filename
+        local file = io.open(path, "r") --[[@as file*]]
+        local text = file:read("*all")
+        file:close()
+        if text:find("texture depthframe;") then
+            local shaderId = filename:sub(1, -4)
+            logger:debug("Found depthframe, excluding %s", shaderId)
+            JoyOfPainting.ArtStyle.registerExcludedShader{ id = shaderId }
+        end
+    end
+end
+
 
 ---@type JOP.ArtStyle.shader[]
 local shaders = {
@@ -77,7 +98,7 @@ local getDistortionStrength = function (paintingSkill, artStyle)
     local max = artStyle.maxDetailSkill
     return math.max(0, math.remap(paintingSkill,
         config.skillPaintEffect.MIN_SKILL, max,
-        0.2, 0.0
+        0.1, 0.0
     ))
 end
 

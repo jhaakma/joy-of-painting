@@ -77,9 +77,9 @@ local function registerMCM()
         label = "Max Saved Paintings",
         description = "Set the maximum number of full-resolution paintings of each art style saved to `Data Files/Textures/jop/saved/`. Once the maximum is reached, the oldest painting will be deleted to make room for the new one.",
         min = 1,
-        max = 100,
+        max = 500,
         step = 1,
-        jump = 10,
+        jump = 50,
         variable = mwse.mcm.createTableVariable{ id = "maxSavedPaintings", table = config.mcm },
     }
 

@@ -154,7 +154,7 @@ float SobelSampleLuminosity(sampler s, float2 uv, float3 offset) {
     return SobelDepth(lumCenter, lumLeft, lumRight, lumUp, lumDown);
 }
 
-float4 getBlackAndWhite(float2 tex, float4 color)
+float4 getShadow(float2 tex, float4 color)
 {
     // Define the thresholds for the limited band shades
     float darkGrayThreshold = shadow;
@@ -199,9 +199,9 @@ float getOutline(float2 tex, float3 pos, float thickness, float depth) {
 
 
     float4 color = tex2D(sLastShader, tex);
-    float4 blackAndWhite = getBlackAndWhite(tex, color);
+    float4 shadowEffect = getShadow(tex, color);
 
-    return max(normalOutline, max(sobelOutline, blackAndWhite.r));
+    return max(normalOutline, max(sobelOutline, shadowEffect.r));
 
 }
 
@@ -217,7 +217,7 @@ float4 outline(float2 rawTex : TEXCOORD0) : COLOR {
     float3 outline = getOutline(tex, pos, thickness1, depth);
 
     //remove outline beyond fog
-    outline = lerp(0, outline, saturate(fog + 0.1));
+    outline = lerp(0, outline, saturate(fog + 0.3));
 
     float4 sceneColor = sampleSceneColor(rawTex, Time, distortionStrength * 1.1, sDistortionMap, timeOffsetMulti, sLastShader);
     float3 lineColor = min(sceneColor.rgb * lineDarkMulti, lineDarkMax);
