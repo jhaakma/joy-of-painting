@@ -392,10 +392,10 @@ function PhotoMenu:createSkillSlider(parent)
     local skillLevel = SkillService.getPaintingSkillLevel()
     local maxLevel = self.artStyle.maxDetailSkill or skillLevel
     local minLevel = config.skillPaintEffect.MIN_SKILL
-    self.detailLevel = self.detailLevel or skillLevel
+    self.detailLevel = self.detailLevel or maxLevel
     local slider = mwse.mcm.createSlider(parent, {
         label = "Skill Level: %s",
-        current = skillLevel,
+        current = maxLevel,
         min = minLevel,
         max = maxLevel,
         step = 1,

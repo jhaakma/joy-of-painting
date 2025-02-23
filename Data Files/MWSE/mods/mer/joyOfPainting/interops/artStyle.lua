@@ -54,6 +54,7 @@ local shaders = {
         defaultControls = {
             "outlineDistortionStrength",
             "outlineDarkness",
+            "shadow"
         }
     },
     {
@@ -152,10 +153,21 @@ local controls = {
         shader = "jop_outline",
         calculate = function(_, artStyle)
             return ({
-                pencil = 0.2,
-                watercolor = 0.4,
+                pencil = 0.1,
+                watercolor = 0.3,
             })[artStyle.paintType.id]  or 0.05
         end
+    },
+    {
+        name = "Shadow",
+        id = "shadow",
+        uniform = "shadow",
+        shader = "jop_outline",
+        sliderDefault = 0,
+        sliderMin = 0,
+        sliderMax = 100,
+        shaderMin = 0.0,
+        shaderMax = 0.4,
     },
     {
         id = "hatchSize",

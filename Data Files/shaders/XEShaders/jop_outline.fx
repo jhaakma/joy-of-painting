@@ -1,4 +1,5 @@
 #include "jop_common.fx"
+#include "jop_gaussian.fx"
 
 extern float maxDistance = 62000;
 extern float outlineThickness = 7;
@@ -6,12 +7,14 @@ extern float lineTest = 5;
 extern float lineDarkMulti = 0.05;
 extern float lineDarkMax = 0.1;
 extern float fadePerlinScale = 5;
+extern float normalOutlineThreshold = 5;
 
 //dog values
 extern float sigmaC = 0.5;
 extern float sigmaE = 2;
 extern float sigmaM = 3;
 extern float threshold = 0.01;
+extern float shadow = 0.5;
 extern float phi = 40;
 
 extern float timeOffsetMulti = 0.0;
@@ -69,10 +72,10 @@ float calculateThickness(float dist, float maxDistance, float outlineThickness) 
     return outlineThickness + outlineThickness * (1.0 - clamped_dist);
 }
 
-float4 sampleSceneColor(float2 rawTex, float Time, float distortionStrength, sampler sDistortionMap, float timeOffsetMulti, sampler sLastShader) {
-    float lineOffset = timeOffsetMulti * min(distortionStrength, 0.03);
-    float2 sceneTex = distort(rawTex, distortionStrength, sDistortionMap, lineOffset);
-    return sample0(sLastShader, sceneTex);
+float4 sampleSceneColor(float2 rawTex, float Time, float distStrength, sampler distMap, float timeOffsetMulti, sampler shaderMap) {
+    float lineOffset = timeOffsetMulti * min(distStrength, 0.03);
+    float2 sceneTex = distort(rawTex, distStrength, distMap, lineOffset);
+    return sample0(shaderMap, sceneTex);
 }
 
 float calculateSobelOutline(float sobelDepth, float depth, float lineTest, float OutlineDepthMultiplier, float OutlineDepthBias) {
@@ -93,7 +96,6 @@ float getFadeStrength(float2 Tex) {
 
 float getSobelOutline(float2 tex, float3 pos, float thickness, float depth) {
     float3 offset = float3(rcpres, 0.0) * thickness;
-    float4 sceneColor = sampleSceneColor(tex, Time, distortionStrength, sDistortionMap, timeOffsetMulti, sLastShader);
 
     float sobelDepth = SobelSampleDepth(sDepthFrame, tex.xy, offset);
     float sobelOutline = calculateSobelOutline(sobelDepth, depth, lineTest, OutlineDepthMultiplier, OutlineDepthBias);
@@ -102,6 +104,32 @@ float getSobelOutline(float2 tex, float3 pos, float thickness, float depth) {
     sobelOutline = sobelOutline * aboveWater;
 
     return sobelOutline;
+}
+
+
+/**
+    Sample the normals around the position with getWorldSpaceNormal
+    If the normals change too much, it's an edge
+    Use the threshold value to change how much the normals need to change
+**/
+float getNormalsOutline(float2 tex, float3 pos, float thickness, float depth, float threshold) {
+    float3 normalCenter = getWorldSpaceNormal(tex, sDepthFrame);
+    float3 normalDiff = float3(0.0, 0.0, 0.0);
+
+    // Apply Gaussian smoothing using a circular kernel
+    for (int x = -4; x <= 4; x++) {
+        for (int y = -4; y <= 4; y++) {
+            if (x*x + y*y <= 16) { // Circular mask with radius 4
+                float weight = kernelRad4[x + 4][y + 4];
+                float2 offset = float2(x, y) * rcpres * thickness;
+                float3 sampledNormal = getWorldSpaceNormal(tex + offset, sDepthFrame);
+                normalDiff += abs(sampledNormal - normalCenter) * weight;
+            }
+        }
+    }
+
+    float normalOutline = step(threshold, dot(normalDiff, float3(1, 1, 1)));
+    return normalOutline;
 }
 
 
@@ -129,11 +157,11 @@ float SobelSampleLuminosity(sampler s, float2 uv, float3 offset) {
 float4 getBlackAndWhite(float2 tex, float4 color)
 {
     // Define the thresholds for the limited band shades
-    float darkGrayThreshold = outlineThickness * 0.02;
+    float darkGrayThreshold = shadow;
     float fadeThreshold = darkGrayThreshold + 0.01;
     float average = dot(color.rgb, float3(0.299, 0.587, 0.114));
 
-    float black = 0.01;
+    float black = 0.0;
     float white = 0.99;
 
     // Quantize the average value to the limited band of shades
@@ -153,6 +181,7 @@ float4 getBlackAndWhite(float2 tex, float4 color)
 
 float getOutline(float2 tex, float3 pos, float thickness, float depth) {
     float sobelOutline = getSobelOutline(tex, pos, thickness, depth);
+    float normalOutline = getNormalsOutline(tex, pos, thickness, depth, normalOutlineThreshold);
 
     ////Luminosity based outline
     // float sobelLuminosity = SobelSampleLuminosity(sLastShader, tex.xy, offset);
@@ -166,10 +195,14 @@ float getOutline(float2 tex, float3 pos, float thickness, float depth) {
     // inputs.phi = phi;
     // float dogStrength = DoGEdgeDetectionETF(tex, sLastShader, rcpres, inputs);
 
+    // Difference in Normals based outline
+
+
     float4 color = tex2D(sLastShader, tex);
     float4 blackAndWhite = getBlackAndWhite(tex, color);
 
-    return max(sobelOutline, blackAndWhite.r);
+    return max(normalOutline, max(sobelOutline, blackAndWhite.r));
+
 }
 
 float4 outline(float2 rawTex : TEXCOORD0) : COLOR {
