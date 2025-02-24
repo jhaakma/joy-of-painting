@@ -76,11 +76,7 @@ function Sketchbook:new(e)
             return sketchbook.dataHolder.data.joyOfPainting[k]
         end,
         __newindex = function(_, k, v)
-            if not (
-                sketchbook.dataHolder
-                and sketchbook.dataHolder.data
-                and sketchbook.dataHolder.data.joyOfPainting
-            ) then
+            if sketchbook.dataHolder == nil then
                 if not sketchbook.reference then
                     logger:debug("sketchbook.item: %s", sketchbook.item)
                     --create itemData
@@ -93,6 +89,8 @@ function Sketchbook:new(e)
                         return
                     end
                 end
+            end
+            if not sketchbook.dataHolder.data.joyOfPainting then
                 sketchbook.dataHolder.data.joyOfPainting = {
                     sketches = {}
                 }
