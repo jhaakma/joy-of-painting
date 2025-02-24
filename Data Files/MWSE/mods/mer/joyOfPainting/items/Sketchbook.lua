@@ -83,11 +83,13 @@ function Sketchbook:new(e)
                     sketchbook.dataHolder = tes3.addItemData{
                         to = tes3.player,
                         item = sketchbook.item,
+                        updateGUI = true
                     }
                     if not sketchbook.dataHolder then
                         logger:error("Failed to create itemData for sketchbook")
                         return
                     end
+
                 end
             end
             if not sketchbook.dataHolder.data.joyOfPainting then
@@ -542,11 +544,13 @@ function Sketchbook:createSketchMenu()
 end
 
 function Sketchbook:open()
-    self:createSketchMenu()
-    tes3.playSound{
-        sound = "scroll",
-        reference = tes3.player
-    }
+    timer.frame.delayOneFrame(function()
+        self:createSketchMenu()
+        tes3.playSound{
+            sound = "scroll",
+            reference = tes3.player
+        }
+    end)
 end
 
 function Sketchbook:rename()

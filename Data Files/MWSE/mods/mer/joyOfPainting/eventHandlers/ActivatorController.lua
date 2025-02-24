@@ -25,7 +25,7 @@ local function onActivate(e)
             else
                 logger:debug("%s is activator item, activating", onActivateParams.target.object.id)
                 activator.onActivate(onActivateParams)
-                return true
+                return
             end
         end
     end
@@ -42,7 +42,7 @@ local function onEquip(e)
     for _, activator in pairs(Activator.activators) do
         if activator.isActivatorItem(onActivateParams) then
             activator.onActivate(onActivateParams)
-            return true
+            return false
         end
     end
 end
