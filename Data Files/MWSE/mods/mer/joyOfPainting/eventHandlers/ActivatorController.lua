@@ -25,7 +25,7 @@ local function onActivate(e)
             else
                 logger:debug("%s is activator item, activating", onActivateParams.target.object.id)
                 activator.onActivate(onActivateParams)
-                return
+                return false
             end
         end
     end
