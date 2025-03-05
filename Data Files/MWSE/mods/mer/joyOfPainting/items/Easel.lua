@@ -442,7 +442,6 @@ end
 ---@param reference tes3reference?
 function Easel.isEasel(reference)
     if not reference then
-        logger:warn("No reference provided")
         return
     end
     if not reference.object then

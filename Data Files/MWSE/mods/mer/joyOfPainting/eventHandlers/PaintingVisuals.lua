@@ -27,12 +27,9 @@ ReferenceManager:new{
 
         local easel = Easel:new(reference)
         if easel then
-            logger:debug("Easel %s is active", easel.reference.id)
             if easel.doesPack then
-                logger:debug("Easel %s does pack", easel.reference.id)
+                logger:debug("Setting clamp for %s", easel.reference.id)
                 easel:setClamp()
-            else
-                logger:debug("Easel %s does not pack", easel.reference.id)
             end
         end
     end
