@@ -327,3 +327,13 @@ float2 rotateUvByNormal(float2 uv, float3 normal)
 
     return rotatedUV;
 }
+
+float getLuminosity(float3 color) {
+    return dot(color, float3(0.299, 0.587, 0.114));
+}
+
+float3 grayscale(float3 color) {
+    float average = getLuminosity(color);
+    return float3(average, average, average);
+}
+

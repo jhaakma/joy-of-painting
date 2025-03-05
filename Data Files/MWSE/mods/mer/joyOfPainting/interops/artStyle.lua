@@ -47,7 +47,7 @@ local shaders = {
             "adjusterOffsetSaturation",
         }
     },
-    { id = "pencil", shaderId = "jop_charcoal" },
+    { id = "charcoalHatch", shaderId = "jop_charcoal" },
     { id = "greyscale", shaderId = "jop_greyscale" },
     { id = "blackAndWhite", shaderId = "jop_blackwhite" },
     { id = "ink", shaderId = "jop_ink" },
@@ -86,6 +86,8 @@ local shaders = {
             "compositeIsRotated",
             "compositeBlacken",
             "compositeDistortionStrength",
+            "pencilStrength",
+            "pencilScale"
         }
     },
     { id = "hatch", shaderId = "jop_hatch", defaultControls = { "hatchSize", "hatchDistortionStrength" } },
@@ -243,7 +245,7 @@ local controls = {
         uniform = "compositeStrength",
         shader = "jop_composite",
         calculate = function(_)
-            return 3
+            return 2
         end
     },
     {
@@ -472,22 +474,26 @@ local controls = {
     },
     {
         id = "pencilStrength",
-        uniform = "pencil_strength",
-        shader = "jop_charcoal",
+        uniform = "hatchStrength",
+        shader = "jop_composite",
         name = "Pencil Strength",
-        calculate = function()
-            return 0.23
+        calculate = function(_, artStyle)
+            local strengths = {
+                pencil = 0.6,
+                charcoal = 0.6
+            }
+            return strengths[artStyle.paintType.id] or 0
         end
     },
     {
         id = "pencilScale",
-        uniform = "pencil_scale",
-        shader = "jop_charcoal",
-        calculate = function(paintingSkill, _)
+        uniform = "hatchSize",
+        shader = "jop_composite",
+        calculate = function(paintingSkill, artStyle)
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, 100)
             return math.remap(paintingSkill,
-                config.skillPaintEffect.MIN_SKILL, 100,
-                0.85, 0.6
+                config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
+                1.2, 0.9
             )
         end
     },
@@ -559,7 +565,7 @@ local artStyles = {
             "distort",
             "detail",
             "adjuster",
-            "pencil",
+            "charcoalHatch",
             "composite",
         },
         controls = {
@@ -613,7 +619,6 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
         shaders = {
             "detail",
             "adjuster",
-            "pencil",
             "outline",
             "composite",
         },
@@ -622,8 +627,6 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
             "brightness",
             "contrast",
             "saturation",
-            "pencilStrength",
-            "pencilScale",
             "transparency",
             "compositeFogDistance",
             "colorPencilTimeOffsetMulti",
@@ -649,6 +652,7 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
             "composite",
             "quantize",
             "splash",
+            "mottle",
             "outline",
         },
         controls = {

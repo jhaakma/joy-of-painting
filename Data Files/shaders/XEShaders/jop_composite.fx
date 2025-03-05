@@ -17,6 +17,10 @@ extern float fogDistance = 250;
 extern int maskIndex = 0;
 //If enabled, will use the alpha mask to create a sketch effect
 extern int sketchMaskIndex = 0;
+//The strength of the hatch effect
+extern float hatchStrength = 0;
+//The size of the hatch effect
+extern float hatchSize = 1.0;
 
 float maxDistance = 250-1;
 static const float screen_width = rcpres.x;
@@ -34,6 +38,7 @@ texture tex3 < string src="jop/vignetteAlphaMask_2.tga"; >;
 texture tex4 < string src="jop/vignetteAlphaMask_3.tga"; >;
 texture tex5 < string src="jop/vignetteAlphaMask_4.tga"; >;
 texture tex6 < string src="jop/perlinNoise.tga"; >;
+texture tex7 < string src="jop/pencil_tile.tga"; >;
 
 sampler2D sLastShader = sampler_state { texture = <lastshader>; addressu = clamp; };
 sampler2D sLastPass = sampler_state { texture = <lastpass>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
@@ -44,7 +49,7 @@ sampler2D sVignetteAlphaMask_2 = sampler_state { texture =<tex3>; addressu = cla
 sampler2D sVignetteAlphaMask_3 = sampler_state { texture =<tex4>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sVignetteAlphaSketchMask_1 = sampler_state { texture =<tex5>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sDistortionMap = sampler_state { texture=<tex6>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
-
+sampler2D sHatch = sampler_state { texture=<tex7>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
 
 /**
 * Renders the canvas image on the screen, adjusting for aspect ratio and rotation.
@@ -147,11 +152,19 @@ float4 composite(float2 tex : TEXCOORD0) : COLOR0
     // Convert to black for sketches
     image = lerp(image, float4(0.01,0.01,0.01,image.a), doBlackenImage);
 
+    float brightnessEffect = brightness;
+    float canvasStrength = saturate(brightnessEffect * compositeStrength);
+
+    if (hatchStrength > 0) {
+        float2 hatchUV = float2(tex.x * rcpres.y / rcpres.x, tex.y) * (1/hatchSize);
+        float4 hatch = tex2D(sHatch, hatchUV);
+        canvasStrength = lerp(canvasStrength, 1.0, hatch.r * hatchStrength );
+    }
+
     //Blend canvas into lighter areas
-    image = lerp(image, canvas, saturate(brightness * compositeStrength));
+    image = lerp(image, canvas, canvasStrength);
 
     if (!doBlackenImage) {
-
         image.rgb = overlay(image.rgb, canvas.rgb, compositeStrength);
     }
 

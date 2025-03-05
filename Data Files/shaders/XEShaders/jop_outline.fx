@@ -86,7 +86,7 @@ float calculateSobelOutline(float sobelDepth, float depth, float lineTest, float
 }
 
 float getFadeStrength(float2 Tex) {
-    float2 uv = float2(Tex.x + sin(Time * 0.5) * 0.1, Tex.y + cos(Time * 0.5) * 0.1) / 4.0;
+    float2 uv = float2(Tex.x + sin(Time * 0.1) * 0.1, Tex.y + cos(Time * 0.1) * 0.1) / 4.0;
     float4 normalMap = tex2D(sDistortionMap, uv * fadePerlinScale);
     float fadeStrength = normalMap.r;
 

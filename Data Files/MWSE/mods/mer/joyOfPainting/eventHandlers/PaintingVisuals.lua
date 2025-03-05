@@ -16,7 +16,7 @@ ReferenceManager:new{
         }:hasCanvasData()
     end,
     onActivated = function(_, reference)
-        logger:debug("Painting OnActive")
+        logger:debug("Painting OnActive ref.object.id: %s", reference.object.id)
         local painting =  Painting:new{
             reference = reference
         }
@@ -26,9 +26,14 @@ ReferenceManager:new{
         end
 
         local easel = Easel:new(reference)
-        if easel and easel.doesPack then
-            logger:debug("Easel %s does pack", easel.reference.id)
-            easel:setClamp()
+        if easel then
+            logger:debug("Easel %s is active", easel.reference.id)
+            if easel.doesPack then
+                logger:debug("Easel %s does pack", easel.reference.id)
+                easel:setClamp()
+            else
+                logger:debug("Easel %s does not pack", easel.reference.id)
+            end
         end
     end
 }

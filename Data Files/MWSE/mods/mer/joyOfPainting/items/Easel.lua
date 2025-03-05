@@ -73,7 +73,7 @@ Easel.animationGroups = {
 ---@return JOP.Easel|nil
 function Easel:new(reference)
     if not self.isEasel(reference) then return nil end
-    local config = self.getEaselConfig(reference.object.id)
+    local config = Easel.getEaselConfig(reference.object.id)
     local easel = setmetatable(table.copy(config), self)
     easel.name = reference.object.name or "Easel"
     easel.reference = reference
@@ -439,11 +439,18 @@ function Easel.registerEasel(e)
     end
 end
 
----@param reference tes3reference
+---@param reference tes3reference?
 function Easel.isEasel(reference)
-    return reference
-        and reference.object
-        and Easel.getEaselConfig(reference.object.id) ~= nil
+    if not reference then
+        logger:warn("No reference provided")
+        return
+    end
+    if not reference.object then
+        logger:warn("No object on reference")
+        return
+    end
+
+    return Easel.getEaselConfig(reference.object.id) ~= nil
 end
 
 

@@ -1,8 +1,7 @@
-extern float mottleStrength = 0.03;
-extern float mottleSize = 1.0;
-extern float sampleSpeed = 0.5;
-float2 rcpres;
-float time;
+#include "jop_common.fx"
+extern float mottleStrength = 0.1;
+extern float mottleSize = 1.3;
+extern float speed = 0.2;
 
 texture lastshader;
 texture tex1 < string src="jop/splash_watercolor.tga"; >;
@@ -17,17 +16,16 @@ float3 applyMottlingEffect(float2 uv, float3 baseColor)
     float3 newColor = baseColor; // Initialize new color
     //newColor = float3(0,0,0);
 
-    //LumEffect: mottle is stronger at low luminosity
-    float luminosity = (newColor.r + newColor.g + newColor.b) / 3;
-    float lumEffect = 1 - luminosity;
+    // Lighten based on luminosity of mottle color
+    float2 randomUv = float2(uv.x + sin(Time * speed + 2) * 0.04, uv.y + cos(Time * speed + 2) * 0.04);
 
-    //Lighten based on luminosity of mottle color
-    float2 randomUv1 = float2(uv.x + sin(time * sampleSpeed) * 0.05, uv.y + cos(time* sampleSpeed) * 0.05);
-    float3 mottleColor1 = tex2D(sMottle, randomUv1 / mottleSize); // Sample mottle texture
+    float3 mottleColor;
+    mottleColor = tex2D(sMottle, randomUv / mottleSize);
+    float lum = getLuminosity(mottleColor);
+    mottleColor = lerp(mottleColor, float3(0, 0, 0), lum);
+    mottleColor = mottleColor * mottleStrength;
 
-    //Squeeze the base color down by 10% and add the mottle color
-    newColor = newColor + mottleColor1 * mottleStrength * lumEffect;
-
+    newColor = newColor + mottleColor;
     return newColor; // Blend base color with mottled color
 }
 
