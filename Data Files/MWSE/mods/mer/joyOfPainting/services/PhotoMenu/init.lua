@@ -807,19 +807,16 @@ function PhotoMenu:createMenu()
     self:createHeader(menu)
     self:createHelpText(menu)
 
-    local controlsParent = menu
-    local _, height = tes3ui.getViewportSize()
-    logger:debug("Viewport height: %s", height)
-    if height <= 800 then
-        logger:debug("Creating scroll pane")
-        controlsParent = menu:createVerticalScrollPane{}
-        controlsParent.widthProportional = 1.0
-        controlsParent.minHeight = 400
-        controlsParent.maxHeight = 400
-        controlsParent.borderTop = 16
-    end
-    self.zoomSlider:create(controlsParent)
-    self:createShaderControls(controlsParent)
+    local _, screenHeight = tes3ui.getViewportSize()
+    local menuHeight = math.ceil(screenHeight * 0.6)
+    local scrollPane = menu:createVerticalScrollPane{}
+    scrollPane.widthProportional = 1.0
+    scrollPane.minHeight = menuHeight
+    scrollPane.maxHeight = menuHeight
+    scrollPane.borderTop = 16
+
+    self.zoomSlider:create(scrollPane)
+    self:createShaderControls(scrollPane)
     self:createResetButton(menu)
     self:createRotateButton(menu)
     self:createFindSubjectsButton(menu)
@@ -831,6 +828,8 @@ function PhotoMenu:createMenu()
     local captureButton = self:createCaptureButton(buttomRowBlock)
     captureButton.absolutePosAlignX = 1.0
     self.active = true
+
+
     tes3ui.enterMenuMode(menu.id)
 end
 
