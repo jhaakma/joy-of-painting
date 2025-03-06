@@ -112,7 +112,8 @@ function Palette:new(e)
     return instance --[[@as JOP.Palette]]
 end
 
-function Palette:use()
+---@param ownerRef tes3reference?
+function Palette:use(ownerRef)
     if self:getRemainingUses() > 0 then
         logger:debug("Using up paint for %s", self.item.id)
         if not self.data.uses then
@@ -124,9 +125,9 @@ function Palette:use()
             logger:debug("Palette has no more uses, removing")
             if self.reference then
                 self.reference:delete()
-            else
+            elseif ownerRef then
                 CraftingFramework.CarryableContainer.removeItem{
-                    reference = tes3.player,
+                    reference = ownerRef,
                     item = self.item,
                     itemData = self.itemData,
                     playSound = false,

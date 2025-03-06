@@ -1,6 +1,6 @@
 
-extern float brightness = 4;
-extern float contrast = 1.2;
+extern float brightness = 0.0;
+extern float contrast = 1.0;
 
 texture lastshader;
 
@@ -10,9 +10,9 @@ sampler sImage = sampler_state { texture=<lastshader>; minfilter = linear; magfi
 float4 main(float2 Tex : TEXCOORD0) : COLOR0 {
     float3 color = tex2D(sImage, Tex).rgb;
     //Increase contrast
-    color = (color - 0.5) * contrast + 0.5;
+    color = color * contrast;
     //Increase brightness
-    color = color * brightness;
+    color = saturate(color + brightness);
     return float4(color, 1);
 }
 
