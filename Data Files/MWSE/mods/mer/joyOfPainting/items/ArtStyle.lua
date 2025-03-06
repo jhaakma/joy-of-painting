@@ -320,14 +320,14 @@ function ArtStyle:usePaint()
     --prioritise used stacks
     for _, stackData in ipairs(usedStacks) do
         local palette = Palette:new(stackData)
-        if palette and palette:use() then
+        if palette and palette:use(stackData.ownerRef) then
             return
         end
     end
     --then new stacks
     for _, stackData in ipairs(newStacks) do
         local palette = Palette:new(stackData)
-        if palette and palette:use() then
+        if palette and palette:use(stackData.ownerRef) then
             return
         end
     end
