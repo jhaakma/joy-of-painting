@@ -390,24 +390,27 @@ end
 function PhotoMenu:createSkillSlider(parent)
     logger:debug("Creating skill slider")
     local skillLevel = SkillService.getPaintingSkillLevel()
-    local maxDetail = self.artStyle.maxDetailSkill or skillLevel
-    local maxLevel = math.min(maxDetail, skillLevel)
+    local maxLevel = skillLevel
     local minLevel = config.skillPaintEffect.MIN_SKILL
     self.detailLevel = self.detailLevel or maxLevel
-    local slider = mwse.mcm.createSlider(parent, {
-        label = "Skill Level: %s",
-        current = maxLevel,
-        min = minLevel,
-        max = maxLevel,
-        step = 1,
-        jump = 10,
-        variable = mwse.mcm.createTableVariable {
-            id = "detailLevel",
-            table = self
-        }
-    })
-    slider.callback = function()
-        self:applyControlValues()
+    if maxLevel > minLevel then
+        local slider = mwse.mcm.createSlider(parent, {
+            label = "Skill Level: %s",
+            current = maxLevel,
+            min = minLevel,
+            max = maxLevel,
+            step = 1,
+            jump = 10,
+            variable = mwse.mcm.createTableVariable {
+                id = "detailLevel",
+                table = self
+            }
+        })
+        slider.callback = function()
+            self:applyControlValues()
+        end
+    else
+        logger:debug("Skill level too low to reduce detail")
     end
 end
 
