@@ -202,8 +202,7 @@ local mcmDefault = {
     tooltipPaintingHeight = 100,
 }
 --MCM Config (stored as JSON in MWSE/config/joyOfPainting.json)
----@type JOP.config.MCM
-config.mcm = mwse.loadConfig(config.configPath, mcmDefault)
+config.mcm = mwse.loadConfig(config.configPath, mcmDefault) --[[@as JOP.config.MCM]]
 ---Save the current config.mcm to the config file
 config.save = function()
     mwse.saveConfig(config.configPath, config.mcm)
