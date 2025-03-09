@@ -47,7 +47,7 @@ local shaders = {
             "adjusterOffsetSaturation",
         }
     },
-    { id = "charcoalHatch", shaderId = "jop_charcoal" },
+    { id = "charcoalHatch", shaderId = "jop_charcoal", defaultControls = { "charcoalHatchSize" } },
     { id = "greyscale", shaderId = "jop_greyscale" },
     { id = "blackAndWhite", shaderId = "jop_blackwhite" },
     { id = "ink", shaderId = "jop_ink" },
@@ -157,7 +157,7 @@ local controls = {
         sliderMin = 0,
         sliderMax = 10,
         shaderMin = 0.0,
-        shaderMax = 12.0,
+        shaderMax = 7.0,
     },
     {
         id = "outlineThicknessInk",
@@ -480,7 +480,6 @@ local controls = {
         calculate = function(_, artStyle)
             local strengths = {
                 pencil = 0.6,
-                charcoal = 0.6
             }
             return strengths[artStyle.paintType.id] or 0
         end
@@ -493,7 +492,19 @@ local controls = {
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, 100)
             return math.remap(paintingSkill,
                 config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
-                1.2, 0.9
+                1.2, 1.0
+            )
+        end
+    },
+    {
+        id = "charcoalHatchSize",
+        uniform = "hatchSize",
+        shader = "jop_charcoal",
+        calculate = function(paintingSkill, artStyle)
+            paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
+            return math.remap(paintingSkill,
+                config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
+                1.1, 0.8
             )
         end
     },
@@ -579,7 +590,7 @@ local artStyles = {
         paintType = "charcoal",
         maxDetailSkill = 30,
         minBrushSize = 3,
-        maxBrushSize = 12,
+        maxBrushSize = 7,
         helpText = [[
 Charcoal drawings work best with high contrast images against an empty background.
 
@@ -608,7 +619,7 @@ Use the fog setting to remove background elements and the threshold to adjust th
         paintType = "ink",
         maxDetailSkill = 40,
         minBrushSize = 2,
-        maxBrushSize = 12,
+        maxBrushSize = 7,
         helpText = [[
 Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
 ]]
@@ -636,7 +647,7 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
         paintType = "pencil",
         maxDetailSkill = 55,
         minBrushSize = 3,
-        maxBrushSize = 12,
+        maxBrushSize = 7,
         helpText = [[
 The bright areas of the pencil drawing will be replaced with the background. Keep this in mind when preparing your scene, use the contrast/brightness settings to make sure any parts of the image you want to remain are below 50% brightness.
 ]]
@@ -671,7 +682,7 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
         --requiresEasel = true,
         maxDetailSkill = 50,
         minBrushSize = 4,
-        maxBrushSize = 12,
+        maxBrushSize = 7,
         helpText = [[
 Watercolor paintings have a limited color palette and thick brush strokes. They are good for making abstract and impressionist paintings.
 
@@ -706,7 +717,7 @@ Try replacing the background with the fog setting and changing the fog color to 
         requiresEasel = true,
         maxDetailSkill = 60,
         minBrushSize = 4,
-        maxBrushSize = 12,
+        maxBrushSize = 7,
         helpText = [[
 Oil paintings require high skill before they start looking detailed.
 

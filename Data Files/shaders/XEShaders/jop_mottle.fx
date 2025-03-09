@@ -1,7 +1,7 @@
 #include "jop_common.fx"
 extern float mottleStrength = 0.1;
-extern float mottleSize = 1.3;
-extern float speed = 0.2;
+extern float mottleSize = 2.0;
+extern float speed = 0.3;
 
 texture lastshader;
 texture tex1 < string src="jop/splash_watercolor.tga"; >;

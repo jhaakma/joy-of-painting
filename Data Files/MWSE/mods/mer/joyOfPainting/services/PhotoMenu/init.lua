@@ -400,7 +400,7 @@ function PhotoMenu:createSkillSlider(parent)
             min = minLevel,
             max = maxLevel,
             step = 1,
-            jump = 10,
+            jump = math.ceil(maxLevel / 10),
             variable = mwse.mcm.createTableVariable {
                 id = "detailLevel",
                 table = self
