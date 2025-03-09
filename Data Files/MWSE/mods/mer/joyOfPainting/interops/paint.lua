@@ -6,28 +6,28 @@ local paletteItems = {
         paintType = "charcoal",
         breaks = true,
         fullByDefault = true,
-        uses = 5,
+        uses = 1,
     },
     {
         id = "t_ingmine_charcoal_01",
         paintType = "charcoal",
         breaks = true,
         fullByDefault = true,
-        uses = 5,
+        uses = 1,
     },
     {
         id = "jop_coal_sticks_01",
         paintType = "charcoal",
         breaks = true,
         fullByDefault = true,
-        uses = 20,
+        uses = 10,
     },
     {
         id = "misc_inkwell",
         meshOverride = "meshes\\jop\\inkwell.nif",
         paintType = "ink",
         fullByDefault = true,
-        uses = 50,
+        uses = 20,
         paintValue = 20,
     },
     {
@@ -47,29 +47,48 @@ local paletteItems = {
         paintType = "oil",
         uses = 10,
         paintValue = 40,
+    },
+    {
+        id = "jop_color_pencils_01",
+        paintType = "pencil",
+        uses = 20,
+        paintValue = 30,
+        fullByDefault = true,
+        breaks = true,
     }
 }
 
+---@type JOP.PaintType[]
 local paintTypes = {
     {
         id = "charcoal",
         name = "Charcoal",
         brushType = nil,
+        action = "Draw",
     },
     {
         id = "ink",
         name = "Ink",
         brushType = "quill",
+        action = "Sketch",
     },
     {
         id = "watercolor",
         name = "Watercolor Paint",
         brushType = "brush",
+        action = "Paint",
     },
     {
         id = "oil",
         name = "Oil Paint",
         brushType = "brush",
+        action = "Paint",
+    },
+    {
+        id = "pencil",
+        name = "Color Pencil",
+        brushType = nil,
+        action = "Draw",
     }
 }
 event.register(tes3.event.initialized, function()

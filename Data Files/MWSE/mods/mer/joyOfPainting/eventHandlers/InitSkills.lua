@@ -5,14 +5,14 @@ local logger = common.createLogger("InitSkills")
 --[[
     Skills
 ]]
-local skillModule = include("OtherSkills.skillModule")
+local skillModule = include("SkillsModule")
 
 --INITIALISE SKILLS--
 local function onSkillsReady()
     for skill, data in pairs(config.skills) do
         data = table.deepcopy(data)
         logger:debug("Registering %s skill", skill)
-        skillModule.registerSkill(data.id, data)
+        skillModule.registerSkill(data)
         SkillService.skills[skill] = skillModule.getSkill(data.id)
     end
     logger:info("JoyOfPainting skills registered")

@@ -28,7 +28,7 @@ Activator.registerActivator{
             logger:debug("Menu mode, skip")
             return false
         end
-        return config.sketchbooks[e.object.id:lower()] ~= nil
+        return e.object and Sketchbook.isSketchbook(e.object.id)
     end,
     blockStackActivate = true
 }

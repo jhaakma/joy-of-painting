@@ -43,6 +43,7 @@ local canvases = {
     },
     {
         canvasId = "sc_paper plain",
+        rotatedId = "jop_paper_h",
         meshOverride = "meshes\\jop\\medium\\paper_01.nif",
         textureWidth = 512,
         textureHeight = 512,
@@ -53,7 +54,21 @@ local canvases = {
         animSound = "jop_scribble_01"
     },
     {
+        canvasId = "jop_paper_h",
+        rotatedId = "sc_paper plain",
+        textureWidth = 512,
+        textureHeight = 512,
+        frameSize = "paper_landscape",
+        valueModifier = 1,
+        canvasTexture = "tx_paper_plain_01.dds",
+        animSpeed = 2.0,
+        animSound = "jop_scribble_01",
+        baseRotation = 90,
+    },
+
+    {
         canvasId = "jop_parchment_01",
+        rotatedId = "jop_parchment_h_01",
         textureWidth = 512,
         textureHeight = 512,
         frameSize = "paper_portrait",
@@ -61,6 +76,41 @@ local canvases = {
         canvasTexture = "jop\\parchment.dds",
         animSound = "jop_scribble_01",
         animSpeed = 2.0,
+    },
+
+    {
+        canvasId = "jop_parchment_h_01",
+        rotatedId = "jop_parchment_01",
+        textureWidth = 512,
+        textureHeight = 512,
+        frameSize = "paper_landscape",
+        valueModifier = 1.1,
+        canvasTexture = "jop\\parchment.dds",
+        animSound = "jop_scribble_01",
+        animSpeed = 2.0,
+        baseRotation = 90,
+    },
+    {
+        canvasId = "ab_misc_dwrvparchmentblank01",
+        meshOverride = "meshes\\jop\\medium\\dwrvParchBlank01.nif",
+        textureWidth = 1024,
+        textureHeight = 512,
+        valueModifier = 1.4,
+        canvasTexture = "oaab\\tx_dwrv_parchment_blank_02.dds",
+        animSound = "jop_scribble_01",
+        animSpeed = 2.0,
+        frameSize = "rectangle",
+    },
+    {
+        canvasId = "ab_misc_dwrvparchmentblank02",
+        meshOverride = "meshes\\jop\\medium\\dwrvParchBlank02.nif",
+        textureWidth = 512,
+        textureHeight = 512,
+        valueModifier = 1.4,
+        canvasTexture = "oaab\\tx_dwrv_parchment_blank_01.dds",
+        animSound = "jop_scribble_01",
+        animSpeed = 2.0,
+        frameSize = "square",
     }
 }
 

@@ -15,10 +15,10 @@ local OcclusionTester = {}
 OcclusionTester.__index = OcclusionTester
 
 ---@class OcclusionTester.params
----@field resolutionScale number
----@field viewportAspectResolution number
----@field viewportScale number
----@field logger mwseLogger
+---@field resolutionScale? number
+---@field viewportAspectResolution? number
+---@field viewportScale? number
+---@field logger? mwseLogger
 
 function OcclusionTester.getNearestPowerOfTwo(n)
     return 2 ^ math.floor(math.log(n, 2))
@@ -124,6 +124,8 @@ end
 ---@field visibility number The ratio of active pixels that are not occluded.
 ---@field framing number The ratio of active pixels that are on the edge of the scene.
 
+---@param id string
+---@return JOP.OcclusionTester.PixelDiagnostics
 function OcclusionTester:getPixelDiagnostics(id)
     local totalActiveData = self:getPixelCounts({ visibleOnly = false })
     self:dumpDebug(id .. "_total")
@@ -147,7 +149,6 @@ function OcclusionTester:enable()
     end
     if mge.camera.zoomEnable then
         self.logger:warn("MGE Zoom is enabled during Occlusion testing")
-        mge.camera.zoom = 1
     end
 end
 
@@ -159,8 +160,16 @@ function OcclusionTester:disable()
     end
 end
 
-function OcclusionTester:capturePixelData()
+---@param e { visibleOnly: boolean }
+function OcclusionTester:capturePixelData(e)
     self.logger:debug("Capturing pixel data...")
+
+    ---@diagnostic disable
+    if e.visibleOnly then
+        self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.lessEqual
+    else
+        self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.always
+    end
 
     self.camera.renderer:setRenderTarget(self.texture)
     self.camera:clear()
@@ -177,19 +186,17 @@ function OcclusionTester:dumpDebug(subjectId)
         self.logger:warn("Dumping debug image for %s", subjectId)
         local plane = tes3.loadMesh("jop\\debug_plane.nif")
         plane.texturingProperty.maps[1].texture = self.pixelData:createSourceTexture()
-        plane:saveBinary(string.format("data files\\meshes\\jop\\debug\\%s.nif", subjectId))
+        plane:saveBinary(string.format("data files\\meshes\\_debug\\%s.nif", subjectId))
     end
 end
 
+---@param e { visibleOnly: boolean }
 ---@return JOP.PixelMap.countPixels.data
 function OcclusionTester:getPixelCounts(e)
     e = e or { visibleOnly = false}
-    if e.visibleOnly then
-        self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.lessEqual
-    else
-        self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.always
-    end
-    self:capturePixelData()
+
+    ---@diagnostic enable
+    self:capturePixelData(e)
     self.logger:debug("Counting pixels...")
     local pixelMap = PixelMap.new{
         pixelData = self.pixelData,

@@ -1,8 +1,5 @@
 ---@class JOP.Palette.params : JOP.ItemInstanceParams
----@field reference tes3reference?
----@field item tes3item|tes3object|tes3misc?
----@field itemData tes3itemData?
----@field paletteItem JOP.PaletteItem
+---@field paletteItem JOP.PaletteItem?
 
 ---@class JOP.PaletteItem
 ---@field id string The id of the palette item. Must be a valid tes3item
@@ -16,8 +13,9 @@
 ---@class JOP.PaintType
 ---@field id string The id of the palette type
 ---@field name string The name of the palette type
----@field brushType string? The brush type to use for this palette. If not specified, this palette does not need a brush to use.
----@field refillMenu CraftingFramework.MenuActivator
+---@field brushType? string The brush type to use for this palette. If not specified, this palette does not need a brush to use.
+---@field refillMenu? CraftingFramework.MenuActivator
+---@field action "Draw" | "Sketch" | "Paint" | string The action to take when using this paint type
 
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
@@ -25,6 +23,7 @@ local logger = common.createLogger("Palette")
 local NodeManager = require("mer.joyOfPainting.services.NodeManager")
 local CraftingFramework = require("CraftingFramework")
 local ValueModifier = require("mer.joyOfPainting.services.ValueModifier")
+local Refill = require("mer.joyOfPainting.items.Refill")
 local meshService = require("mer.joyOfPainting.services.MeshService")
 ---@class JOP.Palette : JOP.ItemInstance
 local Palette = {
@@ -46,8 +45,9 @@ function Palette.registerPaletteItem(e)
     logger:assert(type(e.id) == "string", "id must be a string")
     logger:assert(type(e.paintType) == "string", "paintTypes must be a table")
     logger:debug("Registering palette item %s", e.id)
+    e = table.copy(e, {})
     e.id = e.id:lower()
-    config.paletteItems[e.id] = table.copy(e, {})
+    config.paletteItems[e.id] = e
     if e.meshOverride then
         meshService.registerOverride(e.id, e.meshOverride)
     end
@@ -94,8 +94,10 @@ function Palette.registerPaintType(e)
     logger:assert(type(e.id) == "string", "id must be a string")
     logger:assert(type(e.name) == "string", "name must be a string")
     logger:debug("Registering palette type %s", e.id)
-    e.id = e.id:lower()
-    config.paintTypes[e.id] = table.copy(e, {})
+    local paintType = table.copy(e, {})
+    paintType.id = paintType.id:lower()
+    paintType.action = paintType.action or "Paint"
+    config.paintTypes[paintType.id] = paintType
 end
 
 ---@param e JOP.Palette.params
@@ -110,7 +112,8 @@ function Palette:new(e)
     return instance --[[@as JOP.Palette]]
 end
 
-function Palette:use()
+---@param ownerRef tes3reference?
+function Palette:use(ownerRef)
     if self:getRemainingUses() > 0 then
         logger:debug("Using up paint for %s", self.item.id)
         if not self.data.uses then
@@ -122,9 +125,9 @@ function Palette:use()
             logger:debug("Palette has no more uses, removing")
             if self.reference then
                 self.reference:delete()
-            else
-                tes3.removeItem{
-                    reference = tes3.player,
+            elseif ownerRef then
+                CraftingFramework.CarryableContainer.removeItem{
+                    reference = ownerRef,
                     item = self.item,
                     itemData = self.itemData,
                     playSound = false,
@@ -157,6 +160,7 @@ function Palette:initRefillMenuActivator()
         showCategoriesButton = false,
         showFilterButton = false,
         showSortButton = false,
+        recipes = {}
     }
 end
 
@@ -168,7 +172,7 @@ function Palette:updateRecipes()
 
     ---@type CraftingFramework.Recipe.data[]
     local recipes = {}
-    for _, refill in pairs(config.refills[paintType.id]) do
+    for _, refill in ipairs(Refill.getRefills(paintType)) do
         logger:debug("Adding %s to refill recipes", refill.recipe.id)
         table.insert(recipes, refill.recipe)
     end
@@ -197,7 +201,7 @@ end
 
 function Palette:getRefills()
     local paintType = self:getPaintType()
-    return config.refills[paintType.id]
+    return Refill.getRefills(paintType)
 end
 
 function Palette:hasRefillRecipes()
@@ -222,6 +226,8 @@ function Palette:getMaxUses()
     return self.paletteItem.uses
 end
 
+---@param id string
+---@return boolean
 function Palette.isPalette(id)
     return config.paletteItems[id:lower()] ~= nil
 end

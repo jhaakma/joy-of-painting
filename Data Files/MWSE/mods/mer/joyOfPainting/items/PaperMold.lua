@@ -113,7 +113,7 @@ end
 
 function PaperMold:playerHasPulp()
     for id, _ in pairs(config.paperPulps) do
-        if tes3.player.object.inventory:contains(id) then
+        if CraftingFramework.CarryableContainer.findItemStack{ item = id } then
             return true
         end
     end
@@ -146,8 +146,8 @@ function PaperMold:doAddPulp()
 
     --remove pulp from player inventory
     for id, _ in pairs(config.paperPulps) do
-        if tes3.player.object.inventory:contains(id) then
-            tes3.removeItem{
+        if CraftingFramework.CarryableContainer.findItemStack{ item = id } then
+            CraftingFramework.CarryableContainer.removeItem{
                 reference = tes3.player,
                 item = id,
             }

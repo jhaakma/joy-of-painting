@@ -1,7 +1,6 @@
 ---@class JOP.config
 local config = {}
 
---TODO: replace with loadMetadata once available
 if toml.loadMetadata then
     config.metadata = toml.loadMetadata("The Joy of Painting")
 else
@@ -9,6 +8,7 @@ else
 end
 if not config.metadata then
     mwse.log("Failed to load metadata.toml")
+    ---@diagnostic disable missing-fields
     config.metadata = {
         package = {
             name = "The Joy of Painting",
@@ -16,11 +16,14 @@ if not config.metadata then
             version = "FIX THIS"
         }
     }
+    ---@diagnostic enable missing-fields
 end
 
 ---Path to config file
 config.configPath = "joyOfPainting"
 config.ANIM_OFFSET = 2.0
+
+---@type table<string, SkillsModule.Skill.constructorParams>
 config.skills = {
     painting = {
         id = "painting",
@@ -41,7 +44,7 @@ config.merchantPaintingSupplies = {
     jop_frame_w_03 = 10,
     jop_frame_t_03 = 10,
     jop_parchment_01 = 50,
-    jop_easel_pack = 1,
+    jop_easel_pack_02 = 1,
     jop_easel_misc = 1,
     jop_brush_01 = 1,
     jop_canvas_square_01 = 20,
@@ -53,6 +56,7 @@ config.merchantPaintingSupplies = {
     jop_dye_red = 10,
     jop_dye_yellow = 10,
     jop_dye_blue = 10,
+    jop_color_pencils_01 = 10,
     misc_inkwell = 10,
     misc_quill = 4,
     ['sc_paper plain'] = 25,
@@ -76,35 +80,35 @@ config.skillGoldEffect = {
 }
 ---Configs for how much paintings increase your painting skill
 config.skillProgress = {
-    BASE_PROGRESS_PAINTING = 30,
-    NEW_REGION_MULTI = 3.0,
-    MAX_RANDOM = 10.0
+    BASE_PROGRESS_PAINTING = 20,
+    NEW_REGION_MULTI = 5.0,
+    MAX_RANDOM = 5.0
 }
 ---Configs for subject mechanics
 config.subject = {
-    MINIMUM_PRESENCE = 0.01,
+    MINIMUM_PRESENCE = 0.005,
     MINIMUM_VISIBILITY = 0.1,
 }
+
 
 --Configs for how thick ink is based on skill
 config.ink = {
     THICKNESS_MIN = 0.0005,
-    THICKNESS_MAX = 0.0045,
-    SKILL_MIN = 10,
-    SKILL_MAX = 60,
+    THICKNESS_MAX = 0.0030,
 }
+
+
 
 local root = io.popen("cd"):read()
 --File locations
 config.locations = {}
 do
-    config.locations.dataFiles = root .. "\\Data Files\\"
+    config.locations.dataFiles = "Data Files\\"
     config.locations.screenshot = config.locations.dataFiles .. "Textures\\jop\\sreenshot.png"
     config.locations.paintingsDir = config.locations.dataFiles .. "Textures\\jop\\p\\"
     config.locations.iconsDir = config.locations.dataFiles .. "Icons\\jop\\"
     config.locations.paintingIconsDir = config.locations.iconsDir .. "p\\"
     config.locations.frameIconsDir = config.locations.iconsDir .. "f\\"
-    config.locations.sketchTexture = config.locations.dataFiles .. "Textures\\jop\\pencil_tile.png"
 end
 
 --Registered objects
@@ -119,13 +123,14 @@ config.easels = {}
 config.miscEasels = {}
 ---@type table<string, JOP.ArtStyle.data>
 config.artStyles = {}
+---@type table<string, JOP.ArtStyle.control>
 config.controls = {}
+---@type table<string, JOP.ArtStyle.colorPicker>
+config.colorPickers = {}
 ---@type table<string, JOP.PaintType>
 config.paintTypes = {}
 ---@type table<string, JOP.PaletteItem>
 config.paletteItems = {}
----@type table<string, JOP.Refill[]>
-config.refills = {}
 ---@type table<string, JOP.BrushType>
 config.brushTypes = {}
 ---@type table<string, JOP.Brush>
@@ -139,12 +144,16 @@ config.paperMolds = {}
 config.paperPulps = {}
 ---@type table<string, JOP.Tapestry.data>
 config.tapestries = {}
----@type table<string, string>
+---@type table<string, JOP.ArtStyle.shader>
 config.shaders = {}
 ---@type table<string, JOP.Subject>
 config.subjects = {}
+---@type table<string, { isDisabled: boolean? }>
+config.excludedShaders = {}
 
 ---@class JOP.config.persistent
+---@field lightingMode any
+---@field zoom number
 local persistentDefault = {
     zoom = 100,
     brightness = 50,
@@ -154,7 +163,7 @@ local persistentDefault = {
 ---@class JOP.config.MCM
 local mcmDefault = {
     enabled = true,
-    logLevel = "DEBUG", --TODO: Change to INFO before full release
+    logLevel = "INFO",
     savedPaintingIndexes = {},
     ---The maximum number of saved paintings to keep
     maxSavedPaintings = 20,
@@ -190,6 +199,7 @@ local mcmDefault = {
     --Enable debug mode (generates debug meshes)
     debugMeshes = false,
     enableSubjectCapture = false,
+    tooltipPaintingHeight = 100,
 }
 --MCM Config (stored as JSON in MWSE/config/joyOfPainting.json)
 ---@type JOP.config.MCM

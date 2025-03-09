@@ -234,6 +234,7 @@ local materials = {
         ids = {
             "sc_paper plain",
             "jop_parchment_01",
+            "jop_parchment_h_01",
             "jop_paper_01",
         }
     },

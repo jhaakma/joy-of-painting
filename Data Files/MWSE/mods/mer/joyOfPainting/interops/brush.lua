@@ -52,6 +52,10 @@ local brushes = {
     {
         id = "ab_misc_compaintbrush02",
         brushType = "brush",
+    },
+    {
+        id = "ab_misc_reedpen",
+        brushType = "quill",
     }
 }
 

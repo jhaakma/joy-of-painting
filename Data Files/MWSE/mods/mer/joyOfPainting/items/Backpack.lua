@@ -10,13 +10,14 @@ local logger = common.createLogger("backpackService")
 ---@class JOP.BackPack.Config
 ---@field id string id of the backpack object
 ---@field filename string path to the nif to attach
----@field offset JOP.BackPack.Config.offset table of transation, rotation and scale to apply
+---@field offset? JOP.BackPack.Config.offset table of transation, rotation and scale to apply
 
 ---@class JOP.BackpackService
 local BackpackService = {
     BACKPACK_SLOT = 11
 }
 
+---@param e { id: string, offset?: JOP.BackPack.Config.offset }
 function BackpackService.registerBackpack(e)
     logger:assert(type(e.id) == "string", "id must be a string")
     logger:debug("registering backpack %s", e.id)
@@ -71,12 +72,8 @@ function BackpackService.loadMesh(mesh)
 end
 
 function BackpackService.adjustBodyWeight(ref, node)
-    local weight = ref.object.race.weight.male
-    local height = ref.object.race.height.male
-    if ref.object.female then
-        weight = ref.object.race.weight.female
-        height = ref.object.race.height.female
-    end
+    local height = ref.object.race.height[ref.object.female and "female" or "male"]
+    local weight = ref.object.race.weight[ref.object.female and "female" or "male"]
 
     --scale by weight, but only so much
     local heightScale = math.min(1, height)

@@ -1,6 +1,6 @@
 local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("main")
-local Magick = require("mer.joyOfPainting.services.ImageMagick.Magick")
+local Interop = require("mer.joyOfPainting")
 
 require("mer.joyOfPainting.mcm")
 
@@ -19,23 +19,24 @@ initAll("eventHandlers")
 logger:debug("Initialising Interops")
 initAll("interops")
 
-local function setMagickPath()
-    local paths = {
-        "Data Files/ImageMagick/magick.exe",
-        "Data Files/MWSE/lib/ImageMagick/magick.exe"
-    }
-    for _, path in ipairs(paths) do
-        if lfs.attributes(path) then
-            Magick.setMagickPath(path)
-            return
-        end
-    end
-    Magick.setMagickPath("magick")
-end
+--Add Interop to dialogue environments
+event.register(tes3.event.dialogueEnvironmentCreated, function(e)
+    ---@class mwseDialogueEnvironment
+    local env = e.environment
+    env.JoyOfPainting = Interop
+end)
 
 
 event.register(tes3.event.initialized, function()
-    setMagickPath()
+    -- Check for imagelib plugin.
+    local imagelib = include("imagelib")
+    if (imagelib == nil) then
+        local warningMsg = "MWSE/lib/imagelib.dll not found. Your mod manager may not install .dll files, and you will need to manually install it."
+        logger:warn(warningMsg)
+        tes3.messageBox("[Joy of Painting]: " .. warningMsg)
+        return
+    end
+
     logger:debug("Initialising activators")
     initAll("activators")
     logger:info("Initialized v%s", common.getVersion())

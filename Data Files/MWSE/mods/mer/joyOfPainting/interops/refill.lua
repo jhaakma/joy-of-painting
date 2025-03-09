@@ -16,7 +16,7 @@ local emptyMapping = {
     t_com_paintpotg_02 = "t_com_paintpot_01",
 }
 
----@type JOP.Refill[]
+---@type JOP.Refill.data[]
 local refills = {
     {
         --Ashfall - crush plant dyes and mix with water
@@ -30,15 +30,15 @@ local refills = {
             materials = {
                 {
                     material = "red_dye",
-                    quantity = 1,
+                    count = 1,
                 },
                 {
                     material = "blue_dye",
-                    quantity = 1,
+                    count = 1,
                 },
                 {
                     material = "yellow_dye",
-                    quantity = 1,
+                    count = 1,
                 },
             },
             knowledgeRequirement = function()
@@ -66,15 +66,15 @@ local refills = {
             materials = {
                 {
                     material = "red_pigment",
-                    quantity = 1,
+                    count = 1,
                 },
                 {
                     material = "blue_pigment",
-                    quantity = 1,
+                    count = 1,
                 },
                 {
                     material = "yellow_pigment",
-                    quantity = 1,
+                    count = 1,
                 },
             },
             noResult = true,
@@ -87,8 +87,6 @@ local refills = {
             end,
         }
     },
-
-
     {
         paintType = "oil",
         recipe = OilPaints.getRecipe(),
@@ -103,15 +101,15 @@ local refills = {
             materials = {
                 {
                     material = "red_paint",
-                    quantity = 1,
+                    count = 1,
                 },
                 {
                     material = "blue_paint",
-                    quantity = 1,
+                    count = 1,
                 },
                 {
                     material = "yellow_paint",
-                    quantity = 1,
+                    count = 1,
                 },
             },
             knowledgeRequirement = function(self)
@@ -144,13 +142,46 @@ local refills = {
                 end
             end,
         }
-    }
+    },
+    --Refill ink pot using a mix of charcoal and resin
+    {
+        paintType = "ink",
+        recipe = {
+            name = "Ink",
+            previewMesh = "misc\\inkwell.nif",
+            id = "jop_ink_refill",
+            description = "Refill the ink pot using an ink made of charcoal and resin.",
+            materials = {
+                {
+                    material = "coal",
+                    count = 1,
+                },
+                {
+                    material = "resin",
+                    count = 1,
+                },
+            },
+            knowledgeRequirement = function()
+                --check that ashfall is installed
+                return tes3.isModActive("Ashfall.esp")
+            end,
+            noResult = true,
+            craftCallback = function(self)
+                local paletteToRefill = Palette.getPaletteToRefill()
+                if paletteToRefill then
+                    paletteToRefill:doRefill()
+                end
+            end
+        }
+    },
 }
 event.register(tes3.event.initialized, function()
     for _, refill in ipairs(refills) do
         JoyOfPainting.Refill.registerRefill(refill)
     end
 end)
+
+
 
 local materials = {
     {
@@ -159,6 +190,7 @@ local materials = {
         ids = {
             "jop_dye_red",
         },
+        registerAsRefillItems = true
     },
     {
         id = "blue_pigment",
@@ -166,6 +198,7 @@ local materials = {
         ids = {
             "jop_dye_blue",
         },
+        registerAsRefillItems = true
     },
     {
         id = "yellow_pigment",
@@ -173,6 +206,7 @@ local materials = {
         ids = {
             "jop_dye_yellow",
         },
+        registerAsRefillItems = true
     },
 
     {
@@ -223,7 +257,8 @@ local materials = {
         ids = {
             "t_com_paintpotr_01",
             "t_com_paintpotr_02",
-        }
+        },
+        registerAsRefillItems = true
     },
     {
         id = "blue_paint",
@@ -231,7 +266,8 @@ local materials = {
         ids = {
             "t_com_paintpotb_01",
             "t_com_paintpotb_02",
-        }
+        },
+        registerAsRefillItems = true
     },
     {
         id = "yellow_paint",
@@ -239,12 +275,23 @@ local materials = {
         ids = {
             "t_com_paintpoty_01",
             "t_com_paintpoty_02",
-        }
+        },
+        registerAsRefillItems = true
     },
 }
 event.register(tes3.event.initialized, function()
     local CraftingFramework = include("CraftingFramework")
     if CraftingFramework then
         CraftingFramework.Material:registerMaterials(materials)
+        for _, material in ipairs(materials) do
+            if material.registerAsRefillItems then
+                for _, id in ipairs(material.ids) do
+                    JoyOfPainting.Refill.registerRefillItem{
+                        id = id,
+                    }
+                end
+            end
+        end
+        JoyOfPainting.Refill.registerRefillItem{ id = "jop_oil_paints_01"}
     end
 end)

@@ -1,27 +1,25 @@
 
-extern float brightness = 0;
-extern float contrast = 1.8;
-extern float saturation = 1;
+extern float brightness = 0.0;
+extern float contrast = 1.0;
 
 texture lastshader;
-sampler2D s0 = sampler_state { texture = <lastshader>; addressu = clamp; };
 
-float4 brightness_contrast_saturation(float2 tex: TEXCOORD0) : COLOR0
-{
-  float4 color = tex2D(s0, tex);
+sampler sImage = sampler_state { texture=<lastshader>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
 
-  // Modify the brightness and contrast of the image
-  color.rgb += brightness;
-  color.rgb *= contrast;
 
-  // Adjust the saturation of the image
-  float average = (color.r + color.g + color.b) / 3;
-  color.rgb = lerp(average, color.rgb, saturation);
-
-  return color;
+float4 main(float2 Tex : TEXCOORD0) : COLOR0 {
+    float3 color = tex2D(sImage, Tex).rgb;
+    //Increase contrast
+    color = color * contrast;
+    //Increase brightness
+    color = saturate(color + brightness);
+    return float4(color, 1);
 }
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "scene";  >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 80; >
 {
-	pass p0 { PixelShader = compile ps_3_0 brightness_contrast_saturation(); }
+	pass p0
+    {
+        PixelShader = compile ps_3_0 main();
+    }
 }

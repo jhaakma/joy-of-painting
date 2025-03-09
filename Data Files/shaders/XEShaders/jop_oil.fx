@@ -1,26 +1,18 @@
-//vtastek's Splash
+#include "jop_common.fx"
 
-float time;
-float2 rcpres;
-float3 sunvec;
-float sunvis;
-matrix mview;
-matrix mproj;
-float3 eyepos, eyevec;
+float hatch_strength = 0.4;
+extern float saturation = 3;
+extern float contrast = 0.8;
+extern float outlines = 0.6;
 
-//tweakables
-//last value is coverage
-float4 ColorBlend = float4(0.1,0.1,0.1,0.2);
+
+
 
 //fade start-end, preferrably put 10-50 between for a smooth transition
 float forge = 90;
 float backgro = 100;
 //50 is ~1 meters or so
 
-//supress distant lines
-float linend = 20000;
-
-float3 Params = float3(0,1,1);
 
 static const float2 OffsetMaskH = float2(1.0f, 0.0f);
 static const float2 OffsetMaskV = float2(0.0f, 1.0f);
@@ -89,44 +81,24 @@ texture depthframe;
 texture lastpass;
 
 //this is background texture inside textures folder
-texture tex1 < string src="jop/emptytexscroll.tga"; >;
 texture tex2 < string src="jop/hatchvt.tga"; >;
 
 sampler sLastShader = sampler_state { texture=<lastshader>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
 sampler sDepthFrame = sampler_state { texture=<depthframe>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
 sampler sLastPass = sampler_state { texture=<lastpass>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
-
-sampler sScrollTex = sampler_state { texture=<tex1>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
 sampler sHatchTex = sampler_state { texture=<tex2>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
-
-float readDepth(float2 tex)
-{
-	float depth = pow(tex2D(sDepthFrame, tex).r,1);
-	return depth;
-}
-float3 toWorld(float2 tex)
-{
-	float3 v = float3(mview[0][2], mview[1][2], mview[2][2]);
-	v += (1/mproj[0][0] * (2*tex.x-1)).xxx * float3(mview[0][0], mview[1][0], mview[2][0]);
-	v += (-1/mproj[1][1] * (2*tex.y-1)).xxx * float3(mview[0][1], mview[1][1], mview[2][1]);
-	return v;
-}
-float3 getPosition(in float2 tex, in float depth)
-{
-	return (eyepos + toWorld(tex) * depth);
-}
 
 
 float4 edgedetecting( float2 tex : TEXCOORD0  ) : COLOR0
 {
 
-	float depth = readDepth(tex);
+	float depth = readDepth(tex, sDepthFrame);
 	float3 pos2 = getPosition(tex, depth);
 
-	float3 left2 = pos2 - getPosition(tex + rcpres.xy * float2(-1, 0), readDepth(tex + rcpres.xy * float2(-1, 0)));
-	float3 right2 = getPosition(tex + rcpres.xy * float2(1, 0), readDepth(tex + rcpres.xy * float2(1, 0))) - pos2;
-	float3 up2 = pos2 - getPosition(tex + rcpres.xy * float2(0, -1), readDepth(tex + rcpres.xy * float2(0, -1)));
-	float3 down2 = getPosition(tex + rcpres.xy * float2(0, 1), readDepth(tex + rcpres.xy * float2(0, 1))) - pos2;
+	float3 left2 = pos2 - getPosition(tex + rcpres.xy * float2(-1, 0), readDepth(tex + rcpres.xy * float2(-1, 0), sDepthFrame));
+	float3 right2 = getPosition(tex + rcpres.xy * float2(1, 0), readDepth(tex + rcpres.xy * float2(1, 0), sDepthFrame)) - pos2;
+	float3 up2 = pos2 - getPosition(tex + rcpres.xy * float2(0, -1), readDepth(tex + rcpres.xy * float2(0, -1), sDepthFrame));
+	float3 down2 = getPosition(tex + rcpres.xy * float2(0, 1), readDepth(tex + rcpres.xy * float2(0, 1), sDepthFrame)) - pos2;
 
 	float3 dx2 = length(left2) < length(right2) ? left2 : right2;
 	float3 dy2 = length(up2) < length(down2) ? up2 : down2;
@@ -136,11 +108,11 @@ float4 edgedetecting( float2 tex : TEXCOORD0  ) : COLOR0
 
 	float4 color = tex2D(sLastShader,tex.xy);
 
-	color.r = round(color.r*ColorBlend.r)/ColorBlend.r;
-	color.g = round(color.g*ColorBlend.g)/ColorBlend.g;
-	color.b = round(color.b*ColorBlend.b)/ColorBlend.b;
+	// color.r = round(color.r*ColorBlend.r)/ColorBlend.r;
+	// color.g = round(color.g*ColorBlend.g)/ColorBlend.g;
+	// color.b = round(color.b*ColorBlend.b)/ColorBlend.b;
 
-	const float threshold = ColorBlend.w;
+	const float threshold = outlines;
 
 	const int NUM = 9;
 	const float2 c[NUM] =
@@ -179,41 +151,14 @@ float4 edgedetecting( float2 tex : TEXCOORD0  ) : COLOR0
 }
 
 
-float4 BlurNormals(float2 UVCoord : TEXCOORD0, uniform float2 OffsetMask) : COLOR0
-{
-
-	float WeightSum = 0.12 * saturate(1 - Params.x);
-	float4 oColor = tex2D(sLastPass,UVCoord);
-	float4 finalColor = oColor * WeightSum;
-	float depth = readDepth(UVCoord);
-
-	for (int i = 0; i < cKernelSize; i++)
-	{
-		float2 uvOff = (BlurOffsets[i] * OffsetMask) * Params.y;
-		float4 Color = tex2D(sLastPass, UVCoord + uvOff);
-		float weight = saturate(dot(Color.xyz * 2 - 1, oColor.xyz * 2 - 1) - Params.x);
-		finalColor += BlurWeights[i] * weight * Color;
-		WeightSum += BlurWeights[i] * weight;
-	}
-
-	finalColor /= WeightSum;
-	return float4(finalColor.rgb, oColor.a);
-
-}
-
 
 float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 {
-	// depth blend masks
-	float immask = tex2D(sDepthFrame, Tex).r;
-	float4 ce = smoothstep(forge, backgro, tex2D(sDepthFrame, Tex).r);
-
-	ce.a = 0.0f;
 	// original image, hatch. Hatch is animated.
 	// hatch2 is single color from green channel to match
 	float4 image = tex2D(sLastShader,Tex);
 	float4 hatch = tex2D(sHatchTex,Tex + float2(fmod(time * 0.3 * sign(sin(time*12)),0.44), fmod(time * 0.4 * sign(sin(time*11)),0.33)));
-	float4 hatch2 = tex2D(sHatchTex,Tex);// + fmod(time * 0.3 * sign(sin(time*100)),0.5));
+	float4 hatch2 = tex2D(sHatchTex,Tex + fmod(time * 0.3 * sign(sin(time*100)),0.5));
 
 	//shade data
 	float obbright = max(0.0,dot(tex2D(sLastPass, Tex).rgb, -sunvec));
@@ -221,18 +166,10 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 	obbright = tex2D(sLastPass, Tex).rgb;
 
 
-	//float4 mid = brown * saturate(100*(ce.r) * (1-ce.r));
-
-	//image *=  * (1-ce.r));
-
-	float lum = sqrt(dot(image * image, float3(0.29, 0.58, 0.114)));
-	obbright = smoothstep(0.04, 0.05, lum.xxxx);
-
-	float4 sky = image * saturate((1-ce.r));
-	//return sky;
+	float lum = sqrt(dot(image.rgb * image.rgb, float3(0.29, 0.58, 0.114)));
+	obbright = smoothstep(0.04, hatch_strength, lum.xxxx);
 
 	float3 edges = tex2D(sLastPass,Tex + float2(0.0, 0.0)).a/2;
-
 
 	edges += tex2D(sLastPass,Tex + float2( 0.5, 0.5) * (rcpres.y)).a/8;
 	edges += tex2D(sLastPass,Tex + float2( -0.5, 0.5) * (rcpres.y)).a/8;
@@ -240,39 +177,23 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
 	edges += tex2D(sLastPass,Tex + float2( -0.5, -0.5) * (rcpres.y)).a/8;
 	edges = lerp(hatch2.g-0.5, edges, edges);
 
-	edges = lerp(hatch.r, edges, obbright);
+	edges = lerp(image.r, edges, obbright);
 
+	float3 final = image.rgb * edges.rgb * edges.rgb;
 
+	final = 1.0 - (1.0 - final) * (1.0 - image.rgb);
 
-	float distmask = step(linend,tex2D(sDepthFrame, Tex));
+    //Reduce contrast
+    final = final * contrast;
+    //Increase saturation
+    float average = (final.r + final.g + final.b) / 3;
+    final.rgb = lerp(average, final.rgb, saturation);
 
-	float4 empty = tex2D(sScrollTex,Tex);
-
-
-	edges = saturate(edges + distmask);
-	//edges = saturate(edges + (1-ce.r));
-	//return hatch.rrrr;
-
-
-	float4 canvas = dot(image.rrrr, float3(0.5,0.3,0.1));
-	//return canvas;
-
-	float3 final = lerp(sky.rgb , image.rgb * empty.rgb, ce.r) * edges.rgb * edges.rgb;
-	final = lerp(image.rgb, empty.rgb, pow(lum, 1./2.2)) * pow(edges,2.2);
-
-	final = 1.0 - (1.0 - final) * (1.0 - image);
 	return float4(final.rgb,1);
-
-	//return image;
-
-
 }
 
-
-technique T0 < string MGEinterface="MGE XE 0"; string category = "final";  >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 90;  >
 {
 	pass p0 { PixelShader = compile ps_3_0 edgedetecting(); }
-	//pass p1 { PixelShader = compile ps_3_0 BlurNormals( OffsetMaskH ); }
-	//pass p2	{ PixelShader = compile ps_3_0 BlurNormals( OffsetMaskV ); }
 	pass p3 { PixelShader = compile ps_3_0 splashblend(); }
 }

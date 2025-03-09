@@ -5,6 +5,7 @@
 ]]
 local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
+local Subject = require("mer.joyOfPainting.items.Subject")
 local logger = common.createLogger("SubjectService")
 
 ---@class JOP.SubjectService
@@ -12,20 +13,25 @@ local SubjectService = {
     ---@type OcclusionTester
     occlusionTester = nil,
     subjects = {},
+    --A list of non-NPC subjects that will be detected within a scene
 }
 
 ---@class JOP.SubjectService.params
 ---@field occlusionTester OcclusionTester
----@field logger mwseLogger
----@field subjects table<string, JOP.Subject>
+---@field logger? mwseLogger
+---@field subjects? table<string, JOP.SubjectService.Subject>
 
----@class JOP.Subject.Result
+---@class JOP.SubjectService.Result
+---@field objectId string The object id
+---@field subjectIds table<string, boolean> The subject ids matching this result
 ---@field presence number The ratio of active pixels to total screen pixels
 ---@field visibility number The ratio of active pixels to total object pixels
 ---@field framing number The ratio of non-active pixels to total pixels along the edge of the screen
+---@field count number The number references in the scene that generated this result
 
----@class JOP.Subject
----@field id string
+---@class JOP.SubjectService.Subject
+---@field objectId string
+---@field subjectIds table<string, boolean>
 ---@field nodes niNode[]
 
 ---@param e JOP.SubjectService.params
@@ -36,21 +42,41 @@ function SubjectService.new(e)
     return self
 end
 
---[[
-    Create a subject from a reference and insert it into the subjects table.
-]]
----@param subjects table<string, JOP.Subject>
+--Create a subject from a reference and insert it into the subjects table.
+---@param subjects table<string, JOP.SubjectService.Subject>
 ---@param reference tes3reference
-function SubjectService:insertSubject(subjects, reference)
+local function _insertSubject(subjects, reference)
     local objId = reference.baseObject.id:lower()
     if subjects[objId] == nil then
-        logger:debug("Found reference %s", objId)
+        logger:debug("Inserting reference '%s' as subject", objId)
+
+        local validSubjects = Subject.getSubjectsFromRef(reference)
+
+        ---@type table<string, boolean>
+        local subjectIds
+        if #validSubjects > 0 then
+            subjectIds = {}
+            for _, subject in ipairs(validSubjects) do
+                subjectIds[subject.id] = true
+            end
+        end
+
         subjects[objId] = {
-            id = objId,
+            objectId = objId,
+            subjectIds = subjectIds,
             nodes = {},
         }
     end
     table.insert(subjects[objId].nodes, reference.sceneNode)
+end
+
+
+---Check if the reference is visible to the camera
+---@param reference tes3reference
+local function _isRefVisible(reference)
+    return reference.sceneNode ~= nil
+    and not reference.sceneNode:isAppCulled()
+    and not reference.sceneNode:isFrustumCulled(tes3.worldController.worldCamera.cameraData.camera)
 end
 
 --[[
@@ -60,18 +86,14 @@ end
         - That has a scene node
         - That is visible to the player
 ]]
----@return table<string, JOP.Subject>
+---@return table<string, JOP.SubjectService.Subject>
 function SubjectService:getPotentialSubjects()
-    local camera = tes3.worldController.worldCamera.cameraData.camera
     local subjects = {}
     for _, cell in pairs(tes3.getActiveCells()) do
         ---@param ref tes3reference
-        for _, ref in pairs(cell.actors) do
-            if  ref.sceneNode ~= nil
-                and not ref.sceneNode:isAppCulled()
-                and not ref.sceneNode:isFrustumCulled(camera)
-            then
-                self:insertSubject(subjects, ref)
+        for ref in cell:iterateReferences() do
+            if Subject.isSubject(ref) and _isRefVisible(ref) then
+                _insertSubject(subjects, ref)
             end
         end
     end
@@ -82,7 +104,7 @@ end
     Check whether a subject result meets the minimum visibility threshold to
     be considered a "real" subject.
 ]]
----@param result JOP.Subject.Result
+---@param result JOP.SubjectService.Result
 ---@return boolean
 function SubjectService:subjectMeetsVisibilityThreshold(result)
     return result.presence > config.subject.MINIMUM_PRESENCE
@@ -93,14 +115,22 @@ end
 --[[
     Generate a result for a subject.
 ]]
----@param subject JOP.Subject
----@return JOP.Subject.Result
+---@param subject JOP.SubjectService.Subject
+---@return JOP.SubjectService.Result
 function SubjectService:generateResult(subject)
-    local result = {}
+    ---@type JOP.SubjectService.Result
+    local result = {
+        objectId = subject.objectId,
+        subjectIds = subject.subjectIds,
+        presence = 0,
+        visibility = 0,
+        framing = 0,
+        count = 0
+    }
     self.occlusionTester:setTargets(subject.nodes)
     self.occlusionTester:enable()
     result.count = #subject.nodes
-    local diagnostics = self.occlusionTester:getPixelDiagnostics(subject.id)
+    local diagnostics = self.occlusionTester:getPixelDiagnostics(subject.objectId)
     result.presence = diagnostics.presence
     result.visibility = diagnostics.visibility
     result.framing = 1 - diagnostics.framing
@@ -111,18 +141,18 @@ end
 --[[
     Generate results for a list of subjects.
 ]]
----@param subjects JOP.Subject[]
----@return table<string, JOP.Subject.Result>
+---@param subjects JOP.SubjectService.Subject[]
+---@return table<string, JOP.SubjectService.Result>
 function SubjectService:generateResults(subjects)
     local results = {}
     for _, subject in pairs(subjects) do
-        logger:debug("Subject: %s, nodes: %d", subject.id, #subject.nodes)
+        logger:debug("Subject: %s, nodes: %d", subject.objectId, #subject.nodes)
         local result = self:generateResult(subject)
         logger:debug("Presence: %f, Visibility: %f, Framing: %f",
             result.presence, result.visibility, result.framing)
         if self:subjectMeetsVisibilityThreshold(result) then
-            logger:debug("Subject %s is visible enough", subject.id)
-            results[subject.id] = result
+            logger:debug("Subject %s is visible enough", subject.objectId)
+            results[subject.objectId] = result
         end
     end
     return results
@@ -131,7 +161,7 @@ end
 --[[
     Get results for all the subjects in the scene.
 ]]
----@return table<string, JOP.Subject.Result>
+---@return table<string, JOP.SubjectService.Result>
 function SubjectService:getSubjects()
     local subjects = self:getPotentialSubjects()
     return self:generateResults(subjects)

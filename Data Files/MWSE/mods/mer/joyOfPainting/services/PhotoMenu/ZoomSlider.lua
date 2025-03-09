@@ -2,6 +2,8 @@ local common = require("mer.joyOfPainting.common")
 local logger = common.createLogger("ZoomSlider")
 local config = require("mer.joyOfPainting.config")
 
+local useMGEZoom = true
+
 ---@class JOP.PhotoMenu.ZoomSlider
 local ZoomSlider = {}
 
@@ -11,7 +13,7 @@ function ZoomSlider:new(photoMenu)
     local o = {}
     setmetatable(o, self)
     self.photoMenu = photoMenu
-    self.camera = tes3.worldController.worldCamera.cameraData
+    --self.camera = tes3.worldController.worldCamera.cameraData
     self.__index = self
     return o
 end
@@ -40,10 +42,14 @@ function ZoomSlider:create(parent)
 end
 
 function ZoomSlider:updateZoom()
-    local zoom = (config.persistent.zoom / 100)
-    local x = math.tan((math.pi / 360) * mge.camera.fov)
-    local newFov = math.atan(x / zoom) * (360 / math.pi)
-    self.camera.fov = newFov
+    if useMGEZoom then
+        mge.camera.zoom = config.persistent.zoom / 100
+    else
+        local zoom = (config.persistent.zoom / 100)
+        local x = math.tan((math.pi / 360) * mge.camera.fov)
+        local newFov = math.atan(x / zoom) * (360 / math.pi)
+        self.camera.fov = newFov
+    end
 end
 
 
@@ -53,20 +59,26 @@ function ZoomSlider:init()
     --Enable rendering in menus so scroll wheel zoom works
     self.previousPauseRenderingInMenus = mge.render.pauseRenderingInMenus
     mge.render.pauseRenderingInMenus = false
-    --Zoom
     self.previousZoomState = mge.camera.zoomEnable
-    self.previousFov = self.camera.fov
-    -- mge.camera.zoomEnable = true
-    -- mge.camera.zoom = config.persistent.zoom / 100
-    mge.camera.zoom = 1
-    mge.camera.zoomEnable = false
+    if useMGEZoom then
+        mge.camera.zoomEnable = true
+        mge.camera.zoom = config.persistent.zoom / 100
+    else
+        self.previousFov = self.camera.fov
+        mge.camera.zoom = 1
+        mge.camera.zoomEnable = false
+    end
 end
 
 ---Restore MGE settings
 function ZoomSlider:restore()
     mge.render.pauseRenderingInMenus = self.previousPauseRenderingInMenus
     mge.camera.zoomEnable = self.previousZoomState
-    self.camera.fov = self.previousFov
+    if useMGEZoom then
+        mge.camera.zoom = 1
+    else
+        self.camera.fov = self.previousFov
+    end
 end
 
 local scrollToZoom

@@ -10,6 +10,7 @@ local function activate(e)
         reference = e.target,
         item = e.item,
         itemData = e.itemData,
+        ownerRef = e.ownerRef,
     }
     if palette == nil then
         logger:error("Palette is nil")
@@ -66,6 +67,7 @@ Activator.registerActivator{
             reference = e.target,
             item = e.item,
             itemData = e.itemData,
+            ownerRef = e.ownerRef,
         }
         return palette and palette:hasRefillRecipes()
     end

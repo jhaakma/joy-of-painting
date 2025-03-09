@@ -29,6 +29,8 @@ function Frame.registerFrame(e)
     config.frames[e.id] = table.copy(e, {})
 end
 
+---@param item tes3item
+---@return boolean
 function Frame.isFrame(item)
     return config.frames[item.id:lower()] ~= nil
 end

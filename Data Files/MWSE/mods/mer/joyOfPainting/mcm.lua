@@ -12,10 +12,10 @@ local LINKS_LIST = {
         text = "Wiki",
         url = "https://github.com/jhaakma/joy-of-painting/wiki"
     },
-    -- {
-    --     text = "Nexus",
-    --     url = "https://www.nexusmods.com/morrowind/mods/51366"
-    -- },
+    {
+        text = "Nexus",
+        url = "https://www.nexusmods.com/morrowind/mods/53036"
+    },
     {
         text = "Buy me a coffee",
         url = "https://ko-fi.com/merlord"
@@ -24,8 +24,12 @@ local LINKS_LIST = {
 local CREDITS_LIST = {
     {
         text = "Made by Merlord",
-        url = "https://www.nexusmods.com/users/3040468?tab=user+files",
+        url = "https://next.nexusmods.com/profile/Merlord/mods",
     },
+    {
+        text = "ImageLib by Greatness7",
+        url = "https://next.nexusmods.com/profile/Greatness7/mods",
+    }
 }
 
 local function addSideBar(component)
@@ -34,11 +38,11 @@ local function addSideBar(component)
 
     local linksCategory = component.sidebar:createCategory("Links")
     for _, link in ipairs(LINKS_LIST) do
-        linksCategory:createHyperLink{ text = link.text, url = link.url }
+        linksCategory:createHyperlink{ text = link.text, url = link.url }
     end
     local creditsCategory = component.sidebar:createCategory("Credits")
     for _, credit in ipairs(CREDITS_LIST) do
-        creditsCategory:createHyperLink{ text = credit.text, url = credit.url }
+        creditsCategory:createHyperlink{ text = credit.text, url = credit.url }
     end
 end
 
@@ -73,9 +77,9 @@ local function registerMCM()
         label = "Max Saved Paintings",
         description = "Set the maximum number of full-resolution paintings of each art style saved to `Data Files/Textures/jop/saved/`. Once the maximum is reached, the oldest painting will be deleted to make room for the new one.",
         min = 1,
-        max = 100,
+        max = 500,
         step = 1,
-        jump = 10,
+        jump = 50,
         variable = mwse.mcm.createTableVariable{ id = "maxSavedPaintings", table = config.mcm },
     }
 
@@ -97,6 +101,16 @@ local function registerMCM()
         description = "When enabled, a tooltip will be shown when you hover over a tapestry. Requires a restart for change to take effect.",
         variable = mwse.mcm.createTableVariable{ id = "showTapestryTooltip", table = config.mcm },
         restartRequired = true,
+    }
+
+    page:createSlider{
+        label = "Tooltip Painting Height",
+        description = "Set the height of the painting in the painting tooltip.",
+        min = 0,
+        max = 250,
+        step = 1,
+        jump = 10,
+        variable = mwse.mcm.createTableVariable{ id = "tooltipPaintingHeight", table = config.mcm },
     }
 
     page:createDropdown{
@@ -130,6 +144,10 @@ local function registerMCM()
                     for obj in tes3.iterateObjects(tes3.objectType.npc) do
                         ---@cast obj tes3npc
                         if obj.class and obj.class.bartersMiscItems then
+                            local id = obj.id:lower()
+                            npcs[id] = true
+                        end
+                        if obj.aiConfig.bartersMiscItems then
                             local id = obj.id:lower()
                             npcs[id] = true
                         end

@@ -110,8 +110,8 @@ end
 ---@field cancelCallback function? The function to call whe the cancel button is pressed
 ---@field tooltipHeader string? The header to show in the on-hover tooltip
 ---@field tooltipText string? The text to show in the on-hover tooltip
----@field buttons JOP.UIHelper.openNamePaintingMenu.button[] list of additional buttons to show at the bottom of the menu
----@field cancels boolean True if the menu has a cancel button
+---@field buttons JOP.UIHelper.openNamePaintingMenu.button[]? list of additional buttons to show at the bottom of the menu
+---@field cancels? boolean True if the menu has a cancel button
 ---@field setNameText string? The text to display on the rename button
 
 --[[
@@ -201,6 +201,7 @@ function UIHelper.scrapePaintingMessage(callback)
     }
 end
 
+---@param e { header: string, text: string}
 function UIHelper.createTooltipMenu(e)
     local thisHeader, thisLabel = e.header, e.text
     local tooltip = tes3ui.createTooltipMenu()
@@ -230,21 +231,21 @@ function UIHelper.createTooltipMenu(e)
         descriptionLabel.width = 285
         descriptionLabel.wrapText = true
     end
-
     tooltip:updateLayout()
 end
 
 
 ---@class JOP.UIHelper.viewPainting.params
----@field paintingName string
 ---@field paintingTexture string
 ---@field canvasId string
----@field tooltipText string
----@field tooltipHeader string
+---@field tooltipText? string
+---@field tooltipHeader? string
+---@field height? number The height of the rendered image
 
 --Display a painting in a UI menu
 ---@param parent tes3uiElement
 ---@param e JOP.UIHelper.viewPainting.params
+---@return { block: tes3uiElement, image: tes3uiElement }?
 function UIHelper.createPaintingImage(parent, e)
     --get dimensions
     local _, maxHeight = tes3ui.getViewportSize()
@@ -255,7 +256,7 @@ function UIHelper.createPaintingImage(parent, e)
         logger:error("Could not get dimensions for painting %s", e.canvasId)
         return
     end
-    local outerBlock = parent:createRect{ id = "JOP_PaintingImage_block", color = {0.1, 0.1, 0.1}}
+    local outerBlock = parent:createBlock{ id = "JOP_PaintingImage_block"}
     outerBlock.flowDirection = "left_to_right"
     outerBlock.borderAllSides = 6
     outerBlock.autoHeight = true
@@ -268,9 +269,13 @@ function UIHelper.createPaintingImage(parent, e)
             id = "JOP_PaintingImage",
             path = paintingPath
         }
-        image.width = dimensions.width
-        image.height = dimensions.height
+
+        image.height = e.height or dimensions.height
+        image.width = dimensions.width * (image.height / dimensions.height)
         image.scaleMode = true
+
+        -- image.height = dimensions.height
+        -- image.scaleMode = true
             --tooltip shows location of painting
         if e.tooltipText then
             image:register("help", function()
@@ -280,9 +285,23 @@ function UIHelper.createPaintingImage(parent, e)
                 }
             end)
         end
+        return { block = outerBlock, image = image }
     else
         logger:warn("Painting texture '%s' does not exist", paintingPath)
     end
+end
+
+---Display the painting in a tooltip
+---@param parent tes3uiElement
+---@param painting JOP.Painting
+function UIHelper.showTooltipPainting(parent, painting)
+    local paintingTexture = painting.data.paintingTexture
+    local canvasId = painting.data.canvasId
+    UIHelper.createPaintingImage(parent, {
+        paintingTexture = paintingTexture,
+        canvasId = canvasId,
+        height = config.mcm.tooltipPaintingHeight
+    })
 end
 
 
