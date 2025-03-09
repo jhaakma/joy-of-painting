@@ -5,6 +5,7 @@ local MerchantManager = require("CraftingFramework.components.MerchantManager")
 
 local containers = {}
 
+---@return MerchantManager.ContainerData
 local function createRegisterContainerConfig(merchantId, contents)
     return {
         merchantId = merchantId,
@@ -25,7 +26,15 @@ end
 local manager = MerchantManager.new{
     modName = "JoyOfPainting",
     logger = logger,
-    containers = containers
+    containers = containers,
+}
+
+manager:registerMerchantContainer{
+    merchantTag = "generalTrader",
+    contents = config.merchantPaintingSupplies,
+    enabled = function(e)
+        return config.mcm.enabled == true
+    end
 }
 
 event.register("JoyOfPainting:McmUpdated", function()
