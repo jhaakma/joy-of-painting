@@ -2,7 +2,6 @@ local common = require("mer.joyOfPainting.common")
 local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("artStyle")
 local JoyOfPainting = require("mer.joyOfPainting")
-local SkillService = require("mer.joyOfPainting.services.SkillService")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
 
 local excludedShaders = {
@@ -306,9 +305,9 @@ local controls = {
         shader = "jop_adjuster",
         name = "Saturation",
         sliderDefault = 0,
-        shaderMin = 1.0,
-        shaderMax = 5.0,
-        defaultValue = 1.0,
+        shaderMin = 0.0,
+        shaderMax = 1.0,
+        defaultValue = 0.0,
     },
     {
         id = "hue",

@@ -18,6 +18,8 @@ texture lastshader;
 sampler2D sLastShader = sampler_state { texture = <lastshader>; addressu = clamp; };
 
 
+
+
 float4 adjust(float2 tex: TEXCOORD0) : COLOR0
 {
     float4 color = tex2D(sLastShader, tex);
@@ -28,7 +30,11 @@ float4 adjust(float2 tex: TEXCOORD0) : COLOR0
 
     //SATURATION
     float average = (color.r + color.g + color.b) / 3;
-    color.rgb = lerp(average, color.rgb, (saturation + saturationOffset));
+    float maxChannel = max(max(color.r, color.g), color.b);
+    float vibranceStrength = saturation + saturationOffset; // reuse same var for control
+
+    float vibranceAmount = (1.0 - abs(maxChannel - average)) * vibranceStrength;
+    color.rgb = lerp(average, color.rgb, 1.0 + vibranceAmount);
 
     //HUE
     float3 hsl = RGBToHSL(color.rgb);
