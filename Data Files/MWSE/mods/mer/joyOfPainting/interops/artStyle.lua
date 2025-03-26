@@ -479,7 +479,7 @@ local controls = {
         name = "Pencil Strength",
         calculate = function(_, artStyle)
             local strengths = {
-                pencil = 0.6,
+                pencil = 0.4,
             }
             return strengths[artStyle.paintType.id] or 0
         end
@@ -492,7 +492,7 @@ local controls = {
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, 100)
             return math.remap(paintingSkill,
                 config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
-                1.2, 1.0
+                1.1, 0.8
             )
         end
     },
