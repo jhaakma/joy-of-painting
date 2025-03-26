@@ -3,7 +3,7 @@ name = "Joy Of Painting"
 description = "The Joy of Painting Morrowind adds a new Painting skill which allows you to create your own paintings and sell them or hang them on a wall. "
 repository = "https://github.com/jhaakma/joy-of-painting"
 authors = [ "Merlord", "Greatness7", "Melchior Dahrk",]
-version = "1.9.25"
+version = "1.9.26"
 
 [dependencies]
 assets = [ "TheJoyOfPainting.esp", "Icons\\jop", "Meshes\\jop", "Sound\\jop", "Textures\\jop", "Docs\\JoyOfPainting.md", "MWSE\\mods\\mer\\joyOfPainting", "shaders\\XEshaders\\jop_adjuster.fx", "shaders\\XEshaders\\jop_charcoal.fx", "shaders\\XEshaders\\jop_greyscale.fx", "shaders\\XEshaders\\jop_ink.fx", "shaders\\XEshaders\\jop_oil.fx", "shaders\\XEshaders\\jop_vignette.fx", "shaders\\XEshaders\\jop_watercolor.fx", "shaders\\XEshaders\\jop_window.fx",]
