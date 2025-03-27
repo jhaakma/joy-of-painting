@@ -72,7 +72,9 @@ Activator.registerActivator{
             return false
         end
         --Only use when in world
-        if not e.target then return end
+        if not e.target then
+            return false
+        end
         return PaperMold:new{
             reference = e.target,
             item = e.item,
