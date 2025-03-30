@@ -57,6 +57,7 @@ config.merchantPaintingSupplies = {
     jop_dye_yellow = 10,
     jop_dye_blue = 10,
     jop_color_pencils_01 = 10,
+    jop_pastels_01 = 10,
     misc_inkwell = 10,
     misc_quill = 4,
     ['sc_paper plain'] = 25,

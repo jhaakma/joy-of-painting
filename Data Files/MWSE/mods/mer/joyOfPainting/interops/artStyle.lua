@@ -92,6 +92,8 @@ local shaders = {
     { id = "hatch", shaderId = "jop_hatch", defaultControls = { "hatchSize", "hatchDistortionStrength" } },
     { id = "mottle", shaderId = "jop_mottle" },
     { id = "quantize", shaderId = "jop_quantize", defaultControls = { "quantizeHueLevels", "quantizeLuminosityLevels"} },
+    { id = "pastel", shaderId = "jop_pastel" },
+    { id = "sharpen", shaderId = "jop_sharpen", defaultControls = { "sharpenStrength"} },
 }
 
 local getDistortionStrength = function (paintingSkill, artStyle)
@@ -273,6 +275,14 @@ local controls = {
         end
     },
     {
+        id = "pastelComposite",
+        uniform = "compositeStrength",
+        shader = "jop_composite",
+        calculate = function(_)
+            return 0.2
+        end
+    },
+    {
         id = "compositeFogDistance",
         uniform = "fogDistance",
         shader = "jop_composite",
@@ -306,7 +316,7 @@ local controls = {
         name = "Saturation",
         sliderDefault = 0,
         shaderMin = 0.0,
-        shaderMax = 1.0,
+        shaderMax = 5.0,
         defaultValue = 0.0,
     },
     {
@@ -525,8 +535,9 @@ local controls = {
         calculate = function(_, artStyle)
             return ({
                 watercolor = 24,
-                oil = 36
-            })[artStyle.paintType.id] or 50
+                oil = 36,
+                pastel = 20,
+            })[artStyle.paintType.id] or 0
         end
     },
     {
@@ -537,7 +548,7 @@ local controls = {
             return ({
                 watercolor = 24,
                 oil = 36
-            })[artStyle.paintType.id] or 50
+            })[artStyle.paintType.id] or 0
         end
     },
     {
@@ -550,6 +561,25 @@ local controls = {
         sliderMax = 1,
         shaderMin = 0,
         shaderMax = 1,
+    },
+    {
+        id = "sharpenStrength",
+        uniform = "sharpen_strength",
+        shader = "jop_sharpen",
+        calculate = function(paintingSkill, artStyle)
+            return ({
+                ink = math.remap(paintingSkill,
+                    config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
+                    0, 20
+                ),
+                charcoal = math.remap(paintingSkill,
+                    config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
+                    0, 5
+                ),
+                pastel = 20,
+                pencil = 10,
+            })[artStyle.paintType.id] or 0
+        end
     }
 }
 
@@ -571,6 +601,7 @@ local artStyles = {
         name = "Charcoal Drawing",
         shaders = {
             "adjuster",
+            "sharpen",
             "greyscale",
             "distort",
             "detail",
@@ -606,6 +637,7 @@ Use the fog setting to remove background elements and the threshold to adjust th
             "composite",
             "outline",
             "hatch",
+            "sharpen"
         },
         controls = {
             "brightness",
@@ -627,6 +659,7 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
         id = "Pencil Drawing",
         name = "Pencil Drawing",
         shaders = {
+            "sharpen",
             "detail",
             "adjuster",
             "outline",
@@ -723,6 +756,36 @@ Oil paintings require high skill before they start looking detailed.
 Reduce contrast for a more matte look, or increase contrast to create more defined paint lines.
 ]]
     },
+
+    {
+        id = "Pastel Drawing",
+        name = "Pastel Drawing",
+        shaders = {
+            "detail",
+            "adjuster",
+            "composite",
+            "fogColor",
+            "pastel",
+            "distort",
+        },
+        controls = {
+            "vignette",
+            "brightness",
+            "contrast",
+            "saturation",
+            "pastelComposite",
+            "distortionStrength",
+        },
+        valueModifier = 5,
+        animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
+        paintType = "pastel",
+        maxDetailSkill = 50,
+        minBrushSize = 4,
+        maxBrushSize = 7,
+        helpText = [[
+Pastel drawings are a good way to create a soft, dreamy look. They work best with high contrast images against an empty background.
+]]
+    }
 }
 event.register(tes3.event.initialized, function()
 for _, shader in ipairs(shaders) do

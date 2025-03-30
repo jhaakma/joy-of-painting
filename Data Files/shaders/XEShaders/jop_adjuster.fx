@@ -29,12 +29,7 @@ float4 adjust(float2 tex: TEXCOORD0) : COLOR0
     color.rgb *= contrast + contrastOffset;
 
     //SATURATION
-    float average = (color.r + color.g + color.b) / 3;
-    float maxChannel = max(max(color.r, color.g), color.b);
-    float vibranceStrength = saturation + saturationOffset; // reuse same var for control
-
-    float vibranceAmount = (1.0 - abs(maxChannel - average)) * vibranceStrength;
-    color.rgb = lerp(average, color.rgb, 1.0 + vibranceAmount);
+    color.rgb = applyVibrance(color.rgb, saturation + saturationOffset);
 
     //HUE
     float3 hsl = RGBToHSL(color.rgb);

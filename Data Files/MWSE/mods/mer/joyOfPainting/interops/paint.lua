@@ -55,6 +55,13 @@ local paletteItems = {
         paintValue = 30,
         fullByDefault = true,
         breaks = true,
+    },
+    {
+        id = "jop_pastels_01",
+        paintType = "pastel",
+        uses = 20,
+        fullByDefault = true,
+        breaks = true,
     }
 }
 
@@ -89,7 +96,14 @@ local paintTypes = {
         name = "Color Pencil",
         brushType = nil,
         action = "Draw",
+    },
+    {
+        id = "pastel",
+        name = "Pastel",
+        brushType = nil,
+        action = "Draw",
     }
+
 }
 event.register(tes3.event.initialized, function()
     for _, item in ipairs(paletteItems) do

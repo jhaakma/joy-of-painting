@@ -271,7 +271,6 @@ local function registerTanningRackRecipes(e)
                 toolRequirements = {
                     {
                         tool = "knife",
-                        equipped = true,
                         conditionPerUse = 1
                     }
                 },

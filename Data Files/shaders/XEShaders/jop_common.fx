@@ -337,3 +337,34 @@ float3 grayscale(float3 color) {
     return float3(average, average, average);
 }
 
+float4 sharpen3x3(float2 uv, float strength, sampler2D sScene)
+{
+    // Sample the surrounding neighbors (up, down, left, right) and center pixel
+    float4 center = tex2D(sScene, uv);
+    float4 up     = tex2D(sScene, uv + float2(0, -rcpres.y));
+    float4 down   = tex2D(sScene, uv + float2(0,  rcpres.y));
+    float4 left   = tex2D(sScene, uv + float2(-rcpres.x, 0));
+    float4 right  = tex2D(sScene, uv + float2( rcpres.x, 0));
+
+    // Average the neighbors
+    float4 neighbors = (up + down + left + right) * 0.25;
+
+    // Basic sharpen formula: center + strength * (center - averageNeighbors)
+    float4 diff      = center - neighbors;
+    float4 result    = center + diff * strength;
+
+    return saturate(result);
+}
+
+float3 applyVibrance(float3 color, float vibrance)
+{
+
+    float average = (color.r + color.g + color.b) / 3;
+    float maxChannel = max(max(color.r, color.g), color.b);
+    float vibranceStrength = vibrance; // reuse same var for control
+
+    float vibranceAmount = (1.0 - abs(maxChannel - average)) * vibranceStrength;
+    color.rgb = lerp(average, color.rgb, 1.0 + vibranceAmount);
+
+    return color.rgb;
+}

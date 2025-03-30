@@ -37,6 +37,11 @@ event.register(tes3.event.initialized, function()
         return
     end
 
+    -- Ensure paper names align
+    local originalPaper = tes3.getObject("sc_paper plain")
+    local horizontalPaper = tes3.getObject("jop_paper_h")
+    horizontalPaper.name = originalPaper.name
+
     logger:debug("Initialising activators")
     initAll("activators")
     logger:info("Initialized v%s", common.getVersion())
