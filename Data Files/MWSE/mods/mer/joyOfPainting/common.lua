@@ -179,6 +179,7 @@ function common.createItemInstance(e, class, thisLogger)
                         to = instance.ownerRef,
                         item = instance.item.id,
                     }
+                    instance.itemData = instance.dataHolder
                     if instance.dataHolder == nil then
                         thisLogger:error("Failed to create itemData for instance")
                         return

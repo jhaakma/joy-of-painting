@@ -117,11 +117,12 @@ function Palette:use(ownerRef)
     if self:getRemainingUses() > 0 then
         logger:debug("Using up paint for %s", self.item.id)
         if not self.data.uses then
+            logger:debug("Palette has no uses, setting to %s", self.paletteItem.uses)
             self.data.uses = self.paletteItem.uses
         end
         self.data.uses = self.data.uses - 1
         NodeManager.updateSwitch("paint_palette")
-        if self.paletteItem.breaks and self.data.uses == 0 then
+        if self.paletteItem.breaks and self.data.uses <= 0 then
             logger:debug("Palette has no more uses, removing")
             if self.reference then
                 self.reference:delete()
@@ -132,6 +133,7 @@ function Palette:use(ownerRef)
                     itemData = self.itemData,
                     playSound = false,
                 }
+
             end
         end
         return true
