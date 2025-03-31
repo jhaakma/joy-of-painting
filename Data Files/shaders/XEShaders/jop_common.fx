@@ -368,3 +368,32 @@ float3 applyVibrance(float3 color, float vibrance)
 
     return color.rgb;
 }
+
+// Helper for overlay channel blend
+float overlayChannel(float base, float blend)
+{
+
+   // return lerp( (2.0f * max(base, 0.1) * blend), (1.0f - 2.0f * (1.0f - base) * (1.0f - blend)), base);
+
+    return (blend < 0.5f)
+        ? (2.0f * max(base, 0.2f) * (blend))
+        : (1.0f - 2.0f * (1.0f - base) * (1.0f - blend));
+}
+
+
+float3 overlay(float3 baseColor, float3 canvas, float blendStrength) {
+
+    float coverage = getLuminosity(canvas);
+
+    // Scale coverage by strength and clamp
+    coverage *= blendStrength;
+    coverage = saturate(coverage);
+
+    // Apply the overlay blend on each channel of baseColor
+    float3 result;
+    result.r = overlayChannel(baseColor.r, canvas.r);
+    result.g = overlayChannel(baseColor.g, canvas.g);
+    result.b = overlayChannel(baseColor.b, canvas.b);
+
+    return lerp(baseColor, result, blendStrength);
+}

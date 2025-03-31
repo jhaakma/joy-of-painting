@@ -279,7 +279,7 @@ local controls = {
         uniform = "compositeStrength",
         shader = "jop_composite",
         calculate = function(_)
-            return 0.2
+            return 0.0
         end
     },
     {
@@ -470,15 +470,7 @@ local controls = {
         uniform = "canvas_strength",
         shader = "jop_splash",
         calculate = function()
-            return 0.2
-        end
-    },
-    {
-        id = "canvasStrengthWatercolor",
-        uniform = "canvas_strength",
-        shader = "jop_splash",
-        calculate = function()
-            return 0.10
+            return 0.3
         end
     },
     {
@@ -694,7 +686,6 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
             "fogColor",
             "composite",
             "quantize",
-            "splash",
             "mottle",
             "outline",
         },
@@ -704,7 +695,6 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
             "contrast",
             "saturation",
             "hue",
-            "canvasStrengthWatercolor",
             "watercolorTransparency",
             "outlineThicknessWatercolor"
         },

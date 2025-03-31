@@ -105,30 +105,6 @@ float4 renderCanvas(float2 tex, sampler2D image, bool doRotate = false) : COLOR0
     }
 }
 
-// Overlay blend mode
-// Combine two images based on brightness
-// For painting < 0.5, multiply the images
-// For painting >= 0.5, screen the images
-float3 overlay(float3 image, float3 canvas, float blendStrength) {
-
-    //First greyscale the canvas so it doesn't affect image color
-    float3 hsl = RGBToHSL(canvas.rgb);
-    hsl.g = 0.0;
-    float3 greyCanvas = canvas;
-
-        // Multiply for painting < 0.5
-    float3 multiplyVal = 2.0 * image * greyCanvas;
-
-    // Screen for painting >= 0.5
-    float3 screenVal = 1.0 - 2.0 * (1.0 - image) * (1.0 - greyCanvas);
-
-    // step(0.5, image) is 0 if image < 0.5, 1 if image >= 0.5
-    float3 result = lerp(multiplyVal, screenVal, step(0.5, greyCanvas));
-
-    return lerp(image, result, compositeStrength * 0.1);
-}
-
-
 
 
 //This takes composites the sLastShader onto the result of sLastPass.
@@ -165,7 +141,7 @@ float4 composite(float2 tex : TEXCOORD0) : COLOR0
     image = lerp(image, canvas, canvasStrength);
 
     if (!doBlackenImage) {
-        image.rgb = overlay(image.rgb, canvas.rgb, compositeStrength);
+        image.rgb = overlay(image.rgb, canvas.rgb, compositeStrength*0.1);
     }
 
     image = lerp(image, canvas, (1-alphaMask_1.a) * (maskIndex == 1));

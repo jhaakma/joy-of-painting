@@ -1,15 +1,16 @@
 #include "jop_gaussian.fx"
 #include "jop_common.fx"
 
-extern float canvas_strength = 0.6;
+extern float canvas_strength = 0.3;
 extern float canvas_scale = 1.0;
-extern float grain_strength = 0.3;
+extern float grain_strength = 0.1;
 extern float grain_scale = 1.0;
 extern float lut_strength = 0.6;
 extern float blur_strength = 1.5;
 extern float sharpen_strength = 0;
 extern float gamma = 1.5;
 extern float vibrance = 0;
+extern float3 overlay_range = 1.0;
 
 texture tex1 < string src="jop/luts/pastel.tga"; >;
 texture tex2 < string src="jop/pastelOverlay.tga"; >;
@@ -44,16 +45,8 @@ float3 applyGamma(float3 color) {
 
 
 
-// Helper for overlay channel blend
-float overlayChannel(float base, float blend)
-{
-    return (blend < 0.5f)
-        ? (2.0f * max(base, 0.1) * blend)
-        : (1.0f - 2.0f * (1.0f - base) * (1.0f - blend));
-}
-
 // Our updated pastelOverlay using an overlay blend mode
-float3 overlay(
+float3 doOverlay(
     float3 baseColor,
     float2 uv,
     float scale,
@@ -64,20 +57,8 @@ float3 overlay(
     // Sample the grayscale overlay texture (assuming R=G=B)
     float coverage = tex2D(overlaySampler, uv * scale).r;
 
-    // Scale coverage by strength and clamp
-    coverage *= strength;
-    coverage = saturate(coverage);
-
-    // Apply the overlay blend on each channel of baseColor
-    float3 result;
-    result.r = overlayChannel(baseColor.r, coverage);
-    result.g = overlayChannel(baseColor.g, coverage);
-    result.b = overlayChannel(baseColor.b, coverage);
-
-    return result;
+    return overlay(baseColor, coverage, strength);
 }
-
-
 
 
 float4 main_blurH(float2 tex : TEXCOORD0) : COLOR
@@ -123,9 +104,9 @@ float4 main_overlay(float2 tex : TEXCOORD0) : COLOR
     float4 image = tex2D(sLastPass, tex);
 
     // apply the overlay
-    image.rgb = lerp(image.rgb, overlay(image.rgb, tex, canvas_scale, canvas_strength, sOverlay), canvas_strength);
+    image.rgb = doOverlay(image.rgb, tex, canvas_scale, canvas_strength, sOverlay);
     // apply the grain
-    image.rgb = lerp(image.rgb, overlay(image.rgb, tex, grain_scale, grain_strength, sGrain), grain_strength);
+    image.rgb = doOverlay(image.rgb, tex, grain_scale, grain_strength, sGrain);
 
     return image;
 }
