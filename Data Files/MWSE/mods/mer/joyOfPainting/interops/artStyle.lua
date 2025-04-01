@@ -53,7 +53,7 @@ local shaders = {
     { id = "oil", shaderId = "jop_oil" },
     { id = "watercolor", shaderId = "jop_watercolor" },
     { id = "window", shaderId = "jop_window" },
-    { id = "detail", shaderId = "jop_kuwahara", defaultControls = {"brushSize"} },
+    { id = "detail", shaderId = "jop_kuwahara", defaultControls = {"brushSize", "kuwaharaBlur"} },
     { id = "splash", shaderId = "jop_splash" },
     { id = "distort", shaderId = "jop_distort", defaultControls = {"distortionStrength"} },
     {
@@ -386,7 +386,20 @@ local controls = {
             paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
             return math.remap(paintingSkill,
                 config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
-                (artStyle.maxBrushSize or 1), (artStyle.minBrushSize or 1)
+                (artStyle.maxBrushSize or 0), (artStyle.minBrushSize or 0)
+            )
+        end
+    },
+    {
+        id = "kuwaharaBlur",
+        uniform = "blur_strength",
+        shader = "jop_kuwahara",
+        calculate = function(paintingSkill, artStyle)
+            paintingSkill = math.clamp(paintingSkill, config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill)
+            local maxBlur = (artStyle.maxBrushSize or 0) * 0.1
+            return math.remap(paintingSkill,
+                config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
+                 maxBlur, 0
             )
         end
     },
@@ -611,8 +624,8 @@ local artStyles = {
         valueModifier = 1,
         paintType = "charcoal",
         maxDetailSkill = 30,
-        minBrushSize = 3,
-        maxBrushSize = 7,
+        minBrushSize = 1,
+        maxBrushSize = 6,
         helpText = [[
 Charcoal drawings work best with high contrast images against an empty background.
 
@@ -641,8 +654,8 @@ Use the fog setting to remove background elements and the threshold to adjust th
         valueModifier = 1.5,
         paintType = "ink",
         maxDetailSkill = 40,
-        minBrushSize = 2,
-        maxBrushSize = 7,
+        minBrushSize = 0.5,
+        maxBrushSize = 4,
         helpText = [[
 Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
 ]]
@@ -670,8 +683,8 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
         valueModifier = 3,
         paintType = "pencil",
         maxDetailSkill = 55,
-        minBrushSize = 3,
-        maxBrushSize = 7,
+        minBrushSize = 0.5,
+        maxBrushSize = 4,
         helpText = [[
 The bright areas of the pencil drawing will be replaced with the background. Keep this in mind when preparing your scene, use the contrast/brightness settings to make sure any parts of the image you want to remain are below 50% brightness.
 ]]
@@ -703,8 +716,8 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
         paintType = "watercolor",
         --requiresEasel = true,
         maxDetailSkill = 50,
-        minBrushSize = 4,
-        maxBrushSize = 7,
+        minBrushSize = 2,
+        maxBrushSize = 5,
         helpText = [[
 Watercolor paintings have a limited color palette and thick brush strokes. They are good for making abstract and impressionist paintings.
 
@@ -738,8 +751,8 @@ Try replacing the background with the fog setting and changing the fog color to 
         paintType = "oil",
         requiresEasel = true,
         maxDetailSkill = 60,
-        minBrushSize = 4,
-        maxBrushSize = 7,
+        minBrushSize = 1,
+        maxBrushSize = 5,
         helpText = [[
 Oil paintings require high skill before they start looking detailed.
 
@@ -770,8 +783,8 @@ Reduce contrast for a more matte look, or increase contrast to create more defin
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
         paintType = "pastel",
         maxDetailSkill = 50,
-        minBrushSize = 4,
-        maxBrushSize = 7,
+        minBrushSize = 1,
+        maxBrushSize = 5,
         helpText = [[
 Pastel drawings are a good way to create a soft, dreamy look. They work best with high contrast images against an empty background.
 ]]

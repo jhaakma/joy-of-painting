@@ -35,6 +35,7 @@ local paletteItems = {
         paintType = "watercolor",
         uses = 15,
         paintValue = 20,
+        fullByDefault = true,
     },
     {
         id = "Jop_oil_palette_01",

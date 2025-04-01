@@ -2,12 +2,15 @@
 #include "jop_gaussian.fx"
 
 texture lastshader;
+texture lastpass;
 texture depthframe;
 
-sampler s0 = sampler_state { texture = <lastshader>; magfilter = point; minfilter = point; };
+sampler sLastShader = sampler_state { texture = <lastshader>; magfilter = point; minfilter = point; };
+sampler sLastPass = sampler_state { texture = <lastpass>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
 sampler sDepthFrame = sampler_state { texture=<depthframe>; addressu = clamp; addressv = clamp; magfilter = point; minfilter = point; };
 
-extern float radius = 7;
+extern float radius = 1;
+extern float blur_strength = 1.0;
 
 struct Region
 {
@@ -16,7 +19,6 @@ struct Region
 };
 
 #define KERNEL_RADIUS 7
-
 
 
 Region calcRegion(float2 uv, int xStart, int xEnd, int yStart, int yEnd)
@@ -29,14 +31,14 @@ Region calcRegion(float2 uv, int xStart, int xEnd, int yStart, int yEnd)
     int samples = 0;
 
 
-    float minRadius = max(1, radius * 0.5);
+    float minRadius = max(1, KERNEL_RADIUS * 0.5);
     float maxRadius = KERNEL_RADIUS;
-    float effectiveRadius =  min(radius, maxRadius);
+    float effectiveRadius =  min(KERNEL_RADIUS, maxRadius);
 
 
     float depth = readDepth(uv, sDepthFrame);
     depth = saturate(depth / 100000);
-    effectiveRadius = lerp(radius, minRadius, depth);
+    effectiveRadius = lerp(KERNEL_RADIUS, minRadius, depth);
 
     [loop]
     for (int x = xStart; x <= xEnd; x++)
@@ -46,8 +48,8 @@ Region calcRegion(float2 uv, int xStart, int xEnd, int yStart, int yEnd)
         {
             float within_kernel = step(length(float2(x, y)), effectiveRadius);
             if (within_kernel == 1) {
-                float2 offset = float2(rcpres.x * x, rcpres.y * y);
-                float3 tex = tex2D(s0, uv + offset);
+                float2 offset = float2(rcpres.x * x * radius, rcpres.y * y * radius);
+                float3 tex = tex2D(sLastShader, uv + offset);
 
                 float weight = kernelRad7[x + KERNEL_RADIUS][y + KERNEL_RADIUS];
                 sum += tex * weight;
@@ -93,7 +95,27 @@ float4 paint(float2 tex : TEXCOORD0) : COLOR
     return float4(col, 1.0);
 }
 
+
+
+float4 main_blurH(float2 tex : TEXCOORD0) : COLOR
+{
+    float2 texelSize = rcpres; // e.g. (1.0 / screenWidth, 1.0 / screenHeight)
+    float3 blurredH = GaussianBlurH(tex, sLastPass, blur_strength, texelSize);
+    return float4(blurredH, 1);
+}
+
+float4 main_blurV(float2 tex : TEXCOORD0) : COLOR
+{
+    // blur
+    float2 texelSize = rcpres; // e.g. (1.0 / screenWidth, 1.0 / screenHeight)
+    float3 blurredV = GaussianBlurV(tex, sLastPass, blur_strength, texelSize);
+    return float4(blurredV, 1);
+}
+
+
 technique T0 < string MGEinterface = "MGE XE 0"; string category = "final"; int priorityAdjust = 68;   >
 {
     pass { PixelShader = compile ps_3_0 paint(); }
+    pass { PixelShader = compile ps_3_0 main_blurH(); }
+    pass { PixelShader = compile ps_3_0 main_blurV(); }
 }
