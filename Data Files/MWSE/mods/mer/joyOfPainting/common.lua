@@ -224,8 +224,7 @@ function common.getCursorTarget()
     if not tes3ui.menuMode() then return end
 
     local cursorPosition = common.getZoomedCursorPosition()
-    ---@diagnostic disable-next-line: undefined-field
-    local camera = tes3.worldController.worldCamera.camera
+    local camera = tes3.worldController.worldCamera.cameraData.camera
     local pos, dir = camera:windowPointToRay{cursorPosition.x, cursorPosition.y}
 
     local result = tes3.rayTest{
