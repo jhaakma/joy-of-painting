@@ -4,7 +4,7 @@
 extern float timeOffsetMulti = 0.0;
 extern float distortionStrength = 0.05; // Adjust this to change the strength of the distortion
 
-extern float fogDistance = 0;
+extern float fogDistance = 100000;
 
 extern float hatchStrength = 4.0;
 extern float hatchSize = 0.1;
@@ -38,10 +38,7 @@ float3 Hatching(float2 _uv, half _intensity)
 {
 
     float strength = saturate(_intensity * hatchStrength);
-
-
-    //rotate uv by 45 degrees
-    float2 uv = sin(PI/4) * _uv + cos(PI/4) * _uv;
+    float2 uv = _uv * 1.2;
     half3 hatch1 = tex2D(sHatch1, uv / hatchSize).rgb;
     half3 hatch2 = tex2D(sHatch2, uv / hatchSize).rgb;
 
@@ -61,7 +58,6 @@ float3 Hatching(float2 _uv, half _intensity)
     	hatch2.g + hatch2.b +
     	hatch1.r + hatch1.g +
     	hatch1.b;
-
     return hatching;
 }
 
@@ -88,13 +84,14 @@ float4 hatch(float2 tex : TEXCOORD0) : COLOR0
     // Adjust UV coordinates based on the normal
     float2 adjustedUV = tex;
     //Rotate the hatch texture according the normal
-    adjustedUV = rotateUvByNormal(adjustedUV, normal);
+    adjustedUV = rotateUvByNormal(adjustedUV, normal, -PI/4);
 
     // Get luminosity
     float luminosity = dot(color, float3(0.299, 0.587, 0.114));
 
     // Use adjusted UV for hatching
     float3 hatching = Hatching(adjustedUV, luminosity);
+
 
     //Beyond fog is empty
     hatching = lerp(hatching, float3(1,1,1), beyondFog * (fogDistance < 250));

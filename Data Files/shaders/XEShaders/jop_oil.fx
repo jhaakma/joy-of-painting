@@ -1,9 +1,9 @@
 #include "jop_common.fx"
 
 float hatch_strength = 0.4;
-extern float saturation = 3;
+extern float saturation = 0.5;
 extern float contrast = 0.8;
-extern float outlines = 0.6;
+extern float outlines = 0.1;
 
 
 
@@ -186,13 +186,11 @@ float4 splashblend( float2 Tex : TEXCOORD0 ) : COLOR0
     //Reduce contrast
     final = final * contrast;
     //Increase saturation
-    float average = (final.r + final.g + final.b) / 3;
-    final.rgb = lerp(average, final.rgb, saturation);
-
+    final.rgb = applyVibrance(final.rgb, saturation);
 	return float4(final.rgb,1);
 }
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 90;  >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 70;  >
 {
 	pass p0 { PixelShader = compile ps_3_0 edgedetecting(); }
 	pass p3 { PixelShader = compile ps_3_0 splashblend(); }

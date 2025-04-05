@@ -1,6 +1,6 @@
 #include "jop_common.fx"
 
-extern float sharpen_strength = 10;
+extern float sharpen_strength = 15;
 
 texture lastshader;
 
@@ -8,11 +8,8 @@ sampler sLastShader = sampler_state { texture = <lastshader>; addressu = clamp; 
 
 float4 main(float2 tex: TEXCOORD0) : COLOR0
 {
-
     float4 color = tex2D(sLastShader, tex);
-
     color.rgb = sharpen3x3(tex, sharpen_strength, sLastShader).rgb;
-
     return color;
 }
 

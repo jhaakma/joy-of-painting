@@ -271,7 +271,7 @@ local controls = {
         uniform = "compositeStrength",
         shader = "jop_composite",
         calculate = function(_)
-            return 0.3
+            return 0.05
         end
     },
     {
@@ -483,7 +483,7 @@ local controls = {
         uniform = "canvas_strength",
         shader = "jop_splash",
         calculate = function()
-            return 0.3
+            return 0.15
         end
     },
     {
@@ -551,8 +551,9 @@ local controls = {
         shader = "jop_quantize",
         calculate = function(_, artStyle)
             return ({
-                watercolor = 24,
-                oil = 36
+                watercolor = 20,
+                oil = 36,
+                pastel = 26,
             })[artStyle.paintType.id] or 0
         end
     },
@@ -625,7 +626,7 @@ local artStyles = {
         paintType = "charcoal",
         maxDetailSkill = 30,
         minBrushSize = 1,
-        maxBrushSize = 6,
+        maxBrushSize = 3,
         helpText = [[
 Charcoal drawings work best with high contrast images against an empty background.
 
@@ -654,8 +655,8 @@ Use the fog setting to remove background elements and the threshold to adjust th
         valueModifier = 1.5,
         paintType = "ink",
         maxDetailSkill = 40,
-        minBrushSize = 0.5,
-        maxBrushSize = 4,
+        minBrushSize = 0.1,
+        maxBrushSize = 2,
         helpText = [[
 Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
 ]]
@@ -683,8 +684,8 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
         valueModifier = 3,
         paintType = "pencil",
         maxDetailSkill = 55,
-        minBrushSize = 0.5,
-        maxBrushSize = 4,
+        minBrushSize = 0.1,
+        maxBrushSize = 2,
         helpText = [[
 The bright areas of the pencil drawing will be replaced with the background. Keep this in mind when preparing your scene, use the contrast/brightness settings to make sure any parts of the image you want to remain are below 50% brightness.
 ]]
@@ -698,18 +699,16 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
             "adjuster",
             "fogColor",
             "composite",
-            "quantize",
+            --"quantize",
             "mottle",
-            "outline",
+            "distort",
         },
         controls = {
             "vignette",
             "brightness",
             "contrast",
             "saturation",
-            "hue",
             "watercolorTransparency",
-            "outlineThicknessWatercolor"
         },
         valueModifier = 4,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
@@ -717,7 +716,7 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
         --requiresEasel = true,
         maxDetailSkill = 50,
         minBrushSize = 2,
-        maxBrushSize = 5,
+        maxBrushSize = 4,
         helpText = [[
 Watercolor paintings have a limited color palette and thick brush strokes. They are good for making abstract and impressionist paintings.
 
@@ -734,7 +733,7 @@ Try replacing the background with the fog setting and changing the fog color to 
             "adjuster",
             "composite",
             "fogColor",
-            "quantize",
+            --"quantize",
             "distort",
         },
         controls = {
@@ -751,8 +750,8 @@ Try replacing the background with the fog setting and changing the fog color to 
         paintType = "oil",
         requiresEasel = true,
         maxDetailSkill = 60,
-        minBrushSize = 1,
-        maxBrushSize = 5,
+        minBrushSize = 0.7,
+        maxBrushSize = 4,
         helpText = [[
 Oil paintings require high skill before they start looking detailed.
 

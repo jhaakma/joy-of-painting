@@ -1,8 +1,15 @@
 local Palette = require("mer.joyOfPainting.items.Palette")
-
+local config = require("mer.joyOfPainting.config")
 local SkillService = require("mer.joyOfPainting.services.SkillService")
 event.register("UIEXP:sandboxConsole", function(e)
+
+    local shaders = {}
+    for id, shaderConfig in pairs(config.shaders) do
+        shaders[id] =  mge.shaders.find{ name = shaderConfig.id }
+    end
+
     e.sandbox.jop = {
+        shaders = shaders,
         skills = SkillService.skills,
         setSkill = function(value)
             SkillService.skills.painting.base = value

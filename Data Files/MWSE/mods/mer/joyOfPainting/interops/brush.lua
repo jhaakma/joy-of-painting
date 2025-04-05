@@ -56,6 +56,10 @@ local brushes = {
     {
         id = "ab_misc_reedpen",
         brushType = "quill",
+    },
+    {
+        id = "ab_misc_quillLizard",
+        brushType = "quill",
     }
 }
 

@@ -5,6 +5,8 @@
 #define PI acos(-1)
 #define sky 1e6
 
+//The size of the canvas window as a percentage of the screen
+float viewportSize = 0.8;
 matrix mview;
 matrix mproj;
 float time;
@@ -22,6 +24,8 @@ float fognearstart;
 float3 fognearcol;
 
 static const float Time = time;
+static const float screen_width = rcpres.x;
+static const float screen_height = rcpres.y;
 
 // The inverse projection matrix
 static const float2 invproj = 2.0 * tan(0.5 * radians(fov)) * float2(1, rcpres.x / rcpres.y);
@@ -295,7 +299,9 @@ float3 getWorldSpaceNormal(float2 uv, sampler2D sDepthFrame)
     return N;
 }
 
-float2 rotateUvByNormal(float2 uv, float3 normal)
+
+
+float2 rotateUvByNormal(float2 uv, float3 normal, float rotationAngle)
 {
     //Normal: r = right, u = up, f = forward
     float3 r = float3(1, 0, 0);
@@ -317,8 +323,7 @@ float2 rotateUvByNormal(float2 uv, float3 normal)
 
     // Rotate the UV coordinates by the angle
     float2 rotatedUV = float2(cosAngle * uv.x - sinAngle * uv.y, sinAngle * uv.x + cosAngle * uv.y);
-    // Rotate by a further 15 degrees
-    float rotationAngle = PI/6;
+
     rotatedUV = float2(cos(rotationAngle)
         * rotatedUV.x - sin(rotationAngle)
         * rotatedUV.y, sin(rotationAngle)
@@ -337,23 +342,31 @@ float3 grayscale(float3 color) {
     return float3(average, average, average);
 }
 
+//Sharpens based on luminosity to avoid color distortion
 float4 sharpen3x3(float2 uv, float strength, sampler2D sScene)
 {
+    float4 scene = tex2D(sScene, uv);
     // Sample the surrounding neighbors (up, down, left, right) and center pixel
-    float4 center = tex2D(sScene, uv);
-    float4 up     = tex2D(sScene, uv + float2(0, -rcpres.y));
-    float4 down   = tex2D(sScene, uv + float2(0,  rcpres.y));
-    float4 left   = tex2D(sScene, uv + float2(-rcpres.x, 0));
-    float4 right  = tex2D(sScene, uv + float2( rcpres.x, 0));
+    float3 center = RGBToHSL(scene.rgb);
+    float3 up     = RGBToHSL(tex2D(sScene, uv + float2(0, -rcpres.y)).rgb);
+    float3 down   = RGBToHSL(tex2D(sScene, uv + float2(0,  rcpres.y)).rgb);
+    float3 left   = RGBToHSL(tex2D(sScene, uv + float2(-rcpres.x, 0)).rgb);
+    float3 right  = RGBToHSL(tex2D(sScene, uv + float2( rcpres.x, 0)).rgb);
 
     // Average the neighbors
-    float4 neighbors = (up + down + left + right) * 0.25;
+    float neighbors = (up.z + down.z + left.z + right.z) * 0.25;
 
     // Basic sharpen formula: center + strength * (center - averageNeighbors)
-    float4 diff      = center - neighbors;
-    float4 result    = center + diff * strength;
+    float diff      = center.z - neighbors;
+    float result    = center.z + diff * strength;
 
-    return saturate(result);
+    center.z = result;
+
+    // Convert back to RGB
+    float3 sharpenedColor = HSLToRGB(center);
+    scene.rgb = sharpenedColor;
+
+    return saturate(scene);
 }
 
 float3 applyVibrance(float3 color, float vibrance)
@@ -376,14 +389,15 @@ float overlayChannel(float base, float blend)
    // return lerp( (2.0f * max(base, 0.1) * blend), (1.0f - 2.0f * (1.0f - base) * (1.0f - blend)), base);
 
     return (blend < 0.5f)
-        ? (2.0f * max(base, 0.2f) * (blend))
-        : (1.0f - 2.0f * (1.0f - base) * (1.0f - blend));
+        ? saturate(2.0f * max(base, 0.2f) * (blend))
+        : saturate( (1.0f - 2.0f * (1.0f - base) * (1.0f - blend)));
 }
 
 
 float3 overlay(float3 baseColor, float3 canvas, float blendStrength) {
-
-    float coverage = getLuminosity(canvas);
+    //Coverage is higher for brighter and darker, not for midtones
+    // From 0-1 : 0=1, 0,5=0, 1=1
+    float coverage = 1;
 
     // Scale coverage by strength and clamp
     coverage *= blendStrength;
@@ -395,5 +409,6 @@ float3 overlay(float3 baseColor, float3 canvas, float blendStrength) {
     result.g = overlayChannel(baseColor.g, canvas.g);
     result.b = overlayChannel(baseColor.b, canvas.b);
 
-    return lerp(baseColor, result, blendStrength);
+    return lerp(baseColor, result, coverage);
 }
+

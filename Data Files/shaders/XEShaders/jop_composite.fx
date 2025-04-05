@@ -7,8 +7,7 @@ extern float doBlackenImage = false;
 extern float compositeStrength = 0.0;
 //The aspect ratio of the canvas window
 extern float aspectRatio = 1.3;
-//The size of the canvas window as a percentage of the screen
-extern float viewportSize = 0.8;
+
 //When true, the canvas window is rotated 90 degrees
 extern float isRotated;
 //The distance at which fog begins to obscure objects
@@ -22,9 +21,14 @@ extern float hatchStrength = 0;
 //The size of the hatch effect
 extern float hatchSize = 1.0;
 
+//The size of the canvas window
+extern float diffThreshold = 0.05;
+//The strength of the watercolor effect
+extern float blendStrength = 1.0;
+//The size of the watercolor effect
+extern float waterColorDistortion = 0.1;
+
 float maxDistance = 250-1;
-static const float screen_width = rcpres.x;
-static const float screen_height = rcpres.y;
 
 texture lastshader;
 texture lastpass;
@@ -104,6 +108,8 @@ float4 renderCanvas(float2 tex, sampler2D image, bool doRotate = false) : COLOR0
         return canvas; // Render pixel with mapped and rotated texture coordinates
     }
 }
+
+
 
 
 

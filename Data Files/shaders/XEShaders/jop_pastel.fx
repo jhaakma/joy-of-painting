@@ -2,8 +2,9 @@
 #include "jop_common.fx"
 
 extern float canvas_strength = 0.3;
+extern float canvas_strength2 = 0.2;
 extern float canvas_scale = 1.0;
-extern float grain_strength = 0.1;
+extern float grain_strength = 1.5;
 extern float grain_scale = 1.0;
 extern float lut_strength = 0.6;
 extern float blur_strength = 1.5;
@@ -14,7 +15,9 @@ extern float3 overlay_range = 1.0;
 
 texture tex1 < string src="jop/luts/pastel.tga"; >;
 texture tex2 < string src="jop/pastelOverlay.tga"; >;
-texture tex3 < string src="jop/grain.tga"; >;
+texture tex3 < string src="jop/pastelOverlay2.tga"; >;
+texture tex4 < string src="jop/grain.tga"; >;
+texture tex5 < string src="jop/perlinNoise.tga"; >;
 texture lastshader;
 texture lastpass;
 
@@ -22,7 +25,9 @@ sampler sLastShader = sampler_state { texture=<lastshader>; addressu = clamp; ad
 sampler sLastPass = sampler_state { texture=<lastpass>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=clamp; addressv = clamp;};
 sampler sLutPastel = sampler_state { texture = <tex1>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
 sampler sOverlay = sampler_state { texture = <tex2>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
-sampler sGrain = sampler_state { texture = <tex3>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
+sampler sOverlay2 = sampler_state { texture = <tex3>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
+sampler sGrain = sampler_state { texture = <tex4>; addressu = wrap; addressv = wrap; magfilter = linear; minfilter = linear; mipfilter = NONE; };
+sampler2D sDistortionMap = sampler_state { texture=<tex5>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
 
 float3 lut( float3 colorIN, sampler2D LutSampler )
 {
@@ -97,16 +102,28 @@ float4 main_pastel(float2 tex : TEXCOORD0) : COLOR
     return sharpenedColor;
 }
 
-
+float getBrightness(float3 color) {
+    return max(max(color.r, color.g), color.b);
+}
 
 float4 main_overlay(float2 tex : TEXCOORD0) : COLOR
 {
     float4 image = tex2D(sLastPass, tex);
 
-    // apply the overlay
-    image.rgb = doOverlay(image.rgb, tex, canvas_scale, canvas_strength, sOverlay);
-    // apply the grain
-    image.rgb = doOverlay(image.rgb, tex, grain_scale, grain_strength, sGrain);
+    // apply the over on bright areas
+    float2 uv1 = float2(tex.x + sin(Time * 0.2 + 2) * 0.04, tex.y + cos(Time * 0.2 + 2) * 0.04);
+    float strength = canvas_strength *  saturate(0.3 + (getBrightness(image.rgb)));
+    float2 distTex = distort(uv1, 0.1, sDistortionMap, 0);
+    image.rgb = doOverlay(image.rgb, distTex, canvas_scale, strength, sOverlay);
+    // apply the overlay on dark areas
+    float2 uv2 = float2((tex.x) + sin(Time * 0.2 + 2) * 0.09, (tex.y) + cos(Time * 0.2 + 2) * 0.09);
+    strength = canvas_strength2 * (1 - getBrightness(image.rgb));
+    distTex = distort(uv2, 0.1, sDistortionMap, 20);
+    image.rgb = doOverlay(image.rgb, distTex, grain_scale, strength, sOverlay2);
+
+    // apply grain across the image
+    image.rgb = overlay(image.rgb, tex2D(sGrain, tex).rgb, grain_strength * 0.1);
+
 
     return image;
 }

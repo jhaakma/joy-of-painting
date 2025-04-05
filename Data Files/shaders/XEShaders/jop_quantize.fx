@@ -43,7 +43,7 @@ float4 main(float2 uv : TEXCOORD) : SV_Target {
     return float4(adjustedColor, texColor.a);
 }
 
-technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 158; >
+technique T0 < string MGEinterface="MGE XE 0"; string category = "final"; int priorityAdjust = 38; >
 {
 	pass p0 { PixelShader = compile ps_3_0 main(); }
 }

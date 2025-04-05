@@ -2,20 +2,13 @@
 #include "jop_gaussian.fx"
 
 extern float maxDistance = 62000;
-extern float outlineThickness = 7;
+extern float outlineThickness = 2;
 extern float lineTest = 5;
 extern float lineDarkMulti = 0.05;
 extern float lineDarkMax = 0.1;
 extern float fadePerlinScale = 5;
 extern float normalOutlineThreshold = 5;
-
-//dog values
-extern float sigmaC = 0.5;
-extern float sigmaE = 2;
-extern float sigmaM = 3;
-extern float threshold = 0.01;
-extern float shadow = 0.5;
-extern float phi = 40;
+extern float shadow = 0.1;
 
 extern float timeOffsetMulti = 0.0;
 extern float distortionStrength = 0.05; // Adjust this to change the strength of the distortion
@@ -182,20 +175,6 @@ float4 getShadow(float2 tex, float4 color)
 float getOutline(float2 tex, float3 pos, float thickness, float depth) {
     float sobelOutline = getSobelOutline(tex, pos, thickness, depth);
     float normalOutline = getNormalsOutline(tex, pos, thickness, depth, normalOutlineThreshold);
-
-    ////Luminosity based outline
-    // float sobelLuminosity = SobelSampleLuminosity(sLastShader, tex.xy, offset);
-    // float luminosityOutline = step(0.05, sobelLuminosity);
-
-    // DoG based outline
-    // inputs.sigmaC = sigmaC;
-    // inputs.sigmaE = sigmaE;
-    // inputs.sigmaM = sigmaM;
-    // inputs.threshold = threshold;
-    // inputs.phi = phi;
-    // float dogStrength = DoGEdgeDetectionETF(tex, sLastShader, rcpres, inputs);
-
-    // Difference in Normals based outline
 
 
     float4 color = tex2D(sLastShader, tex);

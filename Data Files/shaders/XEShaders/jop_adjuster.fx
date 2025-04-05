@@ -5,7 +5,7 @@
 //Controlled vars
 extern float brightness = 0;
 extern float contrast = 1;
-extern float saturation = 1;
+extern float saturation = 0;
 
 //Automatic vars
 extern float brightnessOffset = 0;
