@@ -210,6 +210,6 @@ float4 getFadeStrengthTest(float2 Tex : TEXCOORD0) : COLOR {
     return float4(fadeStrength, fadeStrength, fadeStrength, 1);
 }
 
-technique T0 < string MGEinterface = "MGE XE 0"; string category = "final"; int priorityAdjust = 80;> {
+technique T0 < string MGEinterface = "MGE XE 0"; string category = "final"; int priorityAdjust = 79;> {
     pass a { PixelShader = compile ps_3_0 outline(); }
 }

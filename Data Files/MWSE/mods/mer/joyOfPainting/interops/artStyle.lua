@@ -6,7 +6,6 @@ local PaintService = require("mer.joyOfPainting.services.PaintService")
 
 local excludedShaders = {
     ["Bloom Soft"] = true,
-    ["Sunshafts"] = true,
     ["Eye Adaptation (HDR)"] = true,
     ["mer_pixel"] = true,
     ["mer_kuwahara"] = true,
@@ -150,7 +149,7 @@ local controls = {
         shaderMax = 8.0,
     },
     {
-        id = "outlineThicknessWatercolor",
+        id = "outlineThicknessCharcoal",
         uniform = "outlineThickness",
         shader = "jop_outline",
         name = "Outline Thickness",
@@ -158,7 +157,7 @@ local controls = {
         sliderMin = 0,
         sliderMax = 10,
         shaderMin = 0.0,
-        shaderMax = 7.0,
+        shaderMax = 8.0,
     },
     {
         id = "outlineThicknessInk",
@@ -586,7 +585,7 @@ local controls = {
                 pencil = 10,
             })[artStyle.paintType.id] or 0
         end
-    }
+    },
 }
 
 ---@type JOP.ArtStyle.colorPicker[]
@@ -609,7 +608,7 @@ local artStyles = {
             "adjuster",
             "sharpen",
             "greyscale",
-            "distort",
+            "outline",
             "detail",
             "adjuster",
             "charcoalHatch",
@@ -621,6 +620,7 @@ local artStyles = {
             "contrast",
             "charcoalCompositeStrength",
             "compositeFogDistance",
+            "outlineThicknessCharcoal"
         },
         valueModifier = 1,
         paintType = "charcoal",

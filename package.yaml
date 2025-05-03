@@ -1,0 +1,39 @@
+mod_name: The Joy of Painting
+data_files:
+  - Icons/jop
+  - Meshes/jop
+  - Sound/jop
+  - Textures/jop
+  - Docs/JoyOfPainting.md
+  - MWSE/mods/mer/joyOfPainting
+  - shaders/XEshaders/jop_adjuster.fx
+  - shaders/XEshaders/jop_blackwhite.fx
+  - shaders/XEshaders/jop_charcoal.fx
+  - shaders/XEshaders/jop_common.fx
+  - shaders/XEshaders/jop_composite.fx
+  - shaders/XEshaders/jop_distort.fx
+  - shaders/XEshaders/jop_fog_bw.fx
+  - shaders/XEshaders/jop_fog_color.fx
+  - shaders/XEshaders/jop_gaussian.fx
+  - shaders/XEshaders/jop_greyscale.fx
+  - shaders/XEshaders/jop_hatch.fx
+  - shaders/XEshaders/jop_ink.fx
+  - shaders/XEshaders/jop_kuwahara.fx
+  - shaders/XEshaders/jop_mottle.fx
+  - shaders/XEshaders/jop_oil.fx
+  - shaders/XEshaders/jop_outline.fx
+  - shaders/XEshaders/jop_pastel.fx
+  - shaders/XEshaders/jop_quantize.fx
+  - shaders/XEshaders/jop_sharpen.fx
+  - shaders/XEshaders/jop_splash.fx
+  - shaders/XEshaders/jop_vignette.fx
+  - shaders/XEshaders/jop_watercolor.fx
+  - shaders/XEshaders/jop_window.fx
+  - TheJoyOfPainting.esp
+  - The Joy of Painting-metadata.toml
+  - MWSE/lib/imagelib.dll
+metadata_path: Data Files/The Joy of Painting-metadata.toml
+repo_path: F:/Games/_RELEASES/JoyOfPainting/master
+archive_path: F:/Games/_RELEASES/JoyOfPainting/JoyOfPainting.7z
+morrowind_path: C:/games/Morrowind installs/Vanilla+/Morrowind
+skip_archive_creation: true

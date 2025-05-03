@@ -1,6 +1,6 @@
 #include "jop_common.fx"
 
-extern float sharpen_strength = 15;
+extern float sharpen_strength = 0;
 
 texture lastshader;
 
