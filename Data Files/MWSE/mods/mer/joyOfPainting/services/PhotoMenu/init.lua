@@ -20,6 +20,7 @@ local ArtStyle = require("mer.joyOfPainting.items.ArtStyle")
 local OcclusionTester = require("mer.joyOfPainting.services.subjectCapture.OcclusionTester")
 local SubjectService = require("mer.joyOfPainting.services.subjectCapture.SubjectService")
 local ZoomSlider = require("mer.joyOfPainting.services.PhotoMenu.ZoomSlider")
+local DepthFinder = require("mer.joyOfPainting.services.PhotoMenu.DepthFinder")
 local ImageLib = include("imagelib")
 local SubjectFilter = require("mer.joyOfPainting.services.PhotoMenu.SubjectFilter")
 
@@ -52,6 +53,7 @@ local alwaysOnShaders
 ---@field isLooking boolean? default false
 ---@field occlusionTester OcclusionTester
 ---@field subjectFilter JOP.SubjectFilter
+---@field depthFinder JOP.PhotoMenu.DepthFinder
 ---@field detailLevel number?
 local PhotoMenu = {
     shaders = nil,
@@ -131,6 +133,8 @@ function PhotoMenu:new(photoMenuParams)
         PhotoMenu = o,
         occlusionTester = o.occlusionTester
     }
+
+    o.depthFinder = DepthFinder:new(o)
 
     --Using lfs, create a link from the canvas texture to jop/composite_tex.dds
     local compositeTexPath = "Data Files\\Textures\\jop\\composite_tex.dds"
@@ -759,6 +763,7 @@ function PhotoMenu:registerIOEvents()
     end
     self.zoomSlider:registerEvents()
     self.subjectFilter:registerEvents()
+    self.depthFinder:registerEvents()
 
     doCapture = function(e)
         if e.keyCode == tes3.scanCode.enter and self.state ~= "capturing" then
@@ -791,6 +796,7 @@ function PhotoMenu:unregisterIOEvents()
     event.unregister("keyDown", doCapture)
     self.zoomSlider:unregisterEvents()
     self.subjectFilter:unregisterEvents()
+    self.depthFinder:unregisterEvents()
     event.unregister("load", unregisterOnLoad)
     event.unregister("save", blockSave)
 end

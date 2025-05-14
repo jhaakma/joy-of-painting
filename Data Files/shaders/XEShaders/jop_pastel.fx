@@ -1,14 +1,14 @@
 #include "jop_gaussian.fx"
 #include "jop_common.fx"
 
-extern float canvas_strength = 0.3;
+extern float canvas_strength = 0.2;
 extern float canvas_strength2 = 0.2;
 extern float canvas_scale = 1.0;
-extern float grain_strength = 1.5;
+extern float grain_strength = 1.0;
 extern float grain_scale = 1.0;
 extern float lut_strength = 0.6;
-extern float blur_strength = 1.5;
-extern float sharpen_strength = 0;
+extern float blur_strength = 1.2;
+extern float sharpen_strength = 2;
 extern float gamma = 1.5;
 extern float vibrance = 0;
 extern float3 overlay_range = 1.0;

@@ -3,6 +3,7 @@ local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("artStyle")
 local JoyOfPainting = require("mer.joyOfPainting")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
+local DepthFinder = require("mer.joyOfPainting.services.PhotoMenu.DepthFinder")
 
 local excludedShaders = {
     ["Bloom Soft"] = true,
@@ -93,6 +94,7 @@ local shaders = {
     { id = "quantize", shaderId = "jop_quantize", defaultControls = { "quantizeHueLevels", "quantizeLuminosityLevels"} },
     { id = "pastel", shaderId = "jop_pastel" },
     { id = "sharpen", shaderId = "jop_sharpen", defaultControls = { "sharpenStrength"} },
+    { id = "depthOfField", shaderId = "jop_dof", defaultControls = { "depthOfFieldStrength"} }
 }
 
 local getDistortionStrength = function (paintingSkill, artStyle)
@@ -586,6 +588,17 @@ local controls = {
             })[artStyle.paintType.id] or 0
         end
     },
+    {
+        id = "depthOfFieldStrength",
+        uniform = "blur_strength",
+        shader = "jop_dof",
+        name = "Depth of Field",
+        sliderDefault = 0,
+        sliderMin = 0,
+        sliderMax = 100,
+        shaderMin = 0.0,
+        shaderMax = 3.0,
+    },
 }
 
 ---@type JOP.ArtStyle.colorPicker[]
@@ -613,6 +626,7 @@ local artStyles = {
             "adjuster",
             "charcoalHatch",
             "composite",
+            "depthOfField",
         },
         controls = {
             "sketchAlphaMask",
@@ -702,6 +716,7 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
             --"quantize",
             "mottle",
             "distort",
+            "depthOfField",
         },
         controls = {
             "vignette",
@@ -735,6 +750,7 @@ Try replacing the background with the fog setting and changing the fog color to 
             "fogColor",
             --"quantize",
             "distort",
+            "depthOfField",
         },
         controls = {
             "vignette",
@@ -769,6 +785,7 @@ Reduce contrast for a more matte look, or increase contrast to create more defin
             "fogColor",
             "pastel",
             "distort",
+            "depthOfField",
         },
         controls = {
             "vignette",
