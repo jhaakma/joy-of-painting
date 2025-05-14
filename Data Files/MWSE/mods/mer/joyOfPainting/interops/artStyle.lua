@@ -3,7 +3,6 @@ local config = require("mer.joyOfPainting.config")
 local logger = common.createLogger("artStyle")
 local JoyOfPainting = require("mer.joyOfPainting")
 local PaintService = require("mer.joyOfPainting.services.PaintService")
-local DepthFinder = require("mer.joyOfPainting.services.PhotoMenu.DepthFinder")
 
 local excludedShaders = {
     ["Bloom Soft"] = true,
