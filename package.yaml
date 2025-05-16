@@ -12,6 +12,7 @@ data_files:
   - shaders/XEshaders/jop_common.fx
   - shaders/XEshaders/jop_composite.fx
   - shaders/XEshaders/jop_distort.fx
+  - shaders/XEshaders/jop_dof.fx
   - shaders/XEshaders/jop_fog_bw.fx
   - shaders/XEshaders/jop_fog_color.fx
   - shaders/XEshaders/jop_gaussian.fx
