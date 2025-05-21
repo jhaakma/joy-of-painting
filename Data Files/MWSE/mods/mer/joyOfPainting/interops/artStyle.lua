@@ -267,6 +267,15 @@ local controls = {
         shaderMax = 1.0,
     },
     {
+        id = "oilTransparency",
+        uniform = "compositeStrength",
+        shader = "jop_composite",
+        name = "Transparency",
+        sliderDefault = 10,
+        shaderMin = 0.1,
+        shaderMax = 0.5,
+    },
+    {
         id = "oilComposite",
         uniform = "compositeStrength",
         shader = "jop_composite",
@@ -483,7 +492,7 @@ local controls = {
         uniform = "canvas_strength",
         shader = "jop_splash",
         calculate = function()
-            return 0.15
+            return 0.2
         end
     },
     {
@@ -574,16 +583,16 @@ local controls = {
         shader = "jop_sharpen",
         calculate = function(paintingSkill, artStyle)
             return ({
-                ink = math.remap(paintingSkill,
+                ink = math.clamp(math.remap(paintingSkill,
                     config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
-                    0, 20
-                ),
-                charcoal = math.remap(paintingSkill,
+                    0, 10
+                ), config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill),
+                charcoal = math.clamp(math.remap(paintingSkill,
                     config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill,
                     0, 5
-                ),
-                pastel = 20,
-                pencil = 10,
+                ), config.skillPaintEffect.MIN_SKILL, artStyle.maxDetailSkill),
+                pastel = 10,
+                pencil = 5,
             })[artStyle.paintType.id] or 0
         end
     },
@@ -755,10 +764,12 @@ Try replacing the background with the fog setting and changing the fog color to 
             "vignette",
             "brightness",
             "contrast",
+            "saturation",
             "canvasStrengthOil",
             "distortionStrength",
             "hatchStrength",
             "oilComposite",
+            "oilTransparency"
         },
         valueModifier = 9,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",

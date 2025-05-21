@@ -102,7 +102,7 @@ float4 hatch(float2 tex : TEXCOORD0) : COLOR0
 
 
 
-technique T0 < string MGEinterface = "MGE XE 0"; string category = "final"; int priorityAdjust = 81;>
+technique T0 < string MGEinterface = "MGE XE 0"; string category = "final"; int priorityAdjust = 82;>
 {
     pass a { PixelShader = compile ps_3_0 hatch(); }
 }
