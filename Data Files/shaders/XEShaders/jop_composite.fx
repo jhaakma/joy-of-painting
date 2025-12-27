@@ -5,17 +5,18 @@ extern float distortionStrength = 0.05;
 extern float doBlackenImage = false;
 //Higher values replace more of the overlay image with the canvas image
 extern float compositeStrength = 0.0;
-//The aspect ratio of the canvas window
-extern float aspectRatio = 1.3;
+
 
 //When true, the canvas window is rotated 90 degrees
 extern float isRotated;
 //The distance at which fog begins to obscure objects
 extern float fogDistance = 250;
+
 //If enabled, will use the alpha mask to create a vignette effect
+extern float maskEnabled = false;
+//The index of the sketch mask to use
 extern int maskIndex = 0;
-//If enabled, will use the alpha mask to create a sketch effect
-extern int sketchMaskIndex = 0;
+
 //The strength of the hatch effect
 extern float hatchStrength = 0;
 //The size of the hatch effect
@@ -37,10 +38,10 @@ texture depthframe;
 //The composite texture, representing the canvas under the painting
 texture tex1  < string src="jop/composite_tex.dds"; >;
 //Alpha masks for the vignette effect
-texture tex2 < string src="jop/vignetteAlphaMask.tga"; >;
-texture tex3 < string src="jop/vignetteAlphaMask_2.tga"; >;
-texture tex4 < string src="jop/vignetteAlphaMask_3.tga"; >;
-texture tex5 < string src="jop/vignetteAlphaMask_4.tga"; >;
+texture tex2 < string src="jop/vignette/vig_sketch.tga"; >;
+texture tex3 < string src="jop/vignette/vig_char.tga"; >;
+texture tex4 < string src="jop/vignette/vig_water.tga"; >;
+texture tex5 < string src="jop/vignette/vig_oil.tga"; >;
 texture tex6 < string src="jop/perlinNoise.tga"; >;
 texture tex7 < string src="jop/pencil_tile.tga"; >;
 
@@ -51,67 +52,9 @@ sampler2D sComposite = sampler_state { texture=<tex1>; minfilter = linear; magfi
 sampler2D sVignetteAlphaMask_1 = sampler_state { texture =<tex2>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sVignetteAlphaMask_2 = sampler_state { texture =<tex3>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sVignetteAlphaMask_3 = sampler_state { texture =<tex4>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
-sampler2D sVignetteAlphaSketchMask_1 = sampler_state { texture =<tex5>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
+sampler2D sVignetteAlphaMask_4 = sampler_state { texture =<tex5>; addressu = clamp; addressv = clamp; magfilter = linear; minfilter = linear; mipfilter = linear; };
 sampler2D sDistortionMap = sampler_state { texture=<tex6>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
 sampler2D sHatch = sampler_state { texture=<tex7>; minfilter = linear; magfilter = linear; mipfilter = linear; addressu=wrap; addressv = wrap;};
-
-/**
-* Renders the canvas image on the screen, adjusting for aspect ratio and rotation.
-* @param tex The texture coordinates of the pixel.
-* @param image The canvas image.
-* @param doRotate If true, the canvas window is rotated 90 degrees.
-* @return The color of the pixel.
-*/
-float4 renderCanvas(float2 tex, sampler2D image, bool doRotate = false) : COLOR0
-{
-    // Calculate the aspect ratio of the screen
-    float screenRatio = screen_width / screen_height;
-    float new_width, new_height;
-
-    // Adjust window size based on aspect ratio
-    if (aspectRatio < screenRatio) {
-        new_width = viewportSize;
-        new_height = viewportSize / (aspectRatio * screenRatio);
-    } else {
-        new_width = viewportSize * aspectRatio * screenRatio;
-        new_height = viewportSize;
-    }
-
-    // Adjust for rotation
-    if (doRotate) {
-        float temp = new_width;
-        new_width = new_height;
-        new_height = temp;
-    }
-
-    // Calculate new bounds
-    float2 newMin = float2(0.5, 0.5) - float2(new_width, new_height) / 2;
-    float2 newMax = float2(0.5, 0.5) + float2(new_width, new_height) / 2;
-
-    // Adjust tex coordinates for rotation
-    float2 texCentered = tex - float2(0.5, 0.5);
-    if (doRotate) {
-        texCentered = float2(texCentered.y, -texCentered.x);
-    }
-    float2 rotatedTex = texCentered + float2(0.5, 0.5);
-
-    // Check if pixel is outside new bounds
-    if (rotatedTex.x < newMin.x || rotatedTex.x > newMax.x || rotatedTex.y < newMin.y || rotatedTex.y > newMax.y) {
-        return float4(0.00, 0.00, 0.00, 0); // Render pixel as black
-    } else {
-        // Map texture coordinates to new bounds
-        float2 mappedTex;
-        mappedTex.x = (rotatedTex.x - newMin.x) / (newMax.x - newMin.x);
-        mappedTex.y = (rotatedTex.y - newMin.y) / (newMax.y - newMin.y);
-
-        float4 canvas = tex2D(image, mappedTex);
-        return canvas; // Render pixel with mapped and rotated texture coordinates
-    }
-}
-
-
-
-
 
 //This takes composites the sLastShader onto the result of sLastPass.
 //It renders the sLastShader transparent based on brightness and the compositeStrength.
@@ -120,14 +63,15 @@ float4 renderCanvas(float2 tex, sampler2D image, bool doRotate = false) : COLOR0
 float4 composite(float2 tex : TEXCOORD0) : COLOR0
 {
     float4 image = tex2D(sLastShader, tex);
-    float4 canvas = renderCanvas(tex, sComposite, isRotated);
-    float4 alphaMask_1 = renderCanvas(tex, sVignetteAlphaMask_1);
-    float4 alphaMask_2 = renderCanvas(tex, sVignetteAlphaMask_2);
-    float4 alphaMask_3 = renderCanvas(tex, sVignetteAlphaMask_3);
+    float4 canvas = sampleCanvasAligned(tex, sComposite, aspectRatio, isRotated);
+    float4 alphaMask_1 = sampleCanvasAligned(tex, sVignetteAlphaMask_1, aspectRatio);
+    float4 alphaMask_2 = sampleCanvasAligned(tex, sVignetteAlphaMask_2, aspectRatio);
+    float4 alphaMask_3 = sampleCanvasAligned(tex, sVignetteAlphaMask_3, aspectRatio);
+    float4 alphaMask_4 = sampleCanvasAligned(tex, sVignetteAlphaMask_4, aspectRatio);
+    float4 alphaMask_5 = sampleCanvasAligned(tex, sHatch, aspectRatio);
 
-    float4 alphaSketchMask_1 = renderCanvas(tex, sVignetteAlphaSketchMask_1);
 
-    float brightness = max(max(image.r, image.g), image.b);
+    float brightness = getLuminosity(image.rgb);
 
     // Calculate the final image based on compositeStrength
 
@@ -138,9 +82,9 @@ float4 composite(float2 tex : TEXCOORD0) : COLOR0
     float canvasStrength = saturate(brightnessEffect * compositeStrength);
 
     if (hatchStrength > 0) {
-        float2 hatchUV = float2(tex.x * rcpres.y / rcpres.x, tex.y) * (1/hatchSize);
-        float4 hatch = tex2D(sHatch, hatchUV);
-        canvasStrength = lerp(canvasStrength, 1.0, hatch.r * hatchStrength );
+        float2 hatchUV = tex;
+        float4 hatch = sampleCanvasAligned(hatchUV, sHatch, aspectRatio);
+        canvasStrength = lerp(canvasStrength, 1.0, hatch.r * smoothstep(-0.5, 1.0, brightness) );
     }
 
     //Blend canvas into lighter areas
@@ -150,10 +94,11 @@ float4 composite(float2 tex : TEXCOORD0) : COLOR0
         image.rgb = overlay(image.rgb, canvas.rgb, compositeStrength*0.1);
     }
 
-    image = lerp(image, canvas, (1-alphaMask_1.a) * (maskIndex == 1));
-    image = lerp(image, canvas, (1-alphaMask_2.a) * (maskIndex == 2));
-    image = lerp(image, canvas, (1-alphaMask_3.a) * (maskIndex == 3));
-    image = lerp(image, canvas, (1-alphaSketchMask_1.a) * (sketchMaskIndex == 1));
+    image = lerp(image, canvas, (1-alphaMask_1.a) * (maskIndex == 1) * maskEnabled);
+    image = lerp(image, canvas, (1-alphaMask_2.a) * (maskIndex == 2) * maskEnabled);
+    image = lerp(image, canvas, (1-alphaMask_3.a) * (maskIndex == 3) * maskEnabled);
+    image = lerp(image, canvas, (1-alphaMask_4.a) * (maskIndex == 4) * maskEnabled);
+    image = lerp(image, canvas, (1-alphaMask_5.a) * (maskIndex == 5) * maskEnabled);
 
     // Cull distant objects
     float2 distTex = distort(tex, distortionStrength, sDistortionMap);

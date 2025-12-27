@@ -16,7 +16,6 @@ texture tex1 < string src="jop/Hatch1.tga"; >;
 texture tex2 < string src="jop/Hatch2.tga"; >;
 texture tex3 < string src="jop/perlinNoise.tga"; >; // Your normal map texture
 texture tex4;
-sampler sampNormals = sampler_state { texture = <tex1>; minfilter = anisotropic; magfilter = linear; mipfilter = linear; addressu = wrap; addressv = wrap; };
 
 sampler sLastShader = sampler_state { texture = <lastshader>; addressu = mirror; addressv = mirror; magfilter = linear; minfilter = linear; };
 sampler sDepthFrame = sampler_state { texture = <depthframe>; addressu = wrap; addressv = wrap; magfilter = point; minfilter = point; };
@@ -63,39 +62,20 @@ float3 Hatching(float2 _uv, half _intensity)
 
 
 
-
 float4 hatch(float2 tex : TEXCOORD0) : COLOR0
 {
     float2 distortTex = distort(tex, distortionStrength, sDistortionMap);
-    float3 color = tex2D(sLastShader, tex).rgb;
-    float3 normal = getWorldSpaceNormal(distortTex, sDepthFrame);
-    float depth = readDepth(distortTex, sDepthFrame);
+    float3 color = tex2D(sLastShader, distortTex).rgb;
 
-    float expDistance =  pow(fogDistance, 2);
-    bool beyondFog = depth > expDistance;
 
-    if ( beyondFog )
-    {
-        normal = float3(0,0,1);
-    }
-
-    normal = lerp(normal, float3(0,0,1), beyondFog);
-
-    // Adjust UV coordinates based on the normal
-    float2 adjustedUV = tex;
     //Rotate the hatch texture according the normal
-    adjustedUV = rotateUvByNormal(adjustedUV, normal, -PI/4);
+    distortTex = rotateUvByNormal(distortTex, float3(1,1,1), PI/4);
 
     // Get luminosity
     float luminosity = dot(color, float3(0.299, 0.587, 0.114));
 
     // Use adjusted UV for hatching
-    float3 hatching = Hatching(adjustedUV, luminosity);
-
-
-    //Beyond fog is empty
-    hatching = lerp(hatching, float3(1,1,1), beyondFog * (fogDistance < 250));
-
+    float3 hatching = Hatching(distortTex, luminosity);
 
     return float4(hatching , 1);
 }
@@ -104,5 +84,5 @@ float4 hatch(float2 tex : TEXCOORD0) : COLOR0
 
 technique T0 < string MGEinterface = "MGE XE 0"; string category = "final"; int priorityAdjust = 82;>
 {
-    pass a { PixelShader = compile ps_3_0 hatch(); }
+    pass p1 { PixelShader = compile ps_3_0 hatch(); }
 }

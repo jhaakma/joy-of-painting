@@ -2,7 +2,6 @@
 
 
 // Aspect Ratio Shader
-extern float aspectRatio = 1.0;
 extern float view_port_size = 0.8;
 texture lastshader;
 texture lastpass;

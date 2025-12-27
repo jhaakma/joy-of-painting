@@ -2,6 +2,9 @@
     A collection of common functions and variables used by shaders in Joy of Painting.
 **/
 
+//The aspect ratio of the canvas window
+extern float aspectRatio = 1.3;
+
 #define PI acos(-1)
 #define sky 1e6
 
@@ -410,5 +413,61 @@ float3 overlay(float3 baseColor, float3 canvas, float blendStrength) {
     result.b = overlayChannel(baseColor.b, canvas.b);
 
     return lerp(baseColor, result, coverage);
+}
+
+/**
+* Samples a texture aligned to a canvas viewport with proper aspect ratio handling and optional rotation.
+* This adjusts the sampling coordinates so the texture appears correctly within a centered canvas window.
+* @param tex The texture coordinates of the pixel (screen space).
+* @param image The texture sampler to sample from.
+* @param aspectRatio The aspect ratio of the canvas window.
+* @param doRotate If true, the canvas window is rotated 90 degrees.
+* @return The color of the pixel, or black (0,0,0,0) if outside canvas bounds.
+*/
+float4 sampleCanvasAligned(float2 tex, sampler2D image, float aspectRatio, bool doRotate = false) : COLOR0
+{
+    // Calculate the aspect ratio of the screen
+    float screenRatio = screen_width / screen_height;
+    float new_width, new_height;
+
+    // Adjust window size based on aspect ratio
+    if (aspectRatio < screenRatio) {
+        new_width = viewportSize;
+        new_height = viewportSize / (aspectRatio * screenRatio);
+    } else {
+        new_width = viewportSize * aspectRatio * screenRatio;
+        new_height = viewportSize;
+    }
+
+    // Adjust for rotation
+    if (doRotate) {
+        float temp = new_width;
+        new_width = new_height;
+        new_height = temp;
+    }
+
+    // Calculate new bounds
+    float2 newMin = float2(0.5, 0.5) - float2(new_width, new_height) / 2;
+    float2 newMax = float2(0.5, 0.5) + float2(new_width, new_height) / 2;
+
+    // Adjust tex coordinates for rotation
+    float2 texCentered = tex - float2(0.5, 0.5);
+    if (doRotate) {
+        texCentered = float2(texCentered.y, -texCentered.x);
+    }
+    float2 rotatedTex = texCentered + float2(0.5, 0.5);
+
+    // Check if pixel is outside new bounds
+    if (rotatedTex.x < newMin.x || rotatedTex.x > newMax.x || rotatedTex.y < newMin.y || rotatedTex.y > newMax.y) {
+        return float4(0.00, 0.00, 0.00, 0); // Render pixel as black
+    } else {
+        // Map texture coordinates to new bounds
+        float2 mappedTex;
+        mappedTex.x = (rotatedTex.x - newMin.x) / (newMax.x - newMin.x);
+        mappedTex.y = (rotatedTex.y - newMin.y) / (newMax.y - newMin.y);
+
+        float4 canvas = tex2D(image, mappedTex);
+        return canvas; // Render pixel with mapped and rotated texture coordinates
+    }
 }
 

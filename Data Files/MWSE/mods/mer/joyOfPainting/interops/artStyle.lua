@@ -85,7 +85,8 @@ local shaders = {
             "compositeBlacken",
             "compositeDistortionStrength",
             "pencilStrength",
-            "pencilScale"
+            "pencilScale",
+            "vignette",
         }
     },
     { id = "hatch", shaderId = "jop_hatch", defaultControls = { "hatchSize", "hatchDistortionStrength" } },
@@ -93,7 +94,8 @@ local shaders = {
     { id = "quantize", shaderId = "jop_quantize", defaultControls = { "quantizeHueLevels", "quantizeLuminosityLevels"} },
     { id = "pastel", shaderId = "jop_pastel" },
     { id = "sharpen", shaderId = "jop_sharpen", defaultControls = { "sharpenStrength"} },
-    { id = "depthOfField", shaderId = "jop_dof", defaultControls = { "depthOfFieldStrength"} }
+    { id = "depthOfField", shaderId = "jop_dof", defaultControls = { "depthOfFieldStrength"} },
+    { id = "palette", shaderId = "jop_lut", defaultControls = { "selectPalette" } },
 }
 
 local getDistortionStrength = function (paintingSkill, artStyle)
@@ -532,17 +534,6 @@ local controls = {
         end
     },
     {
-        id = "vignette",
-        uniform = "maskIndex",
-        shader = "jop_composite",
-        name = "Splash Pattern",
-        sliderDefault = 0,
-        sliderMin = 0,
-        sliderMax = 3,
-        shaderMin = 0.0,
-        shaderMax = 3.0,
-    },
-    {
         id = "quantizeHueLevels",
         uniform = "hueLevels",
         shader = "jop_quantize",
@@ -566,11 +557,27 @@ local controls = {
             })[artStyle.paintType.id] or 0
         end
     },
+
     {
-        id = "sketchAlphaMask",
-        uniform = "sketchMaskIndex",
+        id = "vignette",
+        uniform = "maskIndex",
         shader = "jop_composite",
-        name = "Sketch Pattern",
+        calculate = function(_, artStyle)
+            return ({
+                pencil = 1,
+                ink = 1,
+                charcoal = 2,
+                watercolor = 3,
+                oil = 4,
+                pastel = 4,
+            })[artStyle.paintType.id] or 0
+        end
+    },
+    {
+        id = "enableVignette",
+        uniform = "maskEnabled",
+        shader = "jop_composite",
+        name = "Border",
         sliderDefault = 1,
         sliderMin = 0,
         sliderMax = 1,
@@ -607,6 +614,17 @@ local controls = {
         shaderMin = 0.0,
         shaderMax = 3.0,
     },
+    {
+        id = "selectPalette",
+        uniform = "selectedLut",
+        shader = "jop_lut",
+        name = "Color Palette",
+        sliderDefault = 1,
+        sliderMin = 1,
+        sliderMax = 10,
+        shaderMin = 1,
+        shaderMax = 10,
+    }
 }
 
 ---@type JOP.ArtStyle.colorPicker[]
@@ -628,7 +646,7 @@ local artStyles = {
         shaders = {
             "adjuster",
             "sharpen",
-            "greyscale",
+            -- "greyscale",
             "outline",
             "detail",
             "adjuster",
@@ -637,12 +655,12 @@ local artStyles = {
             "depthOfField",
         },
         controls = {
-            "sketchAlphaMask",
             "brightness",
             "contrast",
             "charcoalCompositeStrength",
             "compositeFogDistance",
-            "outlineThicknessCharcoal"
+            "outlineThicknessCharcoal",
+            "enableVignette",
         },
         valueModifier = 1,
         paintType = "charcoal",
@@ -665,14 +683,15 @@ Use the fog setting to remove background elements and the threshold to adjust th
             "composite",
             "outline",
             "hatch",
-            "sharpen"
+            "sharpen",
         },
         controls = {
             "brightness",
             "contrast",
             "inkCompositeStrength",
             "distanceHatch",
-            "outlineThicknessInk"
+            "outlineThicknessInk",
+            "enableVignette",
         },
         valueModifier = 1.5,
         paintType = "ink",
@@ -694,7 +713,6 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
             "composite",
         },
         controls = {
-            "sketchAlphaMask",
             "brightness",
             "contrast",
             "saturation",
@@ -702,6 +720,7 @@ Tip: Increase contrast for environmental sketches. Decrease contrast for faces.
             "compositeFogDistance",
             "colorPencilTimeOffsetMulti",
             "outlineThicknessPencil",
+            "enableVignette",
         },
         valueModifier = 3,
         paintType = "pencil",
@@ -725,13 +744,14 @@ The bright areas of the pencil drawing will be replaced with the background. Kee
             "mottle",
             "distort",
             "depthOfField",
+            "palette",
         },
         controls = {
-            "vignette",
             "brightness",
             "contrast",
             "saturation",
             "watercolorTransparency",
+            "enableVignette",
         },
         valueModifier = 4,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
@@ -761,7 +781,6 @@ Try replacing the background with the fog setting and changing the fog color to 
             "depthOfField",
         },
         controls = {
-            "vignette",
             "brightness",
             "contrast",
             "saturation",
@@ -769,7 +788,8 @@ Try replacing the background with the fog setting and changing the fog color to 
             "distortionStrength",
             "hatchStrength",
             "oilComposite",
-            "oilTransparency"
+            "oilTransparency",
+            "enableVignette",
         },
         valueModifier = 9,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",
@@ -798,12 +818,12 @@ Reduce contrast for a more matte look, or increase contrast to create more defin
             "depthOfField",
         },
         controls = {
-            "vignette",
             "brightness",
             "contrast",
             "saturation",
             "pastelComposite",
             "distortionStrength",
+            "enableVignette",
         },
         valueModifier = 5,
         animAlphaTexture = "Textures\\jop\\brush\\jop_paintingAlpha6.dds",

@@ -62,7 +62,7 @@ float4 dof_blur_v(float2 tex : TEXCOORD0) : COLOR0
     return float4(blurred, 1);
 }
 
-technique T_Horizontal < string MGEinterface="MGE XE 0"; string category="final"; int priorityAdjust = 67; >
+technique T_Horizontal < string MGEinterface="MGE XE 0"; string category="final"; int priorityAdjust = 2; >
 {
     pass P0 { PixelShader = compile ps_3_0 dof_blur_h(); }
     pass P1 { PixelShader = compile ps_3_0 dof_blur_v(); }

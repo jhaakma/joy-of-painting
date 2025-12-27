@@ -147,9 +147,6 @@ function OcclusionTester:enable()
     for _, node in ipairs(self.targets) do
         node.appCulled = true
     end
-    if mge.camera.zoomEnable then
-        self.logger:warn("MGE Zoom is enabled during Occlusion testing")
-    end
 end
 
 function OcclusionTester:disable()

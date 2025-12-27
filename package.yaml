@@ -20,6 +20,7 @@ data_files:
   - shaders/XEshaders/jop_hatch.fx
   - shaders/XEshaders/jop_ink.fx
   - shaders/XEshaders/jop_kuwahara.fx
+  - shaders/XEshaders/jop_lut.fx
   - shaders/XEshaders/jop_mottle.fx
   - shaders/XEshaders/jop_oil.fx
   - shaders/XEshaders/jop_outline.fx

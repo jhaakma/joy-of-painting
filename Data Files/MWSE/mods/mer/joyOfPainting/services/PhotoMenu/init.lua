@@ -363,7 +363,7 @@ function PhotoMenu:createHeader(parent)
     logger:debug("Creating header")
     parent:createLabel {
         id = "JOP.Header",
-        text = "Hold Right Click to move camera"
+        text = "Press Right Click to move camera"
     }
 end
 
