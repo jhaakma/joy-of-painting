@@ -153,6 +153,7 @@ function Easel:openAttachCanvasMenu()
         CraftingFramework.InventorySelectMenu.open{
             title = "Select a canvas",
             noResultsText = "No canvases found",
+            ---@param e tes3ui.showInventorySelectMenu.callbackParams
             callback = function(e)
                 timer.delayOneFrame(function()
                     if e.item then
@@ -369,11 +370,11 @@ function Easel:pickUp()
             local isEquipped = tes3.getEquippedItem{
                 actor = tes3.player,
                 objectType = tes3.objectType.clothing,
-                slot = 11 ---@diagnostic disable-line
+                slot = 11
             }
             if not isEquipped then
                 logger:debug("Equipping %s", self.miscItem)
-                tes3.player.mobile:equip{
+                tes3.mobilePlayer:equip{
                     item = item
                 }
                 local carryable = self:getCarryableContainer()
@@ -669,8 +670,8 @@ function Easel.getActivationButtons()
         },
         {
             text = "Position",
+            ---@param e { reference: tes3reference }
             callback = function(e)
-                ---@diagnostic disable-next-line
                 common.positioner{
                     reference = e.reference,
                 }

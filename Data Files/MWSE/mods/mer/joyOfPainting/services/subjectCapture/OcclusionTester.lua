@@ -48,10 +48,8 @@ function OcclusionTester.new(e)
     this.pixelData = niPixelData.new(w, h)
 
     -- Create the utility meshes for managing stencils.
-    ---@diagnostic disable
-    this.root = assert(tes3.loadMesh("jop\\occlusionTester.nif")):clone()
-    this.mask = assert(this.root:getObjectByName("Masked Objects"))
-    ---@diagnostic enable
+    this.root = assert(tes3.loadMesh("jop\\occlusionTester.nif")):clone() --[[@as niNode]]
+    this.mask = assert(this.root:getObjectByName("Masked Objects")) --[[@as niNode]]
 
     -- Attach to camera, assign a convenience accessor.
     this.camera = tes3.worldController.worldCamera.cameraData.camera
@@ -161,20 +159,17 @@ end
 function OcclusionTester:capturePixelData(e)
     self.logger:debug("Capturing pixel data...")
 
-    ---@diagnostic disable
     if e.visibleOnly then
         self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.lessEqual
     else
         self.mask.zBufferProperty.testFunction = ni.zBufferPropertyTestFunction.always
     end
 
-    ---@diagnostic disable
     self.camera.renderer:setRenderTarget(self.texture)
     self.camera:clear()
     self.camera:click()
     self.camera:swapBuffers()
     self.camera.renderer:setRenderTarget(nil)
-    ---@diagnostic enable
 
     self.logger:debug("Finished capturing pixel data.")
     assert(self.texture:readback(self.pixelData))
@@ -194,7 +189,6 @@ end
 function OcclusionTester:getPixelCounts(e)
     e = e or { visibleOnly = false}
 
-    ---@diagnostic enable
     self:capturePixelData(e)
     self.logger:debug("Counting pixels...")
     local pixelMap = PixelMap.new{
